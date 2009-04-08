@@ -8,13 +8,13 @@ fetch:
 	
 	#hoofd loop
 	fetchloop:
-		movl PC, %eax			#laad adres van huidige instructie
-		movl MEM(%eax),IR		#laad instructie van dit adres
+		movl PC, %eax			#load address of current instruction
+		movl MEM(%eax),IR		#load instruction from this address
 		
-		call showi				#toon debug data
-		cmp $0xDB, IR			#vergelijk huidige instructie met de stop instructie
-		jne endloop				#als dit de stop instructie is, stop dan
-		addl $8, PC				#hoog de program counter op
+		call showi				#show debug info
+		cmp $0xDB, IR			
+		jne endloop				#stop if the current instruction is the stop instruction
+		addl $8, PC				#increase the program counter
 		
 	jmp fetchloop
 	
