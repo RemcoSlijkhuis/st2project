@@ -17,7 +17,7 @@ fetch:
 		call showi			#show debug info
 		cmp $0xDB, IR			
 		jne endloop			#stop if the current instruction is the stop instruction
-		addl $8, PC			#increase the program counter
+		addl $1, PC			#increase the program counter
 		
 	jmp fetchloop
 	
