@@ -1,26 +1,29 @@
 
+.global fetch
 
-
+#################################################
+##########Fetch: Check each instruction##########
+################################################# 
 fetch:
-	#begin functie
+	#start function
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#hoofd loop
+	#primary loop
 	fetchloop:
 		movl PC, %eax			#load address of current instruction
 		movl MEM(%eax),IR		#load instruction from this address
 		
-		call showi				#show debug info
+		call showi			#show debug info
 		cmp $0xDB, IR			
-		jne endloop				#stop if the current instruction is the stop instruction
-		addl $8, PC				#increase the program counter
+		jne endloop			#stop if the current instruction is the stop instruction
+		addl $8, PC			#increase the program counter
 		
 	jmp fetchloop
 	
 	endloop:
 	
-	#eindig functie
+	#end function
 	movl %ebp, %esp
 	popl %ebp
 	ret
