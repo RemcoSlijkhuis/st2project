@@ -27,6 +27,16 @@ start:
 	
 	movl $0xFF, S			#Initialize the Stack points
 
+	movl $0, %eax			
+
+memloop:				#Initialize the memory to 0
+	movl $0, MEM(%eax)		
+	incl %eax
+	
+	cmpl $65537, %eax		#while %eax <= 65536
+	jne memloop			#jump back 
+
+
 	call readprog			#Read the example program
 
 	call initpc			#Initialize the Program counter
