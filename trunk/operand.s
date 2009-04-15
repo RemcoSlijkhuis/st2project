@@ -1,3 +1,4 @@
+.data
 
 .global fetch
 
@@ -11,13 +12,20 @@ fetch:
 	
 	#primary loop
 	fetchloop:
-		movl PC, %eax			#load address of current instruction
-		movl MEM(%eax),IR		#load instruction from this address
+		movl $0, %eax
+		mov PC, %ax			#load address of current instruction
+		movl $0, %ebx		
+		movb MEM(%eax), %bl
+		movb %bl, IR			#load instruction from this address
 		
 		call showi			#show debug info
-		cmp $0xDB, IR			
-		jne endloop			#stop if the current instruction is the stop instruction
-		addl $1, PC			#increase the program counter
+
+		movl $0, %ebx
+		movb IR, %bl
+		cmp $0xdb, %bl			
+		je endloop			#stop if the current instruction is the stop instruction
+
+		add $1, PC			#increase the program counter
 		
 	jmp fetchloop
 	
@@ -27,3 +35,4 @@ fetch:
 	movl %ebp, %esp
 	popl %ebp
 	ret
+

@@ -29,7 +29,25 @@ start:
 
 	call readprog
 
+	call initpc
+		
+	call fetch
+
  	ret
 
+initpc:
+	
+	movl $0, %eax
+	mov $0xfffd, %ax
+	
+	movl $0, %ebx
+	movb MEM(%eax), %bh
+	
+	mov $0xfffc, %ax
+		
+	movb MEM(%eax), %bl
 
+	mov %bx, PC
+
+	ret
 
