@@ -3,7 +3,7 @@
 ##################################################################
 
 .text
-registers: .asciz "A:  %d\nX:  %d\nY:  %d\nPC: %d\nS:  %d\nIR: %d\nP:  %d\n"
+registers: .asciz "IR:  %d\nP:  %d\n"
 
 .global showi
 
@@ -13,7 +13,16 @@ registers: .asciz "A:  %d\nX:  %d\nY:  %d\nPC: %d\nS:  %d\nIR: %d\nP:  %d\n"
 showi:	pushl %ebp
 	movl %esp, %ebp
 
-	pushl P,IR,S,PC,Y,X,A
+	movl $0, %eax
+	movl P, %ax
+
+	pushl %eax
+
+	movl $0, %eax
+	movl IR, %al
+
+	pushl %eax
+	
 	pushl registers
 	call printf
 
