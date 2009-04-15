@@ -3,27 +3,30 @@
 ##################################################################
 
 .text
-registers: .asciz "IR:  %d\nP:  %d\n"
+ registers: .asciz "IR:  %x\tPC:  %x\n"
 
 .global showi
 
 ##################################################
 ######### showi: Print out the registers #########
 ##################################################
-showi:	pushl %ebp
+showi:	
+
+	pushl %ebp
 	movl %esp, %ebp
 
 	movl $0, %eax
-	movl P, %ax
+	mov PC, %ax
 
 	pushl %eax
 
 	movl $0, %eax
-	movl IR, %al
+	movb IR, %al
 
 	pushl %eax
 	
-	pushl registers
+	pushl $registers
+	
 	call printf
 
 	movl %ebp, %esp
