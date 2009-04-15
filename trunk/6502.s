@@ -46,6 +46,8 @@ memloop:				#Initialize the memory to 0
 
 	movl %ebp, %esp
 
+	pushl $0
+
  	call exit
 
 initpc:
