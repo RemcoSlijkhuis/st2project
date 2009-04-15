@@ -1,6 +1,6 @@
 .global main
 
-main:	movl %esp, %ebp
+main:	
 	jmp start
-	movl $0,(%esp)
+	
 	call exit
