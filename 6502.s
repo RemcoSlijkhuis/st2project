@@ -24,7 +24,8 @@
 
 
 start:
-	
+	movl %esp, %ebp
+
 	movl $0xFF, S			#Initialize the Stack points
 
 	movl $0, %eax			
@@ -43,7 +44,9 @@ memloop:				#Initialize the memory to 0
 		
 	call fetch
 
- 	ret
+	movl %ebp, %esp
+
+ 	call exit
 
 initpc:
 	
