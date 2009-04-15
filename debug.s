@@ -12,23 +12,23 @@
 ##################################################
 showi:	
 
-	pushl %ebp
+	pushl %ebp		#prolog
 	movl %esp, %ebp
 
-	movl $0, %eax
-	mov PC, %ax
+	movl $0, %eax		#reset aex
+	mov PC, %ax		#move the program counter to the lowest 16 bits of eax
 
-	pushl %eax
+	pushl %eax		#push the PC
 
-	movl $0, %eax
-	movb IR, %al
+	movl $0, %eax		#reset eax
+	movb IR, %al		#move the IR to the lowest 8 bits of eax
 
-	pushl %eax
+	pushl %eax		#push the IR
 	
-	pushl $registers
+	pushl $registers	#push the format string
 	
-	call printf
+	call printf		#print
 
-	movl %ebp, %esp
+	movl %ebp, %esp		
 	popl %ebp
 	ret

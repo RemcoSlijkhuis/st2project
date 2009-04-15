@@ -27,9 +27,9 @@ start:
 	
 	movl $0xFF, S			#Initialize the Stack points
 
-	call readprog
+	call readprog			#Read the example program
 
-	call initpc
+	call initpc			#Initialize the Program counter
 		
 	call fetch
 
@@ -37,17 +37,17 @@ start:
 
 initpc:
 	
-	movl $0, %eax
-	mov $0xfffd, %ax
+	movl $0, %eax			#Reset eax
+	mov $0xfffd, %ax		#Move the memory location of the higher address of PC to ax
 	
-	movl $0, %ebx
-	movb MEM(%eax), %bh
-	
-	mov $0xfffc, %ax
+	movl $0, %ebx			#Reset ebx
+	movb MEM(%eax), %bh		#Move the higher address of PC to bh
 		
-	movb MEM(%eax), %bl
+	mov $0xfffc, %ax		#Move the memory location of the lower address of PC to ax
+		
+	movb MEM(%eax), %bl		#Move the lower address of PC to bl
 
-	mov %bx, PC
+	mov %bx, PC			#Sets the PC
 
-	ret
+	ret				#Return from subroutine
 
