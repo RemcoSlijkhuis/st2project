@@ -27,7 +27,7 @@ start:
 	
 	movl $0xFF, S			#Initialize the Stack points
 
-	
+	call readprog
 
  	ret
 
