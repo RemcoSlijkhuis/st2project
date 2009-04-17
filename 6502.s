@@ -44,7 +44,7 @@ memloop:				#Initialize the memory to 0
 
 	call initpc			#Initialize the Program counter	
 
-	#call fetch
+	call fetch
 
 	movl %ebp, %esp
 
