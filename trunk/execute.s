@@ -1,4 +1,6 @@
+
 .data
+
 
 .global execute_ADC
 .global execute_AND
@@ -155,6 +157,14 @@ execute_BVC:
 	movl %ebp, %esp
 	popl %ebp
 	ret	
+
+execute_BVS:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
 
 execute_CLC:
 	pushl %ebp
