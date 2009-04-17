@@ -1,6 +1,5 @@
 .data
 
-
 .global start	
 .global MEM			#Make all variables global
 .global A
@@ -10,6 +9,9 @@
 .global S
 .global IR
 .global P
+.global filename
+
+
 
 	MEM: .skip 65536	#Reserve 65536 bytes in the memory
 	
@@ -21,7 +23,8 @@
 	IR: .byte 0x00
 	P:  .byte 0x00
 
-
+	test: .asciz "%d\n"
+.text
 
 start:
 	movl %esp, %ebp
@@ -32,17 +35,16 @@ start:
 
 memloop:				#Initialize the memory to 0
 	movl $0, MEM(%eax)		
-	incl %eax
+	addl $4, %eax
 	
-	cmpl $65537, %eax		#while %eax <= 65536
+	cmpl $65536, %eax		#while %eax <= 65536
 	jne memloop			#jump back 
+	
+	call readprog
 
+	call initpc			#Initialize the Program counter	
 
-	call readprog			#Read the example program
-
-	call initpc			#Initialize the Program counter
-		
-	call fetch
+	#call fetch
 
 	movl %ebp, %esp
 
