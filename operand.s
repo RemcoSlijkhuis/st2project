@@ -1,6 +1,19 @@
 .data
 
 .global fetch
+.global fetch_abs
+.global fetch_abX
+.global fetch_abY
+.global fetch_acc
+.global fetch_imm
+.global fetch_ind
+.global fetch_inX
+.global fetch_inY
+.global fetch_r
+.global fetch_zp
+.global fetch_zpX
+.global fetch_zpY
+
 
 #################################################
 ##########Fetch: Check each instruction##########
@@ -36,3 +49,128 @@ fetch:
 	popl %ebp
 	ret
 
+		## fetch operand subroutines voor verschillede adressing modes
+	
+	
+fetch_abs:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_abX:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_abY:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_acc:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_imm:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_ind:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_inX:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_inY:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_r:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_zp:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_zpX:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+fetch_zpY:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+	
+	

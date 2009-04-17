@@ -58,6 +58,7 @@
 .global execute_TXS
 .global execute_TYA
 
+		## execute subroutines
 
 execute_ADC:
 	pushl %ebp
