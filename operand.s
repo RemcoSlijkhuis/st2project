@@ -9,7 +9,7 @@
 .global fetch_ind
 .global fetch_inX
 .global fetch_inY
-.global fetch_r
+.global fetch_rel
 .global fetch_zp
 .global fetch_zpX
 .global fetch_zpY
@@ -32,6 +32,11 @@ fetch:
 		movb %bl, IR			#load instruction from this address
 		
 		call showi			#show debug info
+		call decode
+		
+		movb error,%al 
+		cmp $1,%al
+		je endloop
 
 		movl $0, %ebx
 		movb IR, %bl
@@ -96,7 +101,7 @@ fetch_imm:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -116,7 +121,7 @@ fetch_inX:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -126,17 +131,17 @@ fetch_inY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret
 	
-fetch_r:
+fetch_rel:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -146,7 +151,7 @@ fetch_zp:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -156,7 +161,7 @@ fetch_zpX:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -166,7 +171,7 @@ fetch_zpY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	inc PC				#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %ebp
