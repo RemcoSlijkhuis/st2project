@@ -5,6 +5,174 @@ error:  .byte 0x00
 
 .global do_ERROR
 .global decode
+#0x
+.global do_BRK
+.global do_ORA_inX
+.global do_ORA_zp
+.global do_ASL_zp
+.global do_PHP
+.global do_ORA_imm
+.global do_ASL_acc
+.global do_ORA_abs
+.global do_ASL_abs
+#1x
+.global do_BPL_rel
+.global do_ORA_inY
+.global do_ORA_zpX
+.global do_ASL_zpX
+.global do_CLC
+.global do_ORA_abY
+.global do_ORA_abX
+.global do_ASL_abX
+#2x
+.global do_JSR_abs
+.global do_AND_inX
+.global do_BIT_zp
+.global do_AND_zp
+.global do_ROL_zp
+.global do_PLP
+.global do_AND_imm
+.global do_ROL_acc
+.global do_BIT_abs
+.global do_AND_abs
+.global do_ROL_abs
+#3x
+.global do_BMI_rel
+.global do_AND_inY
+.global do_AND_zpX
+.global do_ROL_zpX
+.global do_SEC
+.global do_AND_abY
+.global do_AND_abX
+.global do_ROL_abX
+#4x
+.global do_RTI
+.global do_EOR_inX
+.global do_EOR_zp
+.global do_LSR_zp
+.global do_PHA
+.global do_EOR_imm
+.global do_LSR_acc
+.global do_JMP_abs
+.global do_EOR_abs
+.global do_LSR_abs
+#5x
+.global do_BVC_rel
+.global do_EOR_inY
+.global do_EOR_zpX
+.global do_LSR_zpX
+.global do_CLI
+.global do_EOR_abY
+.global do_EOR_abX
+.global do_LSR_abX
+#6x
+.global do_RTS
+.global do_ADC_inX
+.global do_ADC_zp
+.global do_ROR_zp
+.global do_PLA
+.global do_ADC_imm
+.global do_ROR_acc
+.global do_JMP_ind
+.global do_ADC_abs
+.global do_ROR_abs
+#7x
+.global do_BVS_rel
+.global do_ADC_inY
+.global do_ADC_zpX
+.global do_ROR_zpX
+.global do_SEI
+.global do_ADC_abY
+.global do_ADC_abX
+.global do_ROR_abX
+#8x
+.global do_STA_inX
+.global do_STA_inY
+.global do_STA_zp
+.global do_STX_zp
+.global do_DEY
+.global do_TXA
+.global do_STY_abs
+.global do_STA_abs
+.global do_STX_abs
+#9x
+.global do_BCC_rel
+.global do_STA_inY
+.global do_STY_zpX
+.global do_STA_zpX
+.global do_STX_zpY
+.global do_TYA
+.global do_STA_abY
+.global do_TXS
+.global do_STA_abX
+#Ax
+.global do_LDY_imm
+.global do_LDA_inX
+.global do_LDX_imm
+.global do_LDY_zp
+.global do_LDA_zp
+.global do_LDX_zp
+.global do_TAY
+.global do_LDA_imm
+.global do_TAX
+.global do_LDY_abs
+.global do_LDA_abs
+.global do_LDX_abs
+#Bx
+.global do_BCS_rel
+.global do_LDA_inY
+.global do_LDY_zpX
+.global do_LDA_zpX
+.global do_LDX_zpY
+.global do_CLV
+.global do_LDA_abY
+.global do_TSX
+.global do_LDY_abX
+.global do_LDA_abX
+.global do_LDX_abY
+#Cx
+.global do_CPY_imm
+.global do_CMP_inX
+.global do_CPY_zp
+.global do_CMP_zp
+.global do_DEC_zp
+.global do_INY
+.global do_CMP_imm
+.global do_DEX
+.global do_CPY_abs
+.global do_CMP_abs
+.global do_DEC_abs
+#Dx
+.global do_BNE_rel
+.global do_CMP_inY
+.global do_CMP_zpX
+.global do_DEC_zpX
+.global do_CLD
+.global do_CMP_abY
+.global do_STP
+.global do_CMP_abX
+.global do_DEC_abX
+#Ex
+.global do_CPX_imm
+.global do_SBC_inX
+.global do_CPX_zp
+.global do_SBC_zp
+.global do_INC_zp
+.global do_INX
+.global do_SBC_imm
+.global do_NOP
+.global do_CPX_abs
+.global do_SBC_abs
+.global do_INC_abs
+#Fx
+.global do_BEQ_rel
+.global do_SBC_inY
+.global do_SBC_zpX
+.global do_INC_zpX
+.global do_SED
+.global do_SBC_abY
+.global do_SBC_abX
+.global do_INC_abX
 
 .data
 	opTable:
