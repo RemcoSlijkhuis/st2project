@@ -9,6 +9,6 @@ readprog:
 	pushl $MEM
 	pushl $filename
 	call  readimage
-	addl  $-8,%esp
+	addl  $8,%esp
 
 	ret
