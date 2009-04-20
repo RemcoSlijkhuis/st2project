@@ -39,7 +39,7 @@ fetch:
 		je endloop
 		
 		mov PC, %ax
-		cmp $0x8300, %ax
+		cmp $0x8100, %ax
 		je endloop
 		movl $0, %ebx
 		movb IR, %bl
