@@ -16,7 +16,8 @@
 
 
 #################################################
-##########Fetch: Check each instruction##########
+########## Fetch: read and execute program.
+########## Each loop fetches an instruction and sends it to decode routine.
 ################################################# 
 fetch:
 	#start function
@@ -24,46 +25,41 @@ fetch:
 	movl %esp, %ebp
 	
 	#primary loop
-	fetchloop:
-		movl $0, %eax
-		mov PC, %ax			#load address of current instruction
-		movl $0, %ebx		
-		movb MEM(%eax), %bl
-		movb %bl, IR			#load instruction from this address
-		
-		call showi			#show debug info
-			
-		call decode
-		call showo
-
-		movb error,%al 
-		cmp $1,%al
-		je endloop
-		
-		mov PC, %ax
-		cmp $0x8100, %ax
-		je endloop
-		movl $0, %ebx
-		movb IR, %bl
-		cmp $0xdb, %bl			
-		je endloop			#stop if the current instruction is the stop instruction
-		
-		add $1, PC			#increase the program counter	
-		
-		
-	jmp fetchloop
-	
-	endloop:
-	
+fetchloop:	
+	#load addres of current instruction
+	movl $0, %eax
+	mov PC, %ax	
+	#load instruction in IR
+	movl $0, %ebx		
+	movb MEM(%eax), %bl
+	movb %bl, IR			
+	#decode instruction en show debug info	
+	call showi							
+	call decode
+	call showo
+	#check for errors during decode session
+	movb error,%al 
+	cmp $1,%al
+	je endloop
+	#check for stop instruction, if so exit loop	
+	movl $0, %ebx
+	movb IR, %bl
+	cmp $0xdb, %bl			
+	je endloop				
+	#no end instruction, increment PC and jump back to loop	
+	incl, PC							
+	jmp fetchloop	
+endloop:	
 	#end function
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
-		## fetch operand subroutines voor verschillede adressing modes
+		## fetch operand subroutines for different adressing modes
 		##
-		## effectieve adressen van variabele worden meegegeven in in het ecx register, oude waarden in ecx worden overschreven
-		## bij fetch accumulator wordt de waarde zelf meegegeven.
+		## subroutine fetches operand, then retrieves effective adress of variable and puts it in the ecx register 
+		## ecx register entries wil be overwritten.
+		## subroutine for fetch_acc will pass on the variable itself, the highest bit of the ecx registers indicates if this is the case.
 		
 	
 	
@@ -71,17 +67,18 @@ fetch_abs:
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
-	
+	#increment PC to point at 1st operand
 	incl PC
 	movl $0, %eax
 	movl $0, %ecx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %cl		#laadt low byte van operand adres in cl	
+	#get PC
+	mov PC, %ax 			
+	#store low and high byte off effective adress in cx
+	mov MEM(%eax), %cl		
 	incl %eax					
-	mov MEM(%eax),%ch		#laadt high byte van operand adres in ch
-	
-	incl PC					#PC + 2 om naar volgende opcode/operand  te wijzen
-	
+	mov MEM(%eax),%ch		
+	#increment PC to point at next instruction and return
+	incl PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
@@ -91,21 +88,19 @@ fetch_abX:
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
-
-	incl PC
-	
+	#increment PC to point at 1st operand
+	incl PC	
 	movl $0, %eax
 	movl $0, %ecx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %cl		#laadt low byte van operand adres base	
+	# get PC
+	mov PC, %ax 
+	#load low and high byte off base addres and add offset to aquire effective addres
+	mov MEM(%eax), %cl			
 	incl %eax					
-	mov MEM(%eax),%ch		#laadt high byte van operand adres base
-	add X, %cx 				#tel offset bij base op
-
-
-	
-	incl PC				#PC + 2 om naar volgende opcode/operand  te wijzen
-	
+	mov MEM(%eax),%ch		
+	add X, %cx 				
+	#increment PC to point at next instruction and return
+	incl PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
@@ -115,22 +110,22 @@ fetch_abY:
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
-
-	incl PC
+	#increment PC to point at 1st operand
+	incl PC	
 	movl $0, %eax
 	movl $0, %ecx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %cl		#laadt low byte van operand adres base	
+	# get PC
+	mov PC, %ax 
+	#load low and high byte off base addres and add offset to aquire effective addres
+	mov MEM(%eax), %cl			
 	incl %eax					
-	mov MEM(%eax),%ch		#laadt high byte van operand adres base
-	add Y, %cx 				#tel offset bij base op
-	
-	incl PC				#PC + 2 om naar volgende opcode/operand  te wijzen
-	
+	mov MEM(%eax),%ch		
+	add Y, %cx 				
+	#increment PC to point at next instruction and return
+	incl PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
-	
 	ret
 	
 fetch_acc:
