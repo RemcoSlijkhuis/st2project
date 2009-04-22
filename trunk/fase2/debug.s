@@ -5,9 +5,11 @@
 .text
  registers: .asciz "IR:  0x%X\tPC:  0x%X\n"
  showrregisters: .asciz "A: 0x%X\t X: 0x%X\t Y: 0x%X\t S: 0x%X\tP: 0x%X\n"
+ operand: .asciz "Operand: %X\n"
 
 .global showi
 .global showr
+.global showo
 
 ##################################################
 ######### showi: Print out the registers #########

@@ -9,6 +9,7 @@
 
 .global showi
 .global showr
+.global showo
 
 ##################################################
 ######### showi: Print out the registers #########
