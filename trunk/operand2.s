@@ -32,6 +32,7 @@ fetch:
 		movb %bl, IR			#load instruction from this address
 		
 		call showi			#show debug info
+		call showr
 		call decode
 		
 		movb error,%al 
