@@ -5,9 +5,11 @@
 .text
  registers: .asciz "IR:  0x%X\tPC:  0x%X\n"
  showrregisters: .asciz "A: 0x%X\t X: 0x%X\t Y: 0x%X\t S: 0x%X\tP: 0x%X\n"
+ operand: .asciz "Operand: %X\n"
 
 .global showi
 .global showr
+.global showo
 
 ##################################################
 ######### showi: Print out the registers #########
@@ -42,31 +44,51 @@ showr:
 	pushl %ebp		#prolog
 	movl %esp, %ebp
 
-	movl $0, %eax
-	movb P, %al
+	movl $0, %eax		#Clear eax
+	movb P, %al		#move P to eax
 
-	pushl %eax
+	pushl %eax		#push P
 
-	movb S, %al
-	pushl %eax
+	movb S, %al		#move S to eax
+	pushl %eax		#push S
 
-	movb Y, %al
-	pushl %eax
+	movb Y, %al		#move Y to eax
+	pushl %eax		#push Y
 
-	movb X, %al
-	pushl %eax
+	movb X, %al		#move X to eax
+	pushl %eax		#push X
 
-	movb A, %al
-	pushl %eax
+	movb A, %al		#move A to eax
+	pushl %eax		#push A
 		
-	pushl $showrregisters
+	pushl $showrregisters	#push showr string
 	
-	call printf
+	call printf		#call printf routine
 
-	movl %ebp, %esp
+	movl %ebp, %esp		#restore stack pointer
 	popl %ebp
 
 	ret
+
+showo:
+	pushl %ebp		#prolog
+	movl %esp, %ebp
+
+	
+	pushl %ecx
+	pushl $operand
+
+	call printf
+
+
+	movl %ebp, %esp		#restore stack pointer
+	popl %ebp
+
+	ret
+
+
+
+
 
 
 	
