@@ -4,8 +4,10 @@
 
 .text
  registers: .asciz "IR:  0x%X\tPC:  0x%X\n"
+ showrregisters: .asciz "A: 0x%X\t X: 0x%X\t Y: 0x%X\t S: 0x%X\tP: 0x%X\n"
 
 .global showi
+.global showr
 
 ##################################################
 ######### showi: Print out the registers #########
@@ -32,3 +34,39 @@ showi:
 	movl %ebp, %esp		
 	popl %ebp
 	ret
+
+
+
+showr:
+	
+	pushl %ebp		#prolog
+	movl %esp, %ebp
+
+	movl $0, %eax
+	movb P, %al
+
+	pushl %eax
+
+	movb S, %al
+	pushl %eax
+
+	movb Y, %al
+	pushl %eax
+
+	movb X, %al
+	pushl %eax
+
+	movb A, %al
+	pushl %eax
+		
+	pushl $showrregisters
+	
+	call printf
+
+	movl %ebp, %esp
+	popl %ebp
+
+	ret
+
+
+	
