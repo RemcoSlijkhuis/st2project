@@ -595,7 +595,7 @@ do_AND_abX:
 do_ROL_abX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_abY
+	call	fetch_abX
 	call	execute_ROL
 	movl	%ebp, %esp
 	popl	%ebp
@@ -914,7 +914,7 @@ do_ADC_abX:
 do_ROR_abX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_zp
+	call	fetch_abX
 	call	execute_ORA
 	movl	%ebp, %esp
 	popl	%ebp
