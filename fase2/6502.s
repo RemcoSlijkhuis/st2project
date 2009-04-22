@@ -23,8 +23,8 @@
 	IR: .byte 0x00
 	P:  .byte 0x00
 
-	test: .asciz "%d\n"
 .text
+	test: .asciz "Exitcode: %d\n"
 
 start:
 	movl %esp, %ebp
@@ -47,8 +47,10 @@ memloop:				#Initialize the memory to 0
 	call fetch
 
 	movl %ebp, %esp
-
-	pushl error
+	
+	movl $0, %eax
+	movb error, %al
+	pushl %eax
 
  	call exit
 
