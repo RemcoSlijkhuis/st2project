@@ -26,6 +26,9 @@
 .text
 	test: .asciz "Exitcode: %d\n"
 
+##################################################
+############## start: Main routine ###############
+##################################################
 start:
 	movl %esp, %ebp
 
@@ -33,7 +36,7 @@ start:
 
 	movl $0, %eax			
 
-memloop:				#Initialize the memory to 0
+	memloop:				#Initialize the memory to 0
 	movl $0, MEM(%eax)		
 	addl $4, %eax
 	
@@ -54,6 +57,9 @@ memloop:				#Initialize the memory to 0
 
  	call exit
 
+##################################################
+###### initpc: initalise the program counter #####
+##################################################
 initpc:
 	
 	movl $0, %eax			#Reset eax
