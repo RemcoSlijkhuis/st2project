@@ -32,9 +32,12 @@ fetch:
 		movb %bl, IR			#load instruction from this address
 		
 		call showi			#show debug info
-		call showr
-		call decode
+	
+		add $1, PC			#increase the program counter		
 		
+		call decode
+		call showo
+
 		movb error,%al 
 		cmp $1,%al
 		je endloop
@@ -47,7 +50,7 @@ fetch:
 		cmp $0xdb, %bl			
 		je endloop			#stop if the current instruction is the stop instruction
 
-		add $1, PC			#increase the program counter
+		
 		
 	jmp fetchloop
 	
@@ -60,31 +63,26 @@ fetch:
 
 		## fetch operand subroutines voor verschillede adressing modes
 		##
-		## operands worden meegegeven in in het ecx register, oude waarden in ecx worden overschreven
-		## bij de relative adressing mode wordt alleen het effectieve adres meegegeven.
+		## effectieve adressen van variabele worden meegegeven in in het ecx register, oude waarden in ecx worden overschreven
+		## bij fetch accumulator wordt de waarde zelf meegegeven.
 		
 	
 	
 fetch_abs:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 	
 	movl $0, %eax
-	movl $0, %ebx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %bl		#laadt low byte van operand adres	
-	incl %eax					
-	mov MEM(%eax),%bh		#laadt high byte van operand adres
 	movl $0, %ecx
-	mov MEM(%ebx), %cl		#sla operand op in cl
-	
+	mov PC, %ax 			# laadt program counter in ax
+	mov MEM(%eax), %cl		#laadt low byte van operand adres in cl	
+	incl %eax					
+	mov MEM(%eax),%ch		#laadt high byte van operand adres in ch
 	
 	add $2, PC				#PC + 2 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
-	popl %ebx
 	popl %eax
 	popl %ebp
 	ret
@@ -92,23 +90,21 @@ fetch_abs:
 fetch_abX:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 
 	movl $0, %eax
-	movl $0, %ebx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %bl		#laadt low byte van operand adres base	
-	incl %eax					
-	mov MEM(%eax),%bh		#laadt high byte van operand adres base
-	add X, %bx 				#tel offset bij base op
 	movl $0, %ecx
-	mov MEM(%ebx), %cl		#sla operand op in ecx
+	mov PC, %ax 			# laadt program counter in ax
+	mov MEM(%eax), %cl		#laadt low byte van operand adres base	
+	incl %eax					
+	mov MEM(%eax),%ch		#laadt high byte van operand adres base
+	add X, %cx 				#tel offset bij base op
+
+
 	
 	add $2, PC				#PC + 2 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
-	popl %ebx
 	popl %eax
 	popl %ebp
 	ret
@@ -116,23 +112,19 @@ fetch_abX:
 fetch_abY:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 
 	movl $0, %eax
-	movl $0, %ebx
-	mov PC, %ax 			# laadt program counter in ax
-	mov MEM(%eax), %bl		#laadt low byte van operand adres base	
-	incl %eax					
-	mov MEM(%eax),%bh		#laadt high byte van operand adres base
-	add Y, %bx 				#tel offset bij base op
 	movl $0, %ecx
-	mov MEM(%ebx), %cl		#sla operand op in ecx
+	mov PC, %ax 			# laadt program counter in ax
+	mov MEM(%eax), %cl		#laadt low byte van operand adres base	
+	incl %eax					
+	mov MEM(%eax),%ch		#laadt high byte van operand adres base
+	add Y, %cx 				#tel offset bij base op
 	
 	add $2, PC				#PC + 2 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
-	popl %ebx
 	popl %eax
 	popl %ebp
 	
@@ -151,18 +143,16 @@ fetch_acc:
 	
 fetch_imm:
 	pushl %ebp
-	pushl %eax
 	movl %esp, %ebp
 
-	movl $0, %eax	
-	mov PC, %ax				# laadt PC in ax
-	movl $0, %ecx
-	mov MEM(%eax), %cl		#laadt operand in ecx
+	movl $0, %ecx	
+	mov PC, %cx				# laadt PC in cx
+
+
 	
 	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
-	popl %eax
 	popl %ebp
 	ret
 	
@@ -174,18 +164,16 @@ fetch_ind:
 
 
 	movl $0, %eax
-	movl $0, %ebx	
+	movl $0, %ebx
+	movl $0, %ecx	
 	mov PC, %ax				#laadt PC in ax
 	mov MEM(%eax), %bl 		#laadt low byte van indirecte adres in bl
 	incl %eax
 	mov MEM(%eax), %bh		#laadt high byte van indirecte adres in bh
-	movl $0, %eax
-	mov MEM(%ebx), %al		#laadt low byte van effectieve adres in al
+	mov MEM(%ebx), %cl		#laadt low byte van effectieve adres in cl
 	incl %ebx					#ga naar high byte van effectief adres
-	mov MEM(%ebx), %ah		#laadt high byte van effectieve adres in ah
-	movl $0, %ecx
-	mov MEM(%eax), %cl		#laadt operand in ecx
-	
+	mov MEM(%ebx), %ch		#laadt high byte van effectieve adres in ch
+
 	add $2, PC				#PC + 2 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
@@ -202,16 +190,16 @@ fetch_inX:
 
 
 	movl $0, %eax
+	movl $0, %ecx
 	mov PC, %ax				#laadt PC in ax
 	movl $0, %ebx 		
 	mov MEM(%eax), %bl		#laadt base adress in bl
 	add X, %bl				#add offest bij base adress
-	movl $0, %eax
-	mov MEM(%ebx),%al		# laadt low byte van effective adress
+	mov MEM(%ebx),%cl		# laadt low byte van effective adress
 	incl %ebx					
-	mov MEM(%ebx),%ah		#laadt high byte van effective adress
-	movl $0, %ecx
-	mov MEM(%eax),%cl		#laadt operand in ecx
+	mov MEM(%ebx),%ch		#laadt high byte van effective adress
+
+
 	
 	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
@@ -227,17 +215,15 @@ fetch_inY:
 	pushl %ebx
 	movl %esp, %ebp
 
-	movl $0, %eax	
+	movl $0, %eax
+	movl $0, %ecx	
 	mov PC, %ax				#laadt PC in ax
 	movl $0, %ebx 		
 	mov MEM(%eax), %bl		#laadt base adress in bl
 	add X, %bl				#add offest bij base adress
-	movl $0, %eax
-	mov MEM(%ebx),%al		# laadt low byte van effective adress
+	mov MEM(%ebx),%cl		# laadt low byte van effective adress
 	incl %ebx					
-	mov MEM(%ebx),%ah		#laadt high byte van effective adress
-	movl $0, %ecx
-	mov MEM(%eax),%cl		#laadt operand in ecx
+	mov MEM(%ebx),%ch		#laadt high byte van effective adress
 	
 	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
@@ -268,62 +254,55 @@ fetch_rel:
 fetch_zp:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
+
+	
 
 	movl $0, %eax	
 	mov PC, %ax
-	movl $0, %ebx			# zet ebx op 0
-	mov MEM(%eax), %bl 		#laadt low byte in ebx
-	mov MEM(%ebx), %cl		#laadt operand in ecx
-	
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
+	movl $0, %ecx			# zet ecx op 0
+	mov MEM(%eax), %cl 		#laadt low byte in ecx
+
+	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen				
 	
 	movl %ebp, %esp
 	popl %eax
-	popl %ebx
 	popl %ebp
 	ret
 	
 fetch_zpX:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 
 	movl $0, %eax
-	movl $0, %ebx	
+	movl $0, %ecx	
 	mov PC, %ax
-	mov MEM(%eax), %bl 		#laadt low byte in ebx
-	add X,%bl				# add offset bij ebx
-	mov MEM(%ebx), %cl		#laadt operand in ecx
-	
+	mov MEM(%eax), %cl 		#laadt low byte in ecx
+	add X,%cl				# add offset bij ecx
+
 	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %eax
-	popl %ebx
 	popl %ebp
 	ret
 	
 fetch_zpY:
 	pushl %ebp
 	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 
 	movl $0, %eax
-	movl $0, %ebx	
+	movl $0, %ecx	
 	mov PC, %ax
-	mov MEM(%eax), %bl 		#laadt low byte in ebx
-	add Y,%bl				# add offset bij ebx
-	mov MEM(%ebx), %cl		#laadt operand in ecx
+	mov MEM(%eax), %cl 		#laadt low byte in ecx
+	add Y,%cl				# add offset bij ecx
 	
 	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl %ebp, %esp
 	popl %eax
-	popl %ebx
 	popl %ebp
 	ret
 	
