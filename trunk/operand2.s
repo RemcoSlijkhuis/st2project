@@ -36,12 +36,10 @@ fetch:
 		call decode
 		
 		movb error,%al 
-		cmp $1,%al
-		je endloop
+		cmp $0,%al
+		jne endloop
 		
-		mov PC, %ax
-		cmp $0x8100, %ax
-		je endloop
+
 		movl $0, %ebx
 		movb IR, %bl
 		cmp $0xdb, %bl			
