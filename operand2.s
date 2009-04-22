@@ -143,7 +143,7 @@ fetch_imm:
 	movl %esp, %ebp
 
 	movl $0, %ecx	
-	mov PC, %cx				# laadt PC in ax
+	mov PC, %cx				# laadt PC in cx
 
 
 	
@@ -187,7 +187,7 @@ fetch_inX:
 
 
 	movl $0, %eax
-		movl $0, %ecx
+	movl $0, %ecx
 	mov PC, %ax				#laadt PC in ax
 	movl $0, %ebx 		
 	mov MEM(%eax), %bl		#laadt base adress in bl
