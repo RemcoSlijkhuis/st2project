@@ -47,7 +47,7 @@ fetchloop:
 	cmp $0xdb, %bl			
 	je endloop				
 	#no end instruction, increment PC and jump back to loop	
-	incl, PC							
+	incl PC
 	jmp fetchloop	
 endloop:	
 	#end function
