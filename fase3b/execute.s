@@ -149,7 +149,7 @@ execute_ASL:
 	mov %al, MEM(%ecx)	
 ASL_checks:
 	pushl %eax
-	call checkZS
+	call check_ZS
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc ASL_setC
@@ -524,7 +524,7 @@ execute_LSR:
 	mov %al, MEM(%ecx)	
 LSR_checks:
 	pushl %eax
-	call checkZS
+	call check_ZS
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc LSR_setC
@@ -669,7 +669,7 @@ execute_ROL:
 	mov %al, MEM(%ecx)	
 ROL_checks:
 	pushl %eax
-	call checkZS
+	call check_ZS
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc ROL_setC
@@ -714,7 +714,7 @@ execute_ROR:
 	mov %al, MEM(%ecx)	
 ROR_checks:
 	pushl %eax
-	call checkZS
+	call check_ZS
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc ROR_setC

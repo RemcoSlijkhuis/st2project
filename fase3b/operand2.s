@@ -36,7 +36,7 @@ fetchloop:
 	#decode instruction en show debug info	
 	call showi							
 	call decode
-	call showo
+	call showr
 	#check for errors during decode session
 	movb error,%al 
 	cmp $1,%al
