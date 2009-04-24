@@ -68,37 +68,39 @@
 execute_ADC:
 	pushl %ebp
 	movl %esp, %ebp
-
+	
 	mov A, %ebx	##remember old Accumulator
 	mov P,%eax
-	div 2		##calculate carry
-	add A, MEM	##add MEM to Accumulator
+	mov $2, %dh
+	div %dh		##calculate carry
+	mov MEM(%ecx), %dl
+	add A, %dl	##add MEM to Accumulator
 	add A, %ah
 
-	cmp %ebx, 0	
-	jl ADC_An	##if negative
+	cmp $0, %ebx
+	jg ADC_An	##if negative
 	jmp ADC_Ap	##positive/0
 
 ADC_An:			##old A<0
-	cmp MEM,0
-	jl ADC_AnMn
+	cmp $0,MEM(%ecx)
+	jg ADC_AnMn
 	jmp ADC_end
 ADC_Ap:			##old A>0
-	cmp MEM,0
-	jg ADC_ApMp
+	cmp $0,MEM(%ecx)
+	jl ADC_ApMp
 	jmp ADC_end
 ADC_AnMn:		##old A<0, M<0
-	cmp A,0
-	jl ADC_end
+	cmp $0,A
+	jg ADC_end
 	jmp ADC_ov
 
 ADC_ApMp:		##old A>0, M>0
-	cmp A,0
-	jge ADC_end
+	cmp $0,A
+	jle ADC_end
 	jmp ADC_ov
 
 ADC_ov:			##if overflow
-	or 0x40, P
+	or $0x40, P
 	jmp ADC_end
 
 ADC_end:		##change negative and zero flag, and stop.
@@ -115,7 +117,8 @@ execute_AND:
 	pushl %ebp
 	movl %esp, %ebp
 
-	and MEM, A
+	mov MEM(%ecx), %al
+	and %al, A
 	push A
 	call check_ZS	##adjust zero en neg. flags
 
@@ -127,7 +130,7 @@ execute_AND:
 
 	## shift bits one place to the left, LSB is set 0, affects sign and zero flags
 	## the bit that is shifted out affects the carry
-execute_ASL
+execute_ASL:
 
 	pushl %ebp
 	pushl %eax
@@ -141,7 +144,7 @@ execute_ASL
 	#get value from memory
 	mov MEM(%ecx), %al
 	#shift 1 right, save flags for checks and update value
-	shl %al, $1
+	shl $1,%al
 	pushf
 	mov %al, MEM(%ecx)	
 ASL_checks:
@@ -162,9 +165,9 @@ ASL_end:
 	ret
 ASL_acc:
 	#accumulator adressing mode, value already in cx
-	mov %cl %al
+	mov %cl, %al
 	#shift 1 right, save flags for checks and update value
-	shl %al, $1
+	shl $1,%al
 	pushf
 	mov %al, A
 	jmp ASL_checks
@@ -257,8 +260,10 @@ execute_BVS:
 execute_CLC:
 	pushl %ebp
 	movl %esp, %ebp
-
-	and 0xFE, P	##change the first bit to 0
+	
+	mov P, %al
+	and $0xFE, %al	##change the first bit to 0
+	mov %al, P
 
 	movl %ebp, %esp
 	popl %ebp
@@ -287,7 +292,9 @@ execute_CLV:
 	pushl %ebp
 	movl %esp, %ebp
 
-	and 0xBF%, P	##change the carry flag
+	mov P, %al
+	and $0xBF, %al	##change the carry flag
+	mov %al, P
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -329,7 +336,7 @@ execute_DEC:
 	dec %al
 	mov %al, MEM(%ecx)
 	
-	pushl %al
+	push MEM(%ecx)
 	call check_ZS	##adjust zero en neg. flags
 
 	movl %ebp, %esp
@@ -343,7 +350,9 @@ execute_DEX:
 	pushl %ebp
 	movl %esp, %ebp
 
-	dec X
+	mov X, %al
+	dec %al
+	mov %al, X
 	push X
 	call check_ZS	##adjust zero en neg. flags
 
@@ -357,8 +366,10 @@ execute_DEX:
 execute_DEY:
 	pushl %ebp
 	movl %esp, %ebp
-
-	dec Y
+	
+	mov Y, %al
+	dec %al
+	mov %al, Y
 	push Y
 	call check_ZS	##adjust zero en neg. flags
 
@@ -375,7 +386,7 @@ execute_EOR:
 	xor A, %bl		#xor accumulator and bl
 	mov %bl, A		#move bl back to the accumulator
 	
-	push %bl
+	push A
 	call check_ZS
 	
 	movl %ebp, %esp
@@ -433,11 +444,11 @@ execute_LDA:
 	movl %esp, %ebp
 	#get value from memory
 	movl $0, %eax
-	mov MEM(%ecx), %eax
+	mov MEM(%ecx), %al
 	#put value in accumulator
-	mov %eax, A	
+	mov %al, A	
 	#check if value is zero or negative and adjust flag accordingly
-	pushl %eax
+	push A
 	call check_ZS
 		
 	movl %ebp, %esp
@@ -455,11 +466,11 @@ execute_LDX:
 	movl %esp, %ebp
 	#get value from memory
 	movl $0, %eax
-	mov MEM(%ecx), %eax
+	mov MEM(%ecx), %al
 	#put value in accumulator
-	mov %eax, X	
+	mov %al, X	
 	#check if value is zero or negative and adjust flag accordingly
-	pushl %eax
+	push X
 	call check_ZS
 		
 	movl %ebp, %esp
@@ -477,11 +488,11 @@ execute_LDY:
 	movl %esp, %ebp
 	#get value from memory
 	movl $0, %eax
-	mov MEM(%ecx), %eax
+	mov MEM(%ecx), %al
 	#put value in accumulator
-	mov %eax, Y	
+	mov %al, Y	
 	#check if value is zero or negative and adjust flag accordingly
-	pushl %eax
+	push Y
 	call check_ZS
 		
 	movl %ebp, %esp
@@ -494,7 +505,7 @@ execute_LDY:
 
 	## shift bits one place to the right, MSB is set 0, affects sign and zero flags
 	## the bit that is shifted out affects the carry
-execute_LSR
+execute_LSR:
 
 	pushl %ebp
 	pushl %eax
@@ -508,7 +519,7 @@ execute_LSR
 	#get value from memory
 	mov MEM(%ecx), %al
 	#shift 1 right, save flags for checks and update value
-	shr %al, $1
+	shr $1, %al
 	pushf
 	mov %al, MEM(%ecx)	
 LSR_checks:
@@ -529,9 +540,9 @@ LSR_end:
 	ret
 LSR_acc:
 	#accumulator adressing mode, value already in cx
-	mov %cl %al
+	mov %cl, %al
 	#shift 1 right, save flags for checks and update value
-	shr %al, $1
+	shr $1, %al
 	pushf
 	mov %al, A
 	jmp LSR_checks
@@ -554,11 +565,11 @@ execute_ORA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov MEM(%cx), %bl	#load argument into bl
+	mov MEM(%ecx), %bl	#load argument into bl
 	or A, %bl		#or accumulator and bl
 	mov %bl, A		#move bl back to the accumulator
 	
-	push %bl
+	push A
 	call check_ZS
 	
 	movl %ebp, %esp
@@ -570,10 +581,10 @@ execute_PHA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	movw $0x0100,%ax	#set the mem pointer ax to be 01:XX (currently 01:00)
+	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
 	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
 	mov A, %bl		#store the accumulator in bl
-	mov %bl, MEM(%ax)	#store bl in memory on the position indicated by mem pointer ax
+	mov %bl, MEM(%eax)	#store bl in memory on the position indicated by mem pointer ax
 	dec %al			#decrease the stack pointer with 1
 	mov %al, S		#and store the stack pointer again
 	
@@ -586,10 +597,10 @@ execute_PHP:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	movw $0x0100,%ax	#set the mem pointer ax to be 01:XX (currently 01:00)
+	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
 	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
 	mov P, %bl		#store the processor status in bl
-	mov %bl, MEM(%ax)	#store bl in memory on the position indicated by mem pointer ax
+	mov %bl, MEM(%eax)	#store bl in memory on the position indicated by mem pointer ax
 	dec %al			#decrease the stack pointer with 1
 	mov %al, S		#and store the stack pointer again
 	
@@ -603,12 +614,12 @@ execute_PLA:
 	movl %esp, %ebp
 	
 	
-	movw $0x0100,%ax	#set the mem pointer ax to be 01:XX (currently 01:00)
+	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
 	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
 	inc %al			#increase the stack pointer value with 1
 	mov %al, S		#and store the stack pointer
 	#ax now contains the mem pointer for the location of the new accumulator
-	mov MEM(%ax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
+	mov MEM(%eax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
 	mov %bl, A		#store bl in the accumulator
 	
 	
@@ -622,12 +633,12 @@ execute_PLP:
 	movl %esp, %ebp
 	
 	
-	movw $0x0100,%ax	#set the mem pointer ax to be 01:XX (currently 01:00)
+	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
 	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
 	inc %al			#increase the stack pointer value with 1
 	mov %al, S		#and store the stack pointer
 	#ax now contains the mem pointer for the location of the new processor status
-	mov MEM(%ax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
+	mov MEM(%eax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
 	mov %bl, P		#store bl in the processor status
 	
 	
@@ -653,7 +664,7 @@ execute_ROL:
 	#get value from memory
 	mov MEM(%ecx), %al
 	#shift 1 left, save flags for checks and update value
-	rcl %al, $1
+	rcl $1, %al
 	pushf
 	mov %al, MEM(%ecx)	
 ROL_checks:
@@ -674,9 +685,9 @@ ROL_end:
 	ret
 ROL_acc:
 	#accumulator adressing mode, value already in cx
-	mov %cl %al
+	mov %cl, %al
 	#shift 1 left, save flags for checks and update value
-	rcl %al, $1
+	rcl $1,%al
 	pushf
 	mov %al, A
 	jmp ROL_checks
@@ -698,7 +709,7 @@ execute_ROR:
 	#get value from memory
 	mov MEM(%ecx), %al
 	#shift 1 right, save flags for checks and update value
-	rcr %al, $1
+	rcr $1,%al
 	pushf
 	mov %al, MEM(%ecx)	
 ROR_checks:
@@ -719,9 +730,9 @@ ROR_end:
 	ret
 ROR_acc:
 	#accumulator adressing mode, value already in cx
-	mov %cl %al
+	mov %cl, %al
 	#shift 1 right, save flags for checks and update value
-	rcr %al, $1
+	rcr $1,%al
 	pushf
 	mov %al, A
 	jmp ROR_checks
@@ -762,7 +773,7 @@ execute_SBC:
 	clc		#clear carry
 	SBC_end:
 	
-	mov MEM(%cx), %bl	#load argument into bl
+	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
 	sbb %dl, %bl		#subtract dl with bl
 	
@@ -813,7 +824,7 @@ execute_STA:
 	movl %esp, %ebp
 	
 	mov A, %al			#store the accumulator in al
-	mov %al, MEM(%cx)		#store al in memory at the given address
+	mov %al, MEM(%ecx)		#store al in memory at the given address
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -833,7 +844,7 @@ execute_STX:
 	movl %esp, %ebp
 	
 	mov X, %al			#store the x register in al
-	mov %al, MEM(%cx)		#store al in memory at the given address
+	mov %al, MEM(%ecx)		#store al in memory at the given address
 	
 	
 	movl %ebp, %esp
@@ -846,7 +857,7 @@ execute_STY:
 	movl %esp, %ebp
 	
 	mov Y, %al			#store the y register in al
-	mov %al, MEM(%cx)		#store al in memory at the given address
+	mov %al, MEM(%ecx)		#store al in memory at the given address
 	
 	
 	movl %ebp, %esp
@@ -860,7 +871,7 @@ execute_TAX:
 	
 	mov A, %al	#move accumulator to al register
 	mov %al, X	#move al register to X
-	push %al
+	push X
 	call check_ZS
 	
 	movl %ebp, %esp
@@ -874,7 +885,7 @@ execute_TAY:
 	
 	mov A, %al	#move accumulator to al register
 	mov %al, Y	#move al register to Y
-	push %al
+	push Y
 	call check_ZS
 	
 	movl %ebp, %esp
@@ -888,7 +899,7 @@ execute_TSX:
 	
 	mov S, %al		#move the stack pointer to al
 	mov %al, X		#move al to the x register
-	push %al		#push al onto the stack for check_ZS
+	push X			#push al onto the stack for check_ZS
 	call check_ZS		#set negative and zero flags
 	
 	movl %ebp, %esp
@@ -902,7 +913,7 @@ execute_TXA:
 	
 	mov X, %al	#move the x register to al
 	mov %al, A	#move al to the accumulator
-	push %al	#push the new value of the accumulator onto the stack
+	push A		#push the new value of the accumulator onto the stack
 	call check_ZS	#set negative and zero flags
 	
 	movl %ebp, %esp
@@ -917,7 +928,7 @@ execute_TXS:
 	
 	mov X, %al		#move the x register to al
 	mov %al, S		#move al to the stack pointer
-	push %al		#push al onto the stack for check_ZS
+	push S			#push al onto the stack for check_ZS
 	call check_ZS		#set negative and zero flags
 	
 	movl %ebp, %esp
@@ -931,7 +942,7 @@ execute_TYA:
 	
 	mov Y, %al		#move the y register to al
 	mov %al, A		#move al to the accumulator
-	push %al		#push al onto the stack for check_ZS
+	push A			#push al onto the stack for check_ZS
 	call check_ZS		#set negative and zero flags
 	
 	movl %ebp, %esp
@@ -940,5 +951,45 @@ execute_TYA:
 	
 	
 	
-	
+
+
+
+
+
+
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+##!!!!!!!!!Extra functions!!!!!!!!!##
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+
+################################################################################################
+##########check_ZS: Checks and changes the negative and zero flag for the pushed value##########
+################################################################################################
+check_ZS:
+	pushl %ebp
+	movl %esp, %ebp
+
+	mov 8(%ebp),%al
+	jz set_zero		##Declare the zero flag true, the negative flag false 
+	js set_neg		##Declare the zero flag false, the negative flag true 
+	jmp set_pos		##Declare the zero flag false and the negative flag false 
+
+set_zero:
+	or $0x02, P		##zero flag true
+	and $0x7F, P 		##negative flag false
+	jmp set_end
+
+set_neg:
+	and $0xFD, P		##zero flag false
+	or $0x80, P		##negative flag true
+	jmp set_end
+
+set_pos:
+	and $0xFD, P		##zero flag false
+	and $0x7F, P 		##zero flag false
+	jmp set_end
+		
+set_end:			##close the function
+	movl %ebp, %esp
+	popl %ebp
+	ret
 	
