@@ -968,28 +968,31 @@ check_ZS:
 	pushl %ebp
 	movl %esp, %ebp
 
+	mov P, %bl
+	
 	mov 8(%ebp),%al
 	jz set_zero		##Declare the zero flag true, the negative flag false 
 	js set_neg		##Declare the zero flag false, the negative flag true 
 	jmp set_pos		##Declare the zero flag false and the negative flag false 
 
 set_zero:
-	or $0x02, P		##zero flag true
-	and $0x7F, P 		##negative flag false
+	or $0x02, %bl		##zero flag true
+	and $0x7F, %bl 		##negative flag false
 	jmp set_end
 
 set_neg:
-	mov P, %bl
+	
 	and $0xFD, %bl		##zero flag false
-	or $0x80, P		##negative flag true
+	or $0x80, %bl		##negative flag true
 	jmp set_end
 
 set_pos:
-	and $0xFD, P		##zero flag false
-	and $0x7F, P 		##zero flag false
+	and $0xFD, %bl		##zero flag false
+	and $0x7F, %bl 		##zero flag false
 	jmp set_end
 		
 set_end:			##close the function
+	mov %bl, P
 	movl %ebp, %esp
 	popl %ebp
 	ret
