@@ -131,9 +131,9 @@ fetch_abY:
 fetch_acc:
 	pushl %ebp
 	movl %esp, %ebp
-
+	#load accumulator in ecx
 	movl $0, %ecx	
-	mov A, %cl				# laadt accumulator in ecx
+	mov A, %cl				
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -143,11 +143,11 @@ fetch_imm:
 	pushl %ebp
 	movl %esp, %ebp
 
-	
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
-	
+	#increment PC to point at first operand
+	incl PC					
+	#load adress pointing to immediate (=PC) in ecx 
 	movl $0, %ecx	
-	mov PC, %cx				# laadt PC in cx
+	mov PC, %cx				
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -163,15 +163,18 @@ fetch_ind:
 	movl $0, %eax
 	movl $0, %ebx
 	movl $0, %ecx	
-	mov PC, %ax				#laadt PC in ax
-	mov MEM(%eax), %bl 		#laadt low byte van indirecte adres in bl
+	#load PC 
+	mov PC, %ax	
+	#load low and high byte off indirect adrees in bx
+	mov MEM(%eax), %bl 		
 	incl %eax
-	mov MEM(%eax), %bh		#laadt high byte van indirecte adres in bh
-	mov MEM(%ebx), %cl		#laadt low byte van effectieve adres in cl
-	incl %ebx					#ga naar high byte van effectief adres
-	mov MEM(%ebx), %ch		#laadt high byte van effectieve adres in ch
-
-	incl PC				#PC + 2 om naar volgende opcode/operand  te wijzen
+	mov MEM(%eax), %bh
+	#load low and high byte off effective adress in ecx
+	mov MEM(%ebx), %cl		
+	incl %ebx					
+	mov MEM(%ebx), %ch		
+	#increment PC to point at next instruction
+	incl PC				
 	
 	movl %ebp, %esp
 	popl %ebx
