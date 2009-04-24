@@ -979,7 +979,8 @@ set_zero:
 	jmp set_end
 
 set_neg:
-	and $0xFD, P		##zero flag false
+	mov P, $bl
+	and $0xFD, %bl		##zero flag false
 	or $0x80, P		##negative flag true
 	jmp set_end
 
