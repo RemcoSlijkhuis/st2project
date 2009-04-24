@@ -133,7 +133,9 @@ fetch_acc:
 	movl %esp, %ebp
 	#load accumulator in ecx
 	movl $0, %ecx	
-	mov A, %cl				
+	mov A, %cl
+	#add value to indicate that ecx stores accumulator value
+	addl $0x00010000, %ecx
 	
 	movl %ebp, %esp
 	popl %ebp
