@@ -1,0 +1,159 @@
+##################################################
+#################ADC: A+MEM+carry#################
+##################################################
+execute_ADC:
+	pushl %ebp
+	movl %esp, %ebp
+
+	mov A, %ebx	##remember old Accumulator
+	mov P,%eax
+	div 2		##calculate carry
+	add A, MEM	##add MEM to Accumulator
+	add A, %ah
+
+	cmp %ebx, 0	
+	jl ADC_An	##if negative
+	jmp ADC_Ap	##positive/0
+
+ADC_An:			##old A<0
+	cmp MEM,0
+	jl ADC_AnMn
+	jmp ADC_end
+ADC_Ap:			##old A>0
+	cmp MEM,0
+	jg ADC_ApMp
+	jmp ADC_end
+ADC_AnMn:		##old A<0, M<0
+	cmp A,0
+	jl ADC_end
+	jmp ADC_ov
+
+ADC_ApMp:		##old A>0, M>0
+	cmp A,0
+	jge ADC_end
+	jmp ADC_ov
+
+ADC_ov:			##if overflow
+	or 0x40, P
+	jmp ADC_end
+
+ADC_end:		##change negative and zero flag, and stop.
+	push A
+	call check_ZS	##adjust zero en neg. flags
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+######################################
+#####AND: AND mem and Accumulator#####
+###################################### 
+execute_AND:
+	pushl %ebp
+	movl %esp, %ebp
+
+	and MEM, A
+	push A
+	call check_ZS	##adjust zero en neg. flags
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#################################################################
+######################CLC: Clear carry flag######################
+#################################################################
+execute_CLC:
+	pushl %ebp
+	movl %esp, %ebp
+
+	and 0xFE, P	##change the first bit to 0
+
+	movl %ebp, %esp
+	popl %ebp
+	ret	
+
+#################################################################
+####################CLV: Clear overflow flag#####################
+#################################################################
+execute_CLV:
+	pushl %ebp
+	movl %esp, %ebp
+
+	and 0xBF%, P	##change the carry flag
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+
+#################################################################
+#######################DEX: Lower X with 1#######################
+#################################################################
+execute_DEX:
+	pushl %ebp
+	movl %esp, %ebp
+
+	decl X
+	pushl X
+	call check_ZS	##adjust zero en neg. flags
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#################################################################
+#######################DEY: Lower Y with 1#######################
+#################################################################
+execute_DEY:
+	pushl %ebp
+	movl %esp, %ebp
+
+	decl Y
+	pushl Y
+	call check_ZS	##adjust zero en neg. flags
+
+	movl %ebp, %esp
+	popl %ebp
+	ret	
+
+
+
+
+
+
+
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+##!!!!!!!!!Extra functions!!!!!!!!!##
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+
+################################################################################################
+##########check_ZS: Checks and changes the negative and zero flag for the pushed value##########
+################################################################################################
+check_ZS
+	pushl %ebp
+	movl %esp, %ebp
+
+	mov 8(%ebp),al
+	jz set_zero		##Declare the zero flag true, the negative flag false 
+	js set_neg		##Declare the zero flag false, the negative flag true 
+	jmp set_pos		##Declare the zero flag false and the negative flag false 
+
+set_zero:
+	or $0x02, P		##zero flag true
+	and $0x7F 		##negative flag false
+	jmp set_end
+
+set_neg:
+	and $0xFD, P		##zero flag false
+	or $0x80, P		##negative flag true
+	jmp set_end
+
+set_pos:
+	and $0xFD, P		##zero flag false
+	and $0x7F, P 		##zero flag false
+	jmp set_end
+		
+set_end:			##close the function
+	movl %ebp, %esp
+	popl %ebp
+	ret
