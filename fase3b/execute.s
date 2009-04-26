@@ -804,24 +804,24 @@ execute_SBC:
 	mov %dl, A	#store dl back in the accumulator
 	
 	jo SBC_overflow		#if there's overflow, set overflow flag
+	jnc SBC_noverflow_carry
+	call set_overflow_0
+	call set_carry_0
+	jmp SBC_overflow_end
+	SBC_noverflow_carry:
 	call set_overflow_0	#else, clear overflow flag
+	call set_carry_1
 	jmp SBC_overflow_end	
 	SBC_overflow:
+	jnc SBC_overflow_carry
 	call set_overflow_1	#set overflow flag
+	call set_carry_0
+	jmp SBC_overflow_end
+	SBC_overflow_carry:
+	call set_overflow_1	#set overflow flag
+	call set_carry_0
 	SBC_overflow_end:
-
 	
-
-	mov P, %al		#load processor status into al
-	
-	jc SBC_setcarry		#set 6502 if x86 carry is set
-	and $0xFE, %al		#clear carry flag
-	jmp SBC_setcarryend
-	SBC_setcarry:
-	or $0x01, %al		#set carry flag
-	SBC_setcarryend:
-	
-	mov %al, P		#store processor status
 	
 	push A
 	call check_ZS
@@ -1043,8 +1043,6 @@ set_end:			##close the function
 	ret
 	
 	
-
-
 set_overflow_0:
 	mov P, %al		#store processor status in al
 	and $0xBF, %al		#set overflow flag
@@ -1054,5 +1052,17 @@ set_overflow_0:
 set_overflow_1:
 	mov P, %al		#store processor status in al
 	or $0x40, %al		#clear overflow flag
+	mov %al, P		#store al back into processor status
+	ret
+
+set_carry_0:
+	mov P, %al		#store processor status in al
+	and $0xFE, %al		#set overflow flag
+	mov %al, P		#store al back into processor status
+	ret
+	
+set_carry_1:
+	mov P, %al		#store processor status in al
+	or $0x1, %al		#clear overflow flag
 	mov %al, P		#store al back into processor status
 	ret
