@@ -74,6 +74,7 @@ execute_ADC:
 	#add 1 to accumulator if carry
 	mov P,%eax		#move the processor status to eax
 	and $0x01, %eax		#get the last (least significant) bit from the processor status (carry)
+	cmp $0, %eax
 	jz ADC_nocarry		#if carry = 0, dont add carry
 	#add carry
 	add $1, A		
@@ -88,9 +89,8 @@ execute_ADC:
 	mov MEM(%ecx), %dl
 	add %dl, A	##add MEM to Accumulator
 	
-	mov P, %eax		#store the processor status in eax
-	
 	#modify carry
+	mov P, %eax		#store the processor status in eax
 	cmp A,%ebx		#compare the original accumulator to the new one
 	jg ADC_setcarry		#if the old accumulator was bigger, set carry
 	jmp ADC_setcarry_not	#otherwise, clear carry
@@ -100,25 +100,16 @@ execute_ADC:
 	ADC_setcarry_not:
 	and $0xFE, %eax		#clear carry
 	ADC_setcarry_end:
+	mov %eax, P		#store processor status
 	#end of modifying carry
 	
 	#modify overflow
-	and $0x7F, %bl		#clear the first bit from the old accumulator
-	and $0x7F, %dl		#clear the first bit from the added value
-	add %dl, %bl		#add the last 7 bits from the added value to the last 7 bits from the old accumulator
-	add %dh, %bl		#add stored carry value (0 or 1) to result
-	cmp $0x80, %bl		#if the result of adding the 2 7-bit value exceeds 7 bits
-	jge ADC_overflow	#then, set overflow
-	#set overflow to 0
-	and $0xBF, %eax
-	jmp ADC_overflow_end
-	#set overflow to 1
-	ADC_overflow:
-	or $0x40, %eax
-	ADC_overflow_end:
+	#%bl contains old accumulator, A
+	#A contains new accumulator, N
+	#%dl contains memory value, M
 	#end of modifying overflow
 	
-	mov %eax, P		#store processor status
+	
 	
 	push A
 	call check_ZS	##adjust zero en neg. flags
@@ -795,20 +786,31 @@ execute_SBC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov P, %al		#move the processor status to al
-	and $0x1, %al		#make al 0x1 if carry, 0x0 if no carry
-	cmp $0, %al		#if no carry
-	jmp SBC_nocarry
-	stc			#set carry
-	jmp SBC_end
-	SBC_nocarry:	#if no carry,
-	clc		#clear carry
-	SBC_end:
 	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
+		
+	mov P, %al		#move the processor status to al
+	and $0x1, %al		#make al 0x1 if carry, 0x0 if no carry
+	cmp $0x0, %al		
+	je SBC_nocarry		#if carry flag is 0, set no carry
+	clc			#clear x86 carry
+	jmp SBC_end
+	SBC_nocarry:		#if no carry,
+	stc			#set x86 carry
+	SBC_end:
 	sbb %bl, %dl		#subtract dl with bl
-	mov %dl, A
+
+	mov %dl, A	#store dl back in the accumulator
+	
+	jo SBC_overflow		#if there's overflow, set overflow flag
+	call set_overflow_0	#else, clear overflow flag
+	jmp SBC_overflow_end	
+	SBC_overflow:
+	call set_overflow_1	#set overflow flag
+	SBC_overflow_end:
+
+	
 
 	mov P, %al		#load processor status into al
 	
@@ -819,15 +821,8 @@ execute_SBC:
 	or $0x01, %al		#set carry flag
 	SBC_setcarryend:
 	
-#	jo SBC_setoverflow		#set 6502 if x86 overflow is set
-#	and $0xFE, %al		#clear overflow flag
-#	jmp SBC_setcarryend
-#	SBC_setcarry:
-#	or $0x01, %al		#set overflow flag
-#	SBC_setcarryend:
-	
 	mov %al, P		#store processor status
-		
+	
 	push A
 	call check_ZS
 	
@@ -1017,26 +1012,30 @@ check_ZS:
 	mov P, %bl
 	
 	mov 8(%ebp),%al
-	jz set_zero		##Declare the zero flag true, the negative flag false 
+	cmp $0, %al
+	jz set_zero		##Declare the zero flag true, the negative flag unknown
 	js set_neg		##Declare the zero flag false, the negative flag true 
-	jmp set_pos		##Declare the zero flag false and the negative flag false 
+	jmp set_none		##Declare the zero flag false and the negative flag false 
 
 set_zero:
+	js set_both		##set both zero flag and negative flag to true
 	or $0x02, %bl		##zero flag true
 	and $0x7F, %bl 		##negative flag false
 	jmp set_end
 
 set_neg:
-	
 	and $0xFD, %bl		##zero flag false
 	or $0x80, %bl		##negative flag true
 	jmp set_end
 
-set_pos:
+set_none:
 	and $0xFD, %bl		##zero flag false
 	and $0x7F, %bl 		##zero flag false
 	jmp set_end
-		
+set_both:
+	or $0x02, %bl		##zero flag true
+	or $0x80, %bl		##negative flag true
+	jmp set_end		
 set_end:			##close the function
 	mov %bl, P
 	movl %ebp, %esp
@@ -1046,5 +1045,14 @@ set_end:			##close the function
 	
 
 
-
-
+set_overflow_0:
+	mov P, %al		#store processor status in al
+	and $0xBF, %al		#set overflow flag
+	mov %al, P		#store al back into processor status
+	ret
+	
+set_overflow_1:
+	mov P, %al		#store processor status in al
+	or $0x40, %al		#clear overflow flag
+	mov %al, P		#store al back into processor status
+	ret
