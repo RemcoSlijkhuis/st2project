@@ -70,40 +70,56 @@ execute_ADC:
 	movl %esp, %ebp
 	
 	mov A, %ebx	##remember old Accumulator
-	mov P,%eax
-	mov $2, %dh
-	div %dh		##calculate carry
+	
+	#add 1 to accumulator if carry
+	mov P,%eax		#move the processor status to eax
+	and $0x01, %eax		#get the last (least significant) bit from the processor status (carry)
+	jz ADC_nocarry		#if carry = 0, dont add carry
+	#add carry
+	add $1, A		
+	mov $0x1, %dh		#store carry=1 for overflow check below
+	jmp ADC_carry_end
+	#don't add carry
+	ADC_nocarry:
+	mov $0x0, %dh		#store carry=0 for overflow check below
+	ADC_carry_end:
+	#end of adding carry
+	
 	mov MEM(%ecx), %dl
-	add A, %dl	##add MEM to Accumulator
-	add A, %ah
-
-	cmp $0, %ebx
-	jg ADC_An	##if negative
-	jmp ADC_Ap	##positive/0
-
-ADC_An:			##old A<0
-	cmp $0,MEM(%ecx)
-	jg ADC_AnMn
-	jmp ADC_end
-ADC_Ap:			##old A>0
-	cmp $0,MEM(%ecx)
-	jl ADC_ApMp
-	jmp ADC_end
-ADC_AnMn:		##old A<0, M<0
-	cmp $0,A
-	jg ADC_end
-	jmp ADC_ov
-
-ADC_ApMp:		##old A>0, M>0
-	cmp $0,A
-	jle ADC_end
-	jmp ADC_ov
-
-ADC_ov:			##if overflow
-	or $0x40, P
-	jmp ADC_end
-
-ADC_end:		##change negative and zero flag, and stop.
+	add %dl, A	##add MEM to Accumulator
+	
+	mov P, %eax		#store the processor status in eax
+	
+	#modify carry
+	cmp A,%ebx		#compare the original accumulator to the new one
+	jg ADC_setcarry		#if the old accumulator was bigger, set carry
+	jmp ADC_setcarry_not	#otherwise, clear carry
+	ADC_setcarry:
+	or $0x01,%eax		#set carry
+	jmp ADC_setcarry_end
+	ADC_setcarry_not:
+	and $0xFE, %eax		#clear carry
+	ADC_setcarry_end:
+	#end of modifying carry
+	
+	#modify overflow
+	and $0x7F, %bl		#clear the first bit from the old accumulator
+	and $0x7F, %dl		#clear the first bit from the added value
+	add %dl, %bl		#add the last 7 bits from the added value to the last 7 bits from the old accumulator
+	add %dh, %bl		#add stored carry value (0 or 1) to result
+	cmp $0x80, %bl		#if the result of adding the 2 7-bit value exceeds 7 bits
+	jge ADC_overflow	#then, set overflow
+	#set overflow to 0
+	and $0xBF, %eax
+	jmp ADC_overflow_end
+	#set overflow to 1
+	ADC_overflow:
+	or $0x40, %eax
+	ADC_overflow_end:
+	#end of modifying overflow
+	
+	mov %eax, P		#store processor status
+	
 	push A
 	call check_ZS	##adjust zero en neg. flags
 	movl %ebp, %esp
@@ -393,26 +409,42 @@ execute_EOR:
 	popl %ebp
 	ret	
 
+
+#increments memory by one
 execute_INC:
 	pushl %ebp
 	movl %esp, %ebp
-	#faal
+	
+	mov MEM(%ecx), %bl	#load old value from memory
+	inc %bl			#increment with one
+	mov %bl, MEM(%ecx)	#store back in memory
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
 
+
+#increment x register by one
 execute_INX:
 	pushl %ebp
 	movl %esp, %ebp
-	#faal
+	
+	mov X, %al
+	inc %al
+	mov %al, X
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
-
+#increment y register by one
 execute_INY:
 	pushl %ebp
 	movl %esp, %ebp
-	#faal
+	
+	mov Y, %al
+	inc %al
+	mov %al, Y
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
@@ -551,11 +583,11 @@ LSR_acc:
 
 
 
-
+#no operation
 execute_NOP:
 	pushl %ebp
 	movl %esp, %ebp
-	#faal
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
@@ -775,29 +807,43 @@ execute_SBC:
 	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
-	sbb %dl, %bl		#subtract dl with bl
+	sbb %bl, %dl		#subtract dl with bl
+	mov %dl, A
+
+	mov P, %al		#load processor status into al
 	
 	jc SBC_setcarry		#set 6502 if x86 carry is set
-	#clear carry
-	mov P, %al		#load processor status into al
 	and $0xFE, %al		#clear carry flag
-	mov %al, P		#store processor status
 	jmp SBC_setcarryend
 	SBC_setcarry:
-	#set carry
-	mov P, %al		#load processor status into al
 	or $0x01, %al		#set carry flag
-	mov %al, P		#store processor status
 	SBC_setcarryend:
+	
+#	jo SBC_setoverflow		#set 6502 if x86 overflow is set
+#	and $0xFE, %al		#clear overflow flag
+#	jmp SBC_setcarryend
+#	SBC_setcarry:
+#	or $0x01, %al		#set overflow flag
+#	SBC_setcarryend:
+	
+	mov %al, P		#store processor status
+		
+	push A
+	call check_ZS
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret		
 
+#set carry flag
 execute_SEC:
 	pushl %ebp
 	movl %esp, %ebp
-	#faal
+	
+	mov P, %al
+	or $0x01, %al	##change the first bit to 1
+	mov %al, P
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
@@ -997,3 +1043,8 @@ set_end:			##close the function
 	popl %ebp
 	ret
 	
+	
+
+
+
+
