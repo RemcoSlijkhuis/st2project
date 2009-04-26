@@ -1,8 +1,12 @@
 	processor 6502
 	org	$8000
 	
+	CLC
+	LDA #$20
+	SBC #$10
+	
 	SEC
-	LDA #$80
-	SBC #$1
+	LDA #$5
+	SBC #$6
 
 	dc	$db

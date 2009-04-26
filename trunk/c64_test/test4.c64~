@@ -3,6 +3,6 @@
 	
 	SEC
 	LDA #$80
-	SBC #$FF
+	SBC #$1
 
 	dc	$db
