@@ -1,0 +1,25 @@
+	processor 6502
+	org	$8000
+	
+	
+	SEC
+	LDA #$22
+	ADC #$1C
+	
+	CLC
+	LDA #$80
+	ADC #$81
+	
+	NOP
+	NOP
+	
+	CLC
+	LDA #$60
+	ADC #$30
+	
+	CLC
+	LDA #$8
+	ADC #$FA
+	
+
+	dc	$db

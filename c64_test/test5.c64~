@@ -1,0 +1,13 @@
+	processor 6502
+	org	$8000
+	
+	
+	CLC
+	LDA #$80
+	ADC #$81
+	
+	CLC
+	LDA #$80
+	ADC #$1
+
+	dc	$db
