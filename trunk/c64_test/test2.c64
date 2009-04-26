@@ -3,8 +3,8 @@
 
 	LDA #$f0
 	ADC #$10
-	ADC #$5
-	SBC #$5
-	ADC #$5
+	;ADC #$5
+	SBC #$10
+	;ADC #$5
 
 	dc	$db
