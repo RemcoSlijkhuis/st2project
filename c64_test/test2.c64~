@@ -1,0 +1,10 @@
+	processor 6502
+	org	$8000
+
+	LDA #$f0
+	ADC #$10
+	ADC #$5
+	SBC #$6
+	ADC #$5
+
+	dc	$db

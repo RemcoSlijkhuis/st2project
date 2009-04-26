@@ -1,0 +1,9 @@
+processor 6502
+org	$8000
+
+LDX #$FF
+LDY #$1
+INX
+INY
+
+dc	$db
