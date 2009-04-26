@@ -2,7 +2,11 @@
 	org	$8000
 	
 	SEC
-	LDA #$80
-	SBC #$1
+	LDA #$20
+	SBC #$10
+	
+	CLC
+	LDA #$5
+	SBC #$6
 
 	dc	$db

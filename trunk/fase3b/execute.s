@@ -69,50 +69,33 @@ execute_ADC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov A, %ebx	##remember old Accumulator
+	call load_C		#set the x86 carry flag	
+	mov $0, %bx
+	mov $0, %dx
+	mov MEM(%ecx), %bl	#load argument into bl
+	mov A, %dl		#load accumulator into dl
+	adc %bl, %dl		#add bl to dl
+	pushf
+	mov %dl, A	#store dl back in the accumulator
 	
-	#add 1 to accumulator if carry
-	mov P,%eax		#move the processor status to eax
-	and $0x01, %eax		#get the last (least significant) bit from the processor status (carry)
-	cmp $0, %eax
-	jz ADC_nocarry		#if carry = 0, dont add carry
-	#add carry
-	add $1, A		
-	mov $0x1, %dh		#store carry=1 for overflow check below
+	#set the carry flag to either 1 or 0
+	adc %bx, %dx
+	cmp $0xff, %dx
+	jg ADC_carry
+	clc
 	jmp ADC_carry_end
-	#don't add carry
-	ADC_nocarry:
-	mov $0x0, %dh		#store carry=0 for overflow check below
+	ADC_carry:
+	stc
 	ADC_carry_end:
-	#end of adding carry
+		
+	#store the x86 overflow into the 6052 flags
+	call check_O		
 	
-	mov MEM(%ecx), %dl
-	add %dl, A	##add MEM to Accumulator
-	
-	#modify carry
-	mov P, %eax		#store the processor status in eax
-	cmp A,%ebx		#compare the original accumulator to the new one
-	jg ADC_setcarry		#if the old accumulator was bigger, set carry
-	jmp ADC_setcarry_not	#otherwise, clear carry
-	ADC_setcarry:
-	or $0x01,%eax		#set carry
-	jmp ADC_setcarry_end
-	ADC_setcarry_not:
-	and $0xFE, %eax		#clear carry
-	ADC_setcarry_end:
-	mov %eax, P		#store processor status
-	#end of modifying carry
-	
-	#modify overflow
-	#%bl contains old accumulator, A
-	#A contains new accumulator, N
-	#%dl contains memory value, M
-	#end of modifying overflow
-	
-	
-	
+	#properly set the zero and negative flags in the 6052 processor status
 	push A
-	call check_ZS	##adjust zero en neg. flags
+	call check_ZS
+	
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret
@@ -786,43 +769,20 @@ execute_SBC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	
+	call load_C		#set the x86 carry flag
+	call swap_carry	#account for x86 carry/borrow	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
-		
-	mov P, %al		#move the processor status to al
-	and $0x1, %al		#make al 0x1 if carry, 0x0 if no carry
-	cmp $0x0, %al		
-	je SBC_nocarry		#if carry flag is 0, set no carry
-	clc			#clear x86 carry
-	jmp SBC_end
-	SBC_nocarry:		#if no carry,
-	stc			#set x86 carry
-	SBC_end:
 	sbb %bl, %dl		#subtract dl with bl
-
+	pushf
 	mov %dl, A	#store dl back in the accumulator
 	
-	jo SBC_overflow		#if there's overflow, set overflow flag
-	jnc SBC_noverflow_carry
-	call set_overflow_0
-	call set_carry_0
-	jmp SBC_overflow_end
-	SBC_noverflow_carry:
-	call set_overflow_0	#else, clear overflow flag
-	call set_carry_1
-	jmp SBC_overflow_end	
-	SBC_overflow:
-	jnc SBC_overflow_carry
-	call set_overflow_1	#set overflow flag
-	call set_carry_0
-	jmp SBC_overflow_end
-	SBC_overflow_carry:
-	call set_overflow_1	#set overflow flag
-	call set_carry_0
-	SBC_overflow_end:
 	
+	#store the x86 overflow and carry flags into the 6052 flags
+	call swap_carry	#account for x86 carry/borrow
+	call check_CO		
 	
+	#properly set the zero and negative flags in the 6052 processor status
 	push A
 	call check_ZS
 	
@@ -1041,8 +1001,97 @@ set_end:			##close the function
 	movl %ebp, %esp
 	popl %ebp
 	ret
+
+swap_carry:
+	jc SC_carry	#if carry is set, jump to SC_carry
+	stc		#carry is not set, so set it
+	jmp SC_end
+	SC_carry:	#carry is set, so:
+	clc		#clear carry
+	SC_end:
+	ret
 	
 	
+#check for carry and overflow flags, requires processor status pushed on the stack
+check_CO:
+	pushl %ebp
+	movl %esp, %ebp
+	mov 8(%ebp),%eax
+	push %eax
+	popf
+	
+	jo CO_overflow		#if there's overflow, set overflow flag to 1
+	
+	#overflow flag set to 0:
+	jc CO_noverflow_carry	#if x86 carry = 0, set carry to 0
+	call set_overflow_0
+	call set_carry_0
+	jmp CO_overflow_end
+	
+	CO_noverflow_carry:
+	call set_overflow_0	
+	call set_carry_1
+	jmp CO_overflow_end	
+	
+	#overflow flag set to 1:
+	CO_overflow:
+	jc CO_overflow_carry
+	call set_overflow_1	#set overflow flag to 1
+	call set_carry_0
+	jmp CO_overflow_end
+	
+	CO_overflow_carry:
+	call set_overflow_1	#set overflow flag to 1
+	call set_carry_0	
+	CO_overflow_end:
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#check for carry and overflow flags, requires processor status pushed on the stack
+check_O:
+	pushl %ebp
+	movl %esp, %ebp
+	mov 8(%ebp),%eax
+	push %eax
+	popf
+	
+	jo O_overflow		#if there's overflow, set overflow flag to 1
+	
+	#overflow flag set to 0:
+	call set_overflow_0
+	jmp O_overflow_end
+	
+	#overflow flag set to 1:
+	O_overflow:
+	call set_overflow_1	#set overflow flag to 1
+	
+	O_overflow_end:
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#loads the carry flag from the 6052 processor status into the x86 flag
+load_C:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	mov P, %al		#move the processor status to al
+	and $0x1, %al		#make al 0x1 if carry, 0x0 if no carry
+	cmp $0x0, %al		
+	je LoadC_nocarry	#if carry flag is 0, set no carry
+	stc			#set x86 carry
+	jmp LoadC_end
+	LoadC_nocarry:		#if no carry,
+	clc			#set x86 carry to 0
+	LoadC_end:
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
 set_overflow_0:
 	mov P, %al		#store processor status in al
 	and $0xBF, %al		#set overflow flag
