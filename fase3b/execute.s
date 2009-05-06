@@ -127,12 +127,12 @@ execute_AND:
 execute_ASL:
 
 	pushl %ebp
-	pushl %eax
 	movl %esp, %ebp
-	movl $0, %eax
+	#movl $0xFFFF, %eax
+	#mov %al, X
 
 	#check if adressing mode is fetch_accumulator
-	cmp $0x0000FFFF, %ecx
+	cmpl $0x0000FFFF, %ecx
 	ja ASL_acc
 	#normal adressing mode
 	#get value from memory
@@ -141,20 +141,23 @@ execute_ASL:
 	shl $1,%al
 	pushf
 	mov %al, MEM(%ecx)	
+	shr $8, %ecx
+	mov %cl, X
+	mov %ch, Y
 ASL_checks:
 	pushl %eax
 	call check_ZS
+	popl %eax
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc ASL_setC
-	call execute_CLC
+	call set_carry_0
 	jmp ASL_end
 ASL_setC:
-	call execute_SEC	
+	call set_carry_1	
 ASL_end:
 	#restore values and return
 	movl %ebp, %esp
-	popl %eax
 	popl %ebp
 	ret
 ASL_acc:
@@ -393,9 +396,14 @@ execute_INC:
 	pushl %ebp
 	movl %esp, %ebp
 	
+	movl $0, %ebx
+	
 	mov MEM(%ecx), %bl	#load old value from memory
 	inc %bl			#increment with one
 	mov %bl, MEM(%ecx)	#store back in memory
+	
+	push %ebx
+	call check_ZS
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -411,6 +419,9 @@ execute_INX:
 	inc %al
 	mov %al, X
 	
+	push X
+	call check_ZS
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
@@ -422,6 +433,9 @@ execute_INY:
 	mov Y, %al
 	inc %al
 	mov %al, Y
+	
+	push Y
+	call check_ZS
 	
 	movl %ebp, %esp
 	popl %ebp
