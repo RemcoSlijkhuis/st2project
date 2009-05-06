@@ -803,7 +803,7 @@ execute_SBC:
 	movl %esp, %ebp
 	
 	call load_C		#set the x86 carry flag
-	#call swap_carry	#account for x86 carry/borrow
+	call swap_carry	#account for x86 carry/borrow
 	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
@@ -813,7 +813,7 @@ execute_SBC:
 	
 	
 	#store the x86 overflow and carry flags into the 6052 flags
-	#call swap_carry	#account for x86 carry/borrow
+	call swap_carry	#account for x86 carry/borrow
 	call check_CO		
 	
 	#properly set the zero and negative flags in the 6052 processor status

@@ -813,7 +813,9 @@ execute_SBC:
 	
 	
 	#store the x86 overflow and carry flags into the 6052 flags
+	popf
 	call swap_carry	#account for x86 carry/borrow
+	pushf
 	call check_CO		
 	
 	#properly set the zero and negative flags in the 6052 processor status
