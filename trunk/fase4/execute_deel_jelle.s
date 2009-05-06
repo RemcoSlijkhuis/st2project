@@ -1,3 +1,87 @@
+#############################################
+#####CMP: Compare memory and accumulator#####
+#############################################
+execute_CMP:
+	pushl %ebp
+	movl %esp, %ebp	
+
+	mov A, %eax
+	sub MEM(%ecx), %eax
+	cmp %eax, $0
+	jl CMP_setcarry
+	jmp CMP_clcarry
+
+CMP_setcarry:
+	call set_carry_1
+	jmp CMP_end
+
+CMP_clcarry:
+	call set_carry_0
+	jmp CMP_end
+
+CMP_end:
+	push %eax
+	call check_ZS
+	movl %ebp, %esp
+	popl %ebp
+	ret	
+
+###################################
+#####CPX: Compare memory and X#####
+###################################
+execute_CPX:
+	pushl %ebp
+	movl %esp, %ebp	
+
+	mov X, %eax
+	sub MEM(%ecx), %eax
+	cmp %eax, $0
+	jl CPX_setcarry
+	jmp CPX_clcarry
+
+CPX_setcarry:
+	call set_carry_1
+	jmp CPX_end
+
+CPX_clcarry:
+	call set_carry_0
+	jmp CPX_end
+
+CPX_end:
+	push %eax
+	call check_ZS
+	movl %ebp, %esp
+	popl %ebp
+	ret	
+
+###################################
+#####CPY: Compare memory and Y#####
+###################################
+execute_CPY:
+	pushl %ebp
+	movl %esp, %ebp	
+
+	mov Y, %eax
+	sub MEM(%ecx), %eax
+	cmp %eax, $0
+	jl CPY_setcarry
+	jmp CPY_clcarry
+
+CPY_setcarry:
+	call set_carry_1
+	jmp CPY_end
+
+CPY_clcarry:
+	call set_carry_0
+	jmp CPY_end
+
+CPY_end:
+	push %eax
+	call check_ZS
+	movl %ebp, %esp
+	popl %ebp
+	ret		
+
 #################################
 #####CLD: clear decimal flag#####
 #################################
@@ -41,7 +125,7 @@ tobcd:
 	jmp tobcd_first_check	##go check first number
 
 tobcd_last_adjust:
-	sub %eax, $0x09		##adjust
+	sub $0x09, %eax		##adjust
 	add %eax, $0x10
 	cmp %eax, $0x10		##check case was: 0xf*
 	jl tobcd_overflow
@@ -53,7 +137,7 @@ tobcd_first_check:
 	jmp tobcd_end
 
 tobcd_first_adjust:
-	sub %eax, $0x90		##adjust
+	sub $0x90, %eax		##adjust
 	call set_overflow_1	##set overflow flag to 1
 	jmp tobcd_end
 
