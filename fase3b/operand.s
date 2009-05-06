@@ -98,7 +98,11 @@ fetch_abX:
 	mov MEM(%eax), %cl			
 	incl %eax					
 	mov MEM(%eax),%ch		
-	add X, %cx 				
+	
+	movl $0, %edx
+	mov X, %dl
+	add %dx, %cx
+	 				
 	#increment PC to point at next instruction and return
 	incl PC						
 	movl %ebp, %esp
@@ -109,7 +113,8 @@ fetch_abX:
 fetch_abY:
 	pushl %ebp
 	pushl %eax
-	movl %esp, %ebp
+	movl %esp, %ebp				
+	
 	#increment PC to point at 1st operand
 	incl PC	
 	movl $0, %eax
@@ -120,7 +125,14 @@ fetch_abY:
 	mov MEM(%eax), %cl			
 	incl %eax					
 	mov MEM(%eax),%ch		
-	add Y, %cx 				
+	
+	movl $0, %edx
+	mov Y, %dl
+	add %dx, %cx
+	
+	
+	
+	
 	#increment PC to point at next instruction and return
 	incl PC						
 	movl %ebp, %esp
