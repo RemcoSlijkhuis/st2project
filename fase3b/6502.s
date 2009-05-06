@@ -33,6 +33,13 @@ start:
 	movl %esp, %ebp
 
 	movl $0xFF, S			#Initialize the Stack points
+	mov $0, A
+	mov $0, X
+	mov $0, Y
+	mov $0, PC
+	mov $0, S
+	mov $0, IR
+	mov $0, P
 
 	movl $0, %eax			
 
