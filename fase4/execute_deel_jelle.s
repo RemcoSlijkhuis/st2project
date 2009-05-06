@@ -1,3 +1,33 @@
+#################################
+#####CLD: clear decimal flag#####
+#################################
+execute_CLD:
+	pushl %ebp
+	movl %esp, %ebp
+
+	mov P, %al		#store processor status in al
+	and $0xEF, %al		#clear Decimal flag
+	mov %al, P		#store al back into processor status
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+###############################
+#####SED: Set decimal flag#####
+###############################
+execute_SED:
+	pushl %ebp
+	movl %esp, %ebp
+
+	mov P, %al		#store processor status in al
+	or $0x08, %al		#set Decimal flag
+	mov %al, P		#store al back into processor status
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
 #####################################
 #####tobcd: Convert a hex to BDC#####
 #####################################
@@ -50,7 +80,7 @@ frombcd:
 	mul %ebx, $10
 	add %ebx, %al
 	mov %eax, %ebx
-	mov %eax, 8(%ebp)	##adjust number	
+	mov %eax, 8(%ebp)	##adjust number
 
 	movl %ebp, %esp
 	popl %ebp
