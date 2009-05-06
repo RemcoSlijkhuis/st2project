@@ -10,6 +10,7 @@
 .global IR
 .global P
 .global filename
+.global test2
 
 
 
@@ -25,6 +26,7 @@
 
 .text
 	test: .asciz "Exitcode: %d\n"
+	test2: .asciz "Exitcode: %x\n"
 
 ##################################################
 ############## start: Main routine ###############
@@ -37,7 +39,6 @@ start:
 	movl $0, X
 	movl $0, Y
 	movl $0, PC
-	movl $0, S
 	movl $0, IR
 	movl $0, P
 
