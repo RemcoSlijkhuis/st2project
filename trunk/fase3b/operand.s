@@ -236,11 +236,14 @@ fetch_inY:
 	mov PC, %ax				#laadt PC in ax
 	movl $0, %ebx 		
 	mov MEM(%eax), %bl		#laadt base adress in bl
-	add X, %bl				#add offest bij base adress
+	
 	mov MEM(%ebx),%cl		# laadt low byte van effective adress
 	incl %ebx					
 	mov MEM(%ebx),%ch		#laadt high byte van effective adress
 	
+	movl $0, %ebx
+	mov Y, %bl
+	add %bx, %cx
 	
 	
 	movl %ebp, %esp
