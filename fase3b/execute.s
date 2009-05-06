@@ -69,23 +69,27 @@ execute_ADC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	call load_C		#set the x86 carry flag	
+	call load_C		#set the x86 carry flag
+	
 	mov $0, %bx
 	mov $0, %dx
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
+	mov A, %dh		#load accumulator into dh as well
 	adc %bl, %dl		#add bl to dl
 	pushf
 	mov %dl, A	#store dl back in the accumulator
 	
 	#set the carry flag to either 1 or 0
+	mov %dh, %dl
+	mov $0, %dh
 	adc %bx, %dx
-	cmp $0xff, %dx
-	jg ADC_carry
-	clc
+	cmp $0x1, %dh
+	jge ADC_carry
+	call set_carry_0
 	jmp ADC_carry_end
 	ADC_carry:
-	stc
+	call set_carry_1
 	ADC_carry_end:
 		
 	#store the x86 overflow into the 6052 flags
@@ -770,7 +774,8 @@ execute_SBC:
 	movl %esp, %ebp
 	
 	call load_C		#set the x86 carry flag
-	call swap_carry	#account for x86 carry/borrow	
+	call swap_carry	#account for x86 carry/borrow
+	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
 	sbb %bl, %dl		#subtract dl with bl
@@ -1016,7 +1021,8 @@ swap_carry:
 check_CO:
 	pushl %ebp
 	movl %esp, %ebp
-	mov 8(%ebp),%eax
+
+	mov 8(%ebp),%eax
 	push %eax
 	popf
 	
@@ -1049,11 +1055,12 @@ check_CO:
 	popl %ebp
 	ret
 
-#check for carry and overflow flags, requires processor status pushed on the stack
+#check for overflow flags, requires processor status pushed on the stack
 check_O:
 	pushl %ebp
 	movl %esp, %ebp
-	mov 8(%ebp),%eax
+
+	mov 8(%ebp),%eax
 	push %eax
 	popf
 	
