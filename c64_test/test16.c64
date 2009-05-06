@@ -1,0 +1,13 @@
+	processor 6502
+	org	$8000
+	
+	
+	LDX #$CD
+	LDA #$FF
+	TXA
+	TXS
+	
+	LDY #$11
+	TYA
+	
+	dc	$db

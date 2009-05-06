@@ -1,0 +1,16 @@
+	processor 6502
+	org	$8000
+	
+	
+	LDA #$AA
+	PHA
+	LDA #$FF
+	PLA
+	
+	PHP
+	PLA
+	LDA #$FF
+	PHA
+	PLP
+	
+	dc	$db

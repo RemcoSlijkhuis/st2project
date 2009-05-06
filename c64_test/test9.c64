@@ -1,0 +1,16 @@
+	processor 6502
+	org	$8000
+	
+	
+	LDX #$1
+	LDY #$2
+	
+	STX $7000
+	DEC $7000
+	LDX $7000
+	
+	DEX
+	DEY
+	DEY
+	
+	dc	$db

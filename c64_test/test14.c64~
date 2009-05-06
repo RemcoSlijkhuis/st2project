@@ -1,0 +1,13 @@
+	processor 6502
+	org	$8000
+	
+	CLC
+	LDA #$FF
+	ROR
+	
+	CLC
+	LDA #$FF
+	ROL
+	
+	
+	dc	$db

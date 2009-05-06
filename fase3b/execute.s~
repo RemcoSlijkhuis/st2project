@@ -962,7 +962,8 @@ execute_TXS:
 	movl %esp, %ebp
 	
 	mov X, %al		#move the x register to al
-	mov %al, S		#move al to the stack pointer
+	mov $0x22, %al
+	mov %al, Y		#move al to the stack pointer
 	push S			#push al onto the stack for check_ZS
 	call check_ZS		#set negative and zero flags
 	

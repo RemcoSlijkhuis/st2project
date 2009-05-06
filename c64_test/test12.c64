@@ -1,0 +1,10 @@
+	processor 6502
+	org	$8000
+	
+	
+	LDA #$4F
+	LSR
+	
+	CLV
+	
+	dc	$db
