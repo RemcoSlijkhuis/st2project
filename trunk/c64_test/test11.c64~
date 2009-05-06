@@ -1,0 +1,13 @@
+	processor 6502
+	org	$8000
+	
+	LDA #$FF
+	EOR #$FE
+	
+	LDA #$00
+	EOR #$00
+	
+	LDA #$0F
+	ORA #$F0
+	
+	dc	$db

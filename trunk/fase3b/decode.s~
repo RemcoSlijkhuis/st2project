@@ -1064,7 +1064,7 @@ do_STA_abY:
 do_TXS:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	execute_TXS
+	call	execute_STX
 	movl	%ebp, %esp
 	popl	%ebp
 	ret

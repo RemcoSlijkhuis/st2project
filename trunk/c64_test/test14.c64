@@ -1,0 +1,13 @@
+	processor 6502
+	org	$8000
+	
+	SEC
+	LDA #$FF
+	ROR
+	
+	SEC
+	LDA #$FF
+	ROL
+	
+	
+	dc	$db
