@@ -754,12 +754,13 @@ ROR_checks:
 	pushl %eax
 	call check_ZS
 	#retrieve flags and check for carry and set if necessary
+	popl %eax
 	popf	
 	jc ROR_setC
-	call execute_CLC
+	call set_carry_0
 	jmp ROR_end
 ROR_setC:
-	call execute_SEC	
+	call set_carry_1
 ROR_end:
 	#restore values and return
 	movl %ebp, %esp
