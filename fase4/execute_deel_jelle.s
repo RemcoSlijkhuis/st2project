@@ -44,9 +44,13 @@ frombcd:
 	pushl %ebp
 	movl %esp, %ebp
 
+	mov $0x00, %ebx
 	mov 8(%ebp),%eax	##read number
-	mul ah, $10
-	
+	mov %ah, %bl
+	mul %ebx, $10
+	add %ebx, %al
+	mov %eax, %ebx
+	mov %eax, 8(%ebp)	##adjust number	
 
 	movl %ebp, %esp
 	popl %ebp
