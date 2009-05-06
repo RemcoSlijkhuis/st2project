@@ -149,7 +149,7 @@ error:  .byte 0x00
 		.long do_STA_inX
 		.long do_ERROR
 		.long do_ERROR
-		.long do_STA_inY
+		.long do_STY_zp
 		.long do_STA_zp
 		.long do_STX_zp
 		.long do_ERROR
