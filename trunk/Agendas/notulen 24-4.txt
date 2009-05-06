@@ -1,0 +1,21 @@
+Notulen 24-04-09
+
+Voorzitter: Leendert
+Notulist: Casper
+
+Vergadering geopend om 10.06
+Afwezig met kennisgeving: Chris, Sebastiaan
+
+Huidige situatie is dat we een beetje voor lopen.
+Doel van vandaag is voor een groot deel fase 3b afmaken.
+
+Afpsraak mbt file execute.s:
+Er wordt een apparte subroutine gemaakt door jelle, genaam check_ZS.
+Deze routine pakt de laatse waarde op de stack en checkt of deze 0 is of negatief en veranderd de vlaggen van de 6502 waar nodig.
+
+Volgende sessie is op 08-05-09
+Volgende voorzitter: Casper
+Volgende notulist: Sebastiaan
+
+vergadering gesloten om 10.31.
+	
