@@ -132,7 +132,7 @@ fetch_acc:
 	pushl %ebp
 	movl %esp, %ebp
 	#load accumulator in ecx
-	movl $0, %ecx	
+	movl $0x80000000, %ecx	
 	mov A, %cl				
 	
 	movl %ebp, %esp
