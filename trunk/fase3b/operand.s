@@ -67,6 +67,7 @@ fetch_abs:
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
+	
 	#increment PC to point at 1st operand
 	incl PC
 	movl $0, %eax
@@ -76,7 +77,8 @@ fetch_abs:
 	#store low and high byte off effective adress in cx
 	mov MEM(%eax), %cl		
 	incl %eax					
-	mov MEM(%eax),%ch		
+	mov MEM(%eax),%ch
+	
 	#increment PC to point at next instruction and return
 	incl PC						
 	movl %ebp, %esp
@@ -208,6 +210,7 @@ fetch_inX:
 	movl $0, %ebx 		
 	mov MEM(%eax), %bl		#laadt base adress in bl
 	add X, %bl				#add offest bij base adress
+	
 	mov MEM(%ebx),%cl		# laadt low byte van effective adress
 	incl %ebx					
 	mov MEM(%ebx),%ch		#laadt high byte van effective adress
@@ -257,15 +260,30 @@ fetch_rel:
 	pushl %eax
 	movl %esp, %ebp
 	
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
+	incl PC					#PC + 1 to point to the first argument
+		
+	movl $0, %eax				#first clear eax
 	
-	movl $0, %eax
+	mov PC, %ax				#load program counter into ax
+	movl $0, %ecx				#clear ecx
+	mov MEM(%eax), %cl			#load offset into ecx
 	
-	mov PC, %ax				# laadt PC in ax
-	movl $0, %ecx			
-	mov MEM(%eax), %cl		# laadt offest in ecx
+	cmp $0x80, %ecx
+	jl fetch_rel_positive
+	#if this point is reached, the offset is negative
+	and $0x7F, %ecx				#set the first bit from the offset to 0
+	add PC, %cx				#add program counter to the offset to get the effective address
+	subl $0x80, %ecx			#subtract ecx with 0x80 because the first bit of the offset was 1
+	jmp fetch_rel_end
 	
-	add PC, %cx				# tel PC bij offset op voor effectief adres
+	fetch_rel_positive:
+	#if this point is reached, the offset is not negative
+	add PC, %cx				#add program counter to the offset to get the effective address
+	
+	fetch_rel_end:
+	
+
+	incl %ecx				#add 1 to the effective address to compensate for the program counter being 1 byte lower than the address of the next instruction
 	
 	
 	movl %ebp, %esp
