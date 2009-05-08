@@ -20,173 +20,165 @@
 ########## Each loop fetches an instruction and sends it to decode routine.
 ################################################# 
 fetch:
-	#start function
-	pushl %ebp
-	movl %esp, %ebp
-	
-	#primary loop
+	pushl %ebp		#Prolog	
+	movl %esp, %ebp	
+
+#primary loop	
 fetchloop:	
-	#load addres of current instruction
-	movl $0, %eax
-	mov PC, %ax	
-	#load instruction in IR
-	movl $0, %ebx		
-	movb MEM(%eax), %bl
-	movb %bl, IR			
-	#decode instruction en show debug info	
-	call showi							
-	call decode
-	call showr
-	#check for errors during decode session
-	movb error,%al 
-	cmp $1,%al
-	je endloop
-	#check for stop instruction, if so exit loop	
-	movl $0, %ebx
-	movb IR, %bl
-	cmp $0xdb, %bl			
-	je endloop				
-	#no end instruction, increment PC and jump back to loop	
-	incl PC
-	jmp fetchloop	
+	movl $0, %eax		#Reset eax
+	mov PC, %ax		#load addres of current instruction
+
+	movl $0, %ebx		#reset ebx	
+	movb MEM(%eax), %bl	#Load from memory to lower part of ebx
+	movb %bl, IR		#load instruction from bl in IR	
+	
+	call showi		#Print out IR and PC registers 					
+	call decode		#decode instruction
+	call showr		#Print out the rest of registers 	
+	
+	movb error,%al 		#move error to al
+	cmp $1,%al		#compare error with illigal instruction value
+	je endloop		#If illigal instruction, then jump to endloop
+
+	movl $0, %ebx		#reset ebx	
+	movb IR, %bl		#move Instruction register to bl
+	cmp $0xdb, %bl		#compare with stop instruction value
+	je endloop		#If stop value, then exit loop	and go to endloop	
+	
+	incl PC			#no end instruction, increment PC	
+	jmp fetchloop		#jump back to loop
+
 endloop:	
-	#end function
-	movl %ebp, %esp
+	movl %ebp, %esp		#Restore stack pointer
 	popl %ebp
 	ret
 
-		## fetch operand subroutines for different adressing modes
-		##
-		## subroutine fetches operand, then retrieves effective adress of variable and puts it in the ecx register 
-		## ecx register entries wil be overwritten.
-		## subroutine for fetch_acc will pass on the variable itself, the highest bit of the ecx registers indicates if this is the case.
-		
-	
-	
+######################################################################################################################################
+## 				FETCH OPERAND SUBROUTINES FOR THE DIFFERENT ADRESSING MODES					 #####
+##								 								 #####
+## subroutine fetches operand, then retrieves effective adress of variable and puts it in the ecx register 			 #####
+## ecx register entries wil be overwritten.											 #####
+## subroutine for fetch_acc will pass on the variable itself, the highest bit of the ecx registers indicates if this is the case #####
+######################################################################################################################################
+
 fetch_abs:
-	pushl %ebp
+	pushl %ebp		#prolog
 	pushl %eax
 	movl %esp, %ebp
 	
-	#increment PC to point at 1st operand
-	incl PC
-	movl $0, %eax
-	movl $0, %ecx
-	#get PC
-	mov PC, %ax 			
-	#store low and high byte off effective adress in cx
-	mov MEM(%eax), %cl		
+	incl PC			#increment PC to point at 1st operand
+	movl $0, %eax		#reset eax
+	movl $0, %ecx		#reset ecx
+
+	mov PC, %ax 		#get Program Counter
+
+	mov MEM(%eax), %cl	#store low byte of effective adress in ecx	
 	incl %eax					
-	mov MEM(%eax),%ch
+	mov MEM(%eax),%ch	#store high byte of effective adress in ecx
 	
-	#increment PC to point at next instruction and return
-	incl PC						
-	movl %ebp, %esp
+	incl PC			#increment PC to point at next instruction				
+	movl %ebp, %esp		#restore stack pointer
 	popl %eax
 	popl %ebp
 	ret
 	
 fetch_abX:
-	pushl %ebp
+	pushl %ebp		#prolog
 	pushl %eax
 	movl %esp, %ebp
-	#increment PC to point at 1st operand
-	incl PC	
-	movl $0, %eax
-	movl $0, %ecx
-	# get PC
-	mov PC, %ax 
-	#load low and high byte off base addres and add offset to aquire effective addres
-	mov MEM(%eax), %cl			
+
+	incl PC			#increment PC to point at 1st operand
+	movl $0, %eax		#reset eax
+	movl $0, %ecx		#reset ecx
+
+	mov PC, %ax 		#get Program Counter
+
+	mov MEM(%eax), %cl	#store low byte of base adress in ecx		
 	incl %eax					
-	mov MEM(%eax),%ch		
+	mov MEM(%eax),%ch	#store high byte of base adress in ecx	
 	
-	movl $0, %edx
-	mov X, %dl
-	add %dx, %cx
+	movl $0, %edx		#reset edx
+	mov X, %dl		#move offset from X into dl
+	add %dx, %cx		#add offset to aquire effective adress
 	 				
-	#increment PC to point at next instruction and return
-	incl PC						
-	movl %ebp, %esp
+	incl PC			#increment PC to point at next instruction		
+	movl %ebp, %esp		#restore stack pointer
 	popl %eax
 	popl %ebp
 	ret
 	
 fetch_abY:
-	pushl %ebp
+	pushl %ebp		#prolog
 	pushl %eax
 	movl %esp, %ebp				
 	
-	#increment PC to point at 1st operand
-	incl PC	
-	movl $0, %eax
-	movl $0, %ecx
-	# get PC
-	mov PC, %ax 
-	#load low and high byte off base addres and add offset to aquire effective addres
-	mov MEM(%eax), %cl			
+	incl PC			#increment PC to point at 1st operand
+	movl $0, %eax		#reset eax
+	movl $0, %ecx		#reset ecx
+
+	mov PC, %ax 		#get Program Counter
+
+	mov MEM(%eax), %cl	#store low byte of base adress in ecx		
 	incl %eax					
-	mov MEM(%eax),%ch		
+	mov MEM(%eax),%ch	#store high byte of base adress in ecx	
 	
-	movl $0, %edx
-	mov Y, %dl
-	add %dx, %cx
+	movl $0, %edx		#reset edx
+	mov Y, %dl		#move offset from Y into dl
+	add %dx, %cx		#add offset to aquire effective adress
 	
-	
-	
-	
-	#increment PC to point at next instruction and return
-	incl PC						
-	movl %ebp, %esp
+	incl PC			#increment PC to point at next instruction			
+	movl %ebp, %esp		#restore stack pointer
 	popl %eax
 	popl %ebp
 	ret
 	
 fetch_acc:
-	pushl %ebp
+	pushl %ebp		#prolog
 	movl %esp, %ebp
-	#load accumulator in ecx
-	movl $0x80000000, %ecx	
-	mov A, %cl				
 	
-	movl %ebp, %esp
+	movl $0x80000000, %ecx	#set first bit of ecx to 1 to indicate accumulator
+	mov A, %cl		#move value from accumulator into ecx		
+	
+	movl %ebp, %esp		#restore stack pointer
 	popl %ebp
 	ret
 	
 fetch_imm:
-	pushl %ebp
+	pushl %ebp		#prolog
 	movl %esp, %ebp
 
-	#increment PC to point at first operand
-	incl PC					
-	#load adress pointing to immediate (=PC) in ecx 
-	movl $0, %ecx	
-	mov PC, %cx				
+	incl PC			#increment PC to point at first operand
+			
+	movl $0, %ecx		#reset ecx
+	mov PC, %cx		#load adress pointing to immediate (=PC) in ecx 		
 	
-	movl %ebp, %esp
+	movl %ebp, %esp		#restore stack pointer
 	popl %ebp
 	ret
 	
 fetch_ind:
-	pushl %ebp
+	pushl %ebp		#prolog
 	pushl %eax
 	pushl %ebx
 	movl %esp, %ebp
 
-	incl PC
-	movl $0, %eax
-	movl $0, %ebx
-	movl $0, %ecx	
-	#load PC 
-	mov PC, %ax	
+	incl PC			#increment PC to point at first operand
+	movl $0, %eax		#reset eax
+	movl $0, %ebx		#reset ebx
+	movl $0, %ecx		#reset ecx
+
+	mov PC, %ax		#load PC
+
 	#load low and high byte off indirect adrees in bx
 	mov MEM(%eax), %bl 		
 	incl %eax
 	mov MEM(%eax), %bh
+	
 	#load low and high byte off effective adress in ecx
 	mov MEM(%ebx), %cl		
 	incl %ebx					
 	mov MEM(%ebx), %ch		
+	
 	#increment PC to point at next instruction
 	incl PC				
 	
@@ -215,10 +207,6 @@ fetch_inX:
 	incl %ebx					
 	mov MEM(%ebx),%ch		#laadt high byte van effective adress
 
-
-	
-	
-	
 	movl %ebp, %esp
 	popl %ebx
 	popl %eax
