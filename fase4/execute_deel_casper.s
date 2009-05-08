@@ -241,6 +241,140 @@ BVS_end:
 	movl %ebp, %esp
 	popl %ebp
 	ret
+	
+##Sets the interrupt disable bit to 0
+execute_CLI:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#set bit 2 to zero
+	and $0xfb,P
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+##jumps by setting the program counter to a new value
+execute_JMP:
+
+	pushl %ebp
+	movl %esp, %ebp
+	#load new program counter
+	movl %cx, PC
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+##jumps by setting the program counter ta a new value, stores second byte after jsr instruction on stack
+execute_JSR
+	pushl %ebp
+	pushl %eax
+	pushl %ebx
+	movl %esp, %ebp
+	#push PC +  on (6502)stack (PC already points at second byte, due to fetch_abs subroutine
+	movl $0, %eax
+	movl $0, %ebx
+	movl PC, %eax 
+	#load stack pointer
+	mov S, %bl
+	mov %al, MEM(%bl)
+	dec %bl
+	mov %ah, MEM(%bl)
+	#update stack pointer
+	mov %bl, S
+	
+	#load new program counter
+	movl %cx, PC
+	
+	movl %ebp, %esp
+	popl %ebx
+	popl %eax
+	popl %ebp
+	ret
+	
+##return program control after (any)interrupt handling
+##Processor status is restored from stack and PC is restored from stack
+execute_RTI:
+	pushl %ebp
+	pushl %eax
+	pushl %ebx
+	movl %esp, %ebp
+	
+	#pull processor status from stack
+	call execute_PLP
+	#pull program counter from stack
+	movl $0x04, %eax
+	movl $0, %ebx
+	mov S, %al
+	#get low byte
+	mov MEM(%eax), %bl
+	incl %eax
+	#get high byte
+	mov MEM(%eax), %bh
+	incl %eax
+	#load PC and restore S
+	mov %bx, PC
+	mov %al, S
+	
+	movl %ebp, %esp
+	popl %ebx
+	popl %eax
+	popl %ebp
+	ret
+	
+##return from subroutine, restores PC from stack
+exectue_RTS:
+	pushl %ebp
+	pushl %eax
+	pushl %ebx
+	movl %esp, %ebp
+	
+	#pull program counter from stack
+	movl $0x04, %eax
+	movl $0, %ebx
+	mov S, %al
+	#get low byte
+	mov MEM(%eax), %bl
+	incl %eax
+	#get high byte
+	mov MEM(%eax), %bh
+	incl %eax
+	#load PC and restore S
+	mov %bx, PC
+	mov %al, S
+	
+	movl %ebp, %esp
+	popl %ebx
+	popl %eax
+	popl %ebp
+	ret
+	
+##sets interrupt disable flag
+execute_SEI:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#set bit 2 to zero
+	or $0x04,P
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	 
+	
+	
+	
+	
 
 
 	
