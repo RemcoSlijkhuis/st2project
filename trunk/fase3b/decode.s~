@@ -9,7 +9,7 @@ error:  .byte 0x00
 .data
 	opTable:
 #0x
-		.long do_ERROR #do_BRK
+		.long do_BRK
 		.long do_ORA_inX
 		.long do_ERROR
 		.long do_ERROR
@@ -444,7 +444,7 @@ do_JSR_abs:
 do_AND_inX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_zp
+	call	fetch_inX
 	call	execute_ORA
 	movl	%ebp, %esp
 	popl	%ebp
