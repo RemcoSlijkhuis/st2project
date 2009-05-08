@@ -595,7 +595,7 @@ do_AND_abX:
 do_ROL_abX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_abY
+	call	fetch_abX
 	call	execute_ROL
 	movl	%ebp, %esp
 	popl	%ebp
