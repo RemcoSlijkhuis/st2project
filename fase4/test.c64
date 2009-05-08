@@ -31,7 +31,7 @@ error
 	dc $de
 vervolg
 	LDA #$FD
-	BPL error:		; zou niet moeten springen
+	BPL error		; zou niet moeten springen
 	CLC
 	ADC #$ff	;moet overflow setten
 	BVS carry_test	;zou jump moeten maken
@@ -53,7 +53,7 @@ bittest
 	BIT $0200	
 	BEQ bittest2
     JMP error
-bittest
+bittest2
 	LDA #$10
 	BIT $0200
 	BEQ error
