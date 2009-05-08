@@ -444,7 +444,7 @@ do_JSR_abs:
 do_AND_inX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_zp
+	call	fetch_inX
 	call	execute_ORA
 	movl	%ebp, %esp
 	popl	%ebp
@@ -1214,7 +1214,7 @@ do_LDY_zpX:
 do_LDA_zpX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_zp
+	call	fetch_zpX
 	call	execute_ORA
 	movl	%ebp, %esp
 	popl	%ebp
