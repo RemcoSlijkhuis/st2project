@@ -1,65 +1,65 @@
-processor 6502
+	processor 6502
 ; start at 80:00
-org $8000
+	org $8000
 
-	ldx #$0
+	LDX #$0
 optelx
-	inx			; x gaat optellen
-	cpx #$6		; x gaat tot 6 en stopt dan met optellen
-	bne optelx
+	INX			; x gaat optellen
+	CPX #$6		; x gaat tot 6 en stopt dan met optellen
+	BNE optelx
 aftelx
-	dex
-	cpx #$2		; x telt af tot 1
-	bmi aftelx
+	DEX
+	CPX #$2		; x telt af tot 1
+	BMI aftelx
 
 	;zelfde voor y
 	
-	ldy #$0
+	LDY #$0
 optely
-	iny			; y gaat optellen
-	cpy #$6		; y gaat tot 6 en stopt dan met optellen
-	bne optely
+	INY			; y gaat optellen
+	CPY #$6		; y gaat tot 6 en stopt dan met optellen
+	BNE optely
 aftely
-	dey
-	cpy #$2		; y telt af tot 1
-	bmi aftely
-	jmp vervolg ; spring naar vervolg code
+	DEY
+	CPY #$2		; y telt af tot 1
+	BMI aftely
+	JMP vervolg ; spring naar vervolg code
 error
-	ldx #$20
-	ldy #$20
-	lda #$20
-	ret
+	LDE #$20
+	DLY #$20
+	LDA #$20
+	dc $de
 vervolg
-	lda #$-20
-	bpl error:		; zou niet moeten springen
-	clc
-	adc #$Oxffff	;moet overflow setten
-	bvs carry_test	;zou jump moeten maken
+	LDA #$-20
+	BPL error:		; zou niet moeten springen
+	CLC
+	ADC #$Oxffff	;moet overflow setten
+	BVS carry_test	;zou jump moeten maken
 carry_test
-	sec 
-	bcc error
-	clc
-	bcs error
-	bcc carry2
-	jmp error
+	SEC 
+	BCC error
+	CLC
+	BCS error
+	BCC carry2
+	JMP error
 carry2
-	sec
-	bcs bittest
-	jmp error
+	SEC
+	BCS bittest
+	JMP error
 bittest
-	lda #$0xf0 
-	sta $0x0200
-	lda #$0x0f
-	bit $0x0200	
-	beq bittest2
-    jmp error
+	LDA #$0xf0 
+	STA $0x0200
+	LDA #$0x0f
+	BIT $0x0200	
+	BEQ bittest2
+    JMP error
 bittest
-	lda #$0x10
-	bit $0x0200
-	beq error
-	jsr sub
-	stp
-dc $de
+	LDA #$0x10
+	BIT $0x0200
+	BEQ error
+	JSR sub
+
+	dc $de
 sub
-	lda#$50
-	rts
+	LDA#$50
+	RTS
