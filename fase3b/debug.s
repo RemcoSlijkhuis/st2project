@@ -3,7 +3,7 @@
 ##################################################################
 
 .text
- registers: .asciz "IR:  0x%X\tPC:  0x%X\n"
+ registers: .asciz "IR:  0x%X\tPC:  0x%X\t->\t"
  showrregisters: .asciz "A: 0x%X\t X: 0x%X\t Y: 0x%X\t S: 0x%X\tP: 0x%X\n"
 
 .global showi
