@@ -1,13 +1,13 @@
 .global	error
 
 .data
-error:  .byte 0x00
+error:  .byte 0x00		#Byte used to register errors encountered (illigal instruction)
 
 .global do_ERROR
 .global decode
 
 .data
-	opTable:
+	opTable:	#Lookup Table for the execute functions
 #0x
 		.long do_BRK
 		.long do_ORA_inX
@@ -281,6 +281,7 @@ error:  .byte 0x00
 		.long do_INC_abX
 		.long do_ERROR
 
+#The execute functions:
 
 do_BRK:
 	pushl	%ebp 
@@ -1630,35 +1631,33 @@ message: .asciz "Illegal instruction encountered. Program terminated. \n"
 
 # Description : Print error message if illegal instruction is encountered.
 do_ERROR:
-		pushl %ebp
+		pushl %ebp		#Prolog
 		movl %esp, %ebp	
-	
-		
 
-		movl $1, %eax
-		movb %al, error
+		movl $1, %eax		#Move 1 to eax as error code to point out illigal instruction error
+		movb %al, error		#Move the error code to global variable error
 		
-		push $message
-		call printf
+		push $message		#Push illigal instruction message
+		call printf		#Print illigal instruction message
 		
-		movl %ebp, %esp
+		movl %ebp, %esp		#restore stack pointer
 		popl %ebp
 
 		ret
 
 # Description:	Use opTable to check which instruction shuold be executed, jump to there.
 decode:
-		pushl %ebp
+		pushl %ebp		#Prolog
 		movl %esp, %ebp	
 		
-		movl $0, %eax
-		movb IR, %al
-		shl $2, %eax
+		movl $0, %eax		#reset eax
+		movb IR, %al		#Move instruction register to lower part of eax
+		shl $2, %eax		#Multiply eax by 4
 
 		movl opTable(%eax), %eax 	# load the address from the table
 		call *%eax 			# call the subroutine
 
-		movl %ebp, %esp
+		movl %ebp, %esp		#restore stack pointer
 		popl %ebp
 
 		ret

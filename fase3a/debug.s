@@ -33,7 +33,7 @@ showi:
 	
 	call printf		#print
 
-	movl %ebp, %esp		
+	movl %ebp, %esp		#restore stack pointer
 	popl %ebp
 	ret
 
@@ -75,10 +75,10 @@ showo:
 	movl %esp, %ebp
 
 	
-	pushl %ecx
-	pushl $operand
+	pushl %ecx		#push ecx
+	pushl $operand		#push Operand-string
 
-	call printf
+	call printf		#Print Operand value
 
 
 	movl %ebp, %esp		#restore stack pointer
