@@ -445,7 +445,7 @@ do_AND_inX:
 	pushl	%ebp 
 	movl	%esp, %ebp
 	call	fetch_inX
-	call	execute_ORA
+	call	execute_AND
 	movl	%ebp, %esp
 	popl	%ebp
 	ret
@@ -915,7 +915,7 @@ do_ROR_abX:
 	pushl	%ebp 
 	movl	%esp, %ebp
 	call	fetch_abX
-	call	execute_ORA
+	call	execute_ROR
 	movl	%ebp, %esp
 	popl	%ebp
 	ret
@@ -1206,7 +1206,7 @@ do_LDY_zpX:
 	pushl	%ebp 
 	movl	%esp, %ebp
 	call	fetch_zpX
-	call	execute_LDA
+	call	execute_LDY
 	movl	%ebp, %esp
 	popl	%ebp
 	ret
@@ -1215,7 +1215,7 @@ do_LDA_zpX:
 	pushl	%ebp 
 	movl	%esp, %ebp
 	call	fetch_zpX
-	call	execute_ORA
+	call	execute_LDA
 	movl	%ebp, %esp
 	popl	%ebp
 	ret

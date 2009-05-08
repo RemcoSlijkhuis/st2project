@@ -700,6 +700,7 @@ execute_ROL:
 	jge ROL_setC	#then jump to ROL_setC
 	call set_carry_0	#otherwise, set carry to 0
 ROL_checks:
+	movl $0, %eax
 	mov %dl, %al
 	pushl %eax
 	call check_ZS
