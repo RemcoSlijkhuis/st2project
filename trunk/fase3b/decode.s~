@@ -9,7 +9,7 @@ error:  .byte 0x00
 .data
 	opTable:
 #0x
-		.long do_BRK
+		.long do_ERROR #do_BRK
 		.long do_ORA_inX
 		.long do_ERROR
 		.long do_ERROR
@@ -914,7 +914,7 @@ do_ADC_abX:
 do_ROR_abX:
 	pushl	%ebp 
 	movl	%esp, %ebp
-	call	fetch_zp
+	call	fetch_abX
 	call	execute_ORA
 	movl	%ebp, %esp
 	popl	%ebp
@@ -1646,17 +1646,22 @@ do_ERROR:
 
 		ret
 
+
 # Description:	Use opTable to check which instruction shuold be executed, jump to there.
 decode:
 		pushl %ebp
 		movl %esp, %ebp	
 		
-		movl $0, %eax
-		movb IR, %al
-		shl $2, %eax
-
-		movl opTable(%eax), %eax 	# load the address from the table
-		call *%eax 			# call the subroutine
+		movl $0, %ebx
+		movb IR, %bl
+		shl $2, %ebx
+		
+		
+		
+		
+		movl opTable(%ebx), %ebx 	# load the address from the table
+		
+		call *%ebx 			# call the subroutine
 
 		movl %ebp, %esp
 		popl %ebp

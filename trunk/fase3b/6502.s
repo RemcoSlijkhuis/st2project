@@ -26,7 +26,7 @@
 
 .text
 	test: .asciz "Exitcode: %d\n"
-	test2: .asciz "Exitcode: %x\n"
+	test2: .asciz "Value: %x\n"
 
 ##################################################
 ############## start: Main routine ###############
@@ -34,13 +34,13 @@
 start:
 	movl %esp, %ebp
 
-	movl $0xFF, S			#Initialize the Stack points
-	movl $0, A
-	movl $0, X
-	movl $0, Y
-	movl $0, PC
-	movl $0, IR
-	movl $0, P
+	movb $0xFF, S			#Initialize the Stack points
+	movb $0, A
+	movb $0, X
+	movb $0, Y
+	movw $0, PC
+	movw $0, IR
+	movb $0, P
 
 	movl $0, %eax			
 
