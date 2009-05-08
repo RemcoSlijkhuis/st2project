@@ -1082,7 +1082,7 @@ check_CO:
 	
 	CO_overflow_carry:
 	call set_overflow_1	#set overflow flag to 1
-	call set_carry_0	
+	call set_carry_1	
 	CO_overflow_end:
 	
 	movl %ebp, %esp
