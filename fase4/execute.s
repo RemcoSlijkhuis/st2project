@@ -528,10 +528,11 @@ CMP_end:
 execute_CPX:
 	pushl %ebp
 	movl %esp, %ebp	
-
-	mov X, %eax
-	sub MEM(%ecx), %eax
-	cmp $0, %eax
+	
+	movl $0, %ebx
+	mov X, %bl
+	sub MEM(%ecx), %ebx
+	cmp $0, %ebx
 	jl CPX_setcarry
 	jmp CPX_clcarry
 
@@ -544,8 +545,9 @@ CPX_clcarry:
 	jmp CPX_end
 
 CPX_end:
-	push %eax
+	push %ebx
 	call check_ZS
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
