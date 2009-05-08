@@ -183,6 +183,7 @@ execute_BCC:
 	jne BCC_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCC_end:
@@ -202,6 +203,7 @@ execute_BCS:
 	je BCS_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCS_end:
@@ -254,7 +256,7 @@ execute_BIT:
 	jne BIT_negative
 	#value is negative, set flag
 	AND $0x7F, P
-	jmp Bit_OVtest
+	jmp BIT_OVtest
 BIT_negative:
 	#value is positive, clear flag
 	orb $0x80, P
@@ -452,7 +454,7 @@ execute_CLD:
 	movl %esp, %ebp
 
 	mov P, %al		#store processor status in al
-	and $0xEF, %al		#clear Decimal flag
+	and $0xF7, %al		#clear Decimal flag
 	mov %al, P		#store al back into processor status
 
 	movl %ebp, %esp

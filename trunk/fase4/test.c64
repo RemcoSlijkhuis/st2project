@@ -7,6 +7,7 @@ optelx
 	INX			; x gaat optellen
 	CPX #$6		; x gaat tot 6 en stopt dan met optellen
 	BNE optelx
+	dc $db
 aftelx
 	DEX
 	CPX #$2		; x telt af tot 1

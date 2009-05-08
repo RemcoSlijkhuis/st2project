@@ -183,6 +183,7 @@ execute_BCC:
 	jne BCC_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCC_end:
@@ -202,6 +203,7 @@ execute_BCS:
 	je BCS_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCS_end:
@@ -312,6 +314,7 @@ execute_BNE:
 	jne BNE_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC
 
 	#restore stack pointer and return
 BNE_end:
@@ -452,7 +455,7 @@ execute_CLD:
 	movl %esp, %ebp
 
 	mov P, %al		#store processor status in al
-	and $0xEF, %al		#clear Decimal flag
+	and $0xF7, %al		#clear Decimal flag
 	mov %al, P		#store al back into processor status
 
 	movl %ebp, %esp
