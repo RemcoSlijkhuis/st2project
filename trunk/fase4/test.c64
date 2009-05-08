@@ -30,10 +30,10 @@ error
 	LDA #$AA
 	dc $de
 vervolg
-	LDA #$-20
+	LDA #$FD
 	BPL error:		; zou niet moeten springen
 	CLC
-	ADC #$ffff	;moet overflow setten
+	ADC #$ff	;moet overflow setten
 	BVS carry_test	;zou jump moeten maken
 carry_test
 	SEC 
@@ -61,5 +61,5 @@ bittest
 
 	dc $de
 sub
-	LDA#$BB
+	LDA #$BB
 	RTS
