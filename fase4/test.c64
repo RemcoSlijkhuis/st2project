@@ -1,0 +1,65 @@
+processor 6502
+; start at 80:00
+org $8000
+
+	ldx #$0
+optelx
+	inx			; x gaat optellen
+	cpx #$6		; x gaat tot 6 en stopt dan met optellen
+	bne optelx
+aftelx
+	dex
+	cpx #$2		; x telt af tot 1
+	bmi aftelx
+
+	;zelfde voor y
+	
+	ldy #$0
+optely
+	iny			; y gaat optellen
+	cpy #$6		; y gaat tot 6 en stopt dan met optellen
+	bne optely
+aftely
+	dey
+	cpy #$2		; y telt af tot 1
+	bmi aftely
+	jmp vervolg ; spring naar vervolg code
+error
+	ldx #$20
+	ldy #$20
+	lda #$20
+	ret
+vervolg
+	lda #$-20
+	bpl error:		; zou niet moeten springen
+	clc
+	adc #$Oxffff	;moet overflow setten
+	bvs carry_test	;zou jump moeten maken
+carry_test
+	sec 
+	bcc error
+	clc
+	bcs error
+	bcc carry2
+	jmp error
+carry2
+	sec
+	bcs bittest
+	jmp error
+bittest
+	lda #$0xf0 
+	sta $0x0200
+	lda #$0x0f
+	bit $0x0200	
+	beq bittest2
+    jmp error
+bittest
+	lda #$0x10
+	bit $0x0200
+	beq error
+	jsr sub
+	stp
+dc $de
+sub
+	lda#$50
+	rts
