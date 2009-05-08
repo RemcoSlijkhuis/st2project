@@ -25,15 +25,15 @@ aftely
 	BMI aftely
 	JMP vervolg ; spring naar vervolg code
 error
-	LDE #$20
-	DLY #$20
-	LDA #$20
+	LDA #$AA
+	LDY #$AA
+	LDA #$AA
 	dc $de
 vervolg
 	LDA #$-20
 	BPL error:		; zou niet moeten springen
 	CLC
-	ADC #$Oxffff	;moet overflow setten
+	ADC #$ffff	;moet overflow setten
 	BVS carry_test	;zou jump moeten maken
 carry_test
 	SEC 
@@ -47,19 +47,19 @@ carry2
 	BCS bittest
 	JMP error
 bittest
-	LDA #$0xf0 
-	STA $0x0200
-	LDA #$0x0f
-	BIT $0x0200	
+	LDA #$f0 
+	STA $0200
+	LDA #$0f
+	BIT $0200	
 	BEQ bittest2
     JMP error
 bittest
-	LDA #$0x10
-	BIT $0x0200
+	LDA #$10
+	BIT $0200
 	BEQ error
 	JSR sub
 
 	dc $de
 sub
-	LDA#$50
+	LDA#$BB
 	RTS
