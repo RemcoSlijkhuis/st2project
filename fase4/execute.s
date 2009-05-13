@@ -629,7 +629,7 @@ CPY_end:
 
 
 #################################################################
-#######################DEC: Lower mem with 1#######################
+## DEC: Lower mem with 1                                       ##
 #################################################################
 execute_DEC:
 	pushl %ebp
@@ -640,14 +640,14 @@ execute_DEC:
 	mov %al, MEM(%ecx)
 	
 	push MEM(%ecx)
-	call check_ZS	##adjust zero en neg. flags
+	call check_ZS			# adjust zero en neg. flags
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
 #################################################################
-#######################DEX: Lower X with 1#######################
+## DEX: Lower X with 1                                         ##
 #################################################################
 execute_DEX:
 	pushl %ebp
@@ -657,14 +657,14 @@ execute_DEX:
 	dec %al
 	mov %al, X
 	push X
-	call check_ZS	##adjust zero en neg. flags
+	call check_ZS			# adjust zero en neg. flags
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
 #################################################################
-#######################DEY: Lower Y with 1#######################
+## DEY: Lower Y with 1                                         ##
 #################################################################
 execute_DEY:
 	pushl %ebp
@@ -674,20 +674,22 @@ execute_DEY:
 	dec %al
 	mov %al, Y
 	push Y
-	call check_ZS	##adjust zero en neg. flags
+	call check_ZS			# adjust zero en neg. flags
 
 	movl %ebp, %esp
 	popl %ebp
 	ret	
 
-#exclusive or memory with accumulator
+#################################################################
+## EOR: Exclusive or memory with accumulator                   ##
+#################################################################
 execute_EOR:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov MEM(%ecx), %bl	#load argument into bl
-	xor A, %bl		#xor accumulator and bl
-	mov %bl, A		#move bl back to the accumulator
+	mov MEM(%ecx), %bl		# load argument into bl
+	xor A, %bl			# xor accumulator and bl
+	mov %bl, A			# move bl back to the accumulator
 	
 	push A
 	call check_ZS
@@ -975,14 +977,13 @@ execute_PLA:
 	movl %esp, %ebp
 	
 	
-	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
-	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
-	inc %al			#increase the stack pointer value with 1
-	mov %al, S		#and store the stack pointer
-	#ax now contains the mem pointer for the location of the new accumulator
-	mov MEM(%eax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
-	mov %bl, A		#store bl in the accumulator
+	mov $0x0100,%eax		# set the mem pointer ax to be 01:XX (currently 01:00)
+	mov S, %al			# set the last byte of the mem pointer ax to the stack pointer value
+	incb %al			# increase the stack pointer value with 1
+	mov %al, S			# and store the stack pointer in the S register
 	
+	mov MEM(%eax),%bl		# get the value in memory on the position indicated by mem pointer ax
+	mov %bl, A			# and store it in the accumulator
 	
 	movl %ebp, %esp
 	popl %ebp
