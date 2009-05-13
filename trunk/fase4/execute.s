@@ -79,20 +79,19 @@ execute_ADC:
 	
 	movl $0, %edx
 	mov P, %dl
+	
 	andb $0x08, %dl
 	cmp $0, %dl
 	je ADC_continue
 
 	pushl %eax
-	call tobcd
+	call frombcd
 	popl %eax
 	movb %al, %ah
 
 	pushl %ebx
-	call tobcd
+	call frombcd
 	popl %ebx
-	
-	
 
 ADC_continue:
 	call load_C		#set the x86 carry flag	
@@ -103,17 +102,30 @@ ADC_continue:
 	mov %al, A	#store dl back in the accumulator
 	
 	#set the carry flag to either 1 or 0
+	mov $0xFF, %cx			#maximum value for non-BCD mode
+	mov P, %dl
+	andb $0x08, %dl
+	cmp $0, %dl
+	je ADC_end2
+	mov $99, %cx			#maximum value for BCD mode
+ADC_end2:
 	mov %ah, %al
 	mov $0, %ah
 	adc %bx, %ax
-	cmp $0x1, %ah
-	jge ADC_carry
+	cmp %cx, %ax
+	ja ADC_carry
 	call set_carry_0
 	jmp ADC_carry_end
 	ADC_carry:
 	call set_carry_1
+	movw $0, %ax
+	mov A, %al
+	movb $100, %bl
+	divb %bl
+	movb %ah, A
 	ADC_carry_end:
-		
+	
+	
 	#store the x86 overflow into the 6052 flags
 	call check_O		
 	
@@ -121,8 +133,8 @@ ADC_continue:
 	push A
 	call check_ZS
 	
-
-
+	
+	
 	movl $0, %edx
 	mov P, %dl
 	andb $0x08, %dl
@@ -133,7 +145,7 @@ ADC_continue:
 	movl $0, %eax
 	movb A, %al
 	pushl %eax
-	call frombcd
+	call tobcd
 	popl %eax
 	movb %al, A
 
@@ -182,10 +194,7 @@ execute_ASL:
 	#shift 1 right, save flags for checks and update value
 	shl $1,%al
 	pushf
-	mov %al, MEM(%ecx)	
-	shr $8, %ecx
-	mov %cl, X
-	mov %ch, Y
+	mov %al, MEM(%ecx)
 ASL_checks:
 	pushl %eax
 	call check_ZS
@@ -1226,11 +1235,11 @@ execute_SBC:
 	je SBC_continue
 
 	pushl %edx
-	call tobcd
+	call frombcd
 	popl %edx
 
 	pushl %ebx
-	call tobcd
+	call frombcd
 	popl %ebx
 
 
@@ -1618,10 +1627,10 @@ set_carry_1:
 
 
 
-#####################################
-#####tobcd: Convert a hex to BDC#####
-#####################################
-tobcd:
+#######################################
+#####frombcd: Convert a BDC to hex#####
+#######################################
+frombcd:
 	pushl %ebp
 	pushl %eax
 	pushl %ebx
@@ -1653,10 +1662,11 @@ tobcd:
 	popl %ebp
 	ret
 
-#######################################
-#####frombcd: Convert a BDC to hex#####
-#######################################
-frombcd:
+
+#####################################
+#####tobcd: Convert a hex to BDC#####
+#####################################
+tobcd:
 	pushl %ebp
 	pushl %eax
 	pushl %ebx
