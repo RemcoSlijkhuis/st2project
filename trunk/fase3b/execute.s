@@ -1,6 +1,4 @@
-
 .data
-
 
 .global execute_ADC
 .global execute_AND
@@ -78,9 +76,9 @@ execute_ADC:
 	mov A, %dh		#load accumulator into dh as well
 	adc %bl, %dl		#add bl to dl
 	pushf
-	mov %dl, A	#store dl back in the accumulator
+	mov %dl, A		#store dl back in the accumulator
 	
-	#set the carry flag to either 1 or 0
+	##set the carry flag to either 1 or 0
 	mov %dh, %dl
 	mov $0, %dh
 	adc %bx, %dx
@@ -92,15 +90,15 @@ execute_ADC:
 	call set_carry_1
 	ADC_carry_end:
 		
-	#store the x86 overflow into the 6052 flags
+	##store the x86 overflow into the 6052 flags
 	call check_O		
 	
-	#properly set the zero and negative flags in the 6052 processor status
+	##properly set the zero and negative flags in the 6052 processor status
 	push A
 	call check_ZS
 	
 	
-	movl %ebp, %esp
+	movl %ebp, %esp		#reset stackpointer
 	popl %ebp
 	ret
 
@@ -108,68 +106,70 @@ execute_ADC:
 #####AND: AND mem and Accumulator#####
 ###################################### 
 execute_AND:
-	pushl %ebp
+	pushl %ebp		#prolog
 	movl %esp, %ebp
 
 	mov MEM(%ecx), %al
 	and %al, A
 	push A
-	call check_ZS	##adjust zero en neg. flags
+	call check_ZS		#adjust zero en neg. flags
 
-	movl %ebp, %esp
+	movl %ebp, %esp		#reset stackpointer
 	popl %ebp
 	ret
 	
 
 
-	## shift bits one place to the left, LSB is set 0, affects sign and zero flags
-	## the bit that is shifted out affects the carry
+## shift bits one place to the left, LSB is set 0, affects sign and zero flags
+## the bit that is shifted out affects the carry
 execute_ASL:
 
-	pushl %ebp
+	pushl %ebp		#prolog
 	movl %esp, %ebp
-	#movl $0xFFFF, %eax
-	#mov %al, X
 
-	#check if adressing mode is fetch_accumulator
-	cmpl $0x0000FFFF, %ecx
+	cmpl $0x0000FFFF, %ecx	#check if adressing mode is fetch_accumulator
 	ja ASL_acc
+	
 	#normal adressing mode
-	#get value from memory
-	mov MEM(%ecx), %al
-	#shift 1 right, save flags for checks and update value
-	shl $1,%al
+	mov MEM(%ecx), %al	#get value from memory
+	shl $1,%al		#shift 1 right, save flags for checks and update value
 	pushf
 	mov %al, MEM(%ecx)	
 	shr $8, %ecx
 	mov %cl, X
 	mov %ch, Y
+
+## check for flag setting and set if necesarry
 ASL_checks:
 	pushl %eax
 	call check_ZS
 	popl %eax
+	
 	#retrieve flags and check for carry and set if necessary
 	popf	
 	jc ASL_setC
 	call set_carry_0
 	jmp ASL_end
+
+## set carry flag
 ASL_setC:
-	call set_carry_1	
+	call set_carry_1
+
+##restore values and return
 ASL_end:
-	#restore values and return
 	movl %ebp, %esp
 	popl %ebp
 	ret
+
+##accumulator adressing mode, 
 ASL_acc:
-	#accumulator adressing mode, value already in cx
-	mov %cl, %al
-	#shift 1 right, save flags for checks and update value
-	shl $1,%al
+	
+	mov %cl, %al		#value already in cx
+	
+	shl $1,%al		#shift 1 right, save flags for checks and update value
 	pushf
 	mov %al, A
 	jmp ASL_checks
-
-
 
 execute_BCC:
 	pushl %ebp
