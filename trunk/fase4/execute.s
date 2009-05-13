@@ -70,90 +70,64 @@ execute_ADC:
 	movl %esp, %ebp
 	
 
-	movl $0, %ebx
-	mov MEM(%ecx), %bl	#load argument into bl
+	movl $0, %ebx			# clear ebx
+	mov MEM(%ecx), %bl		# load value at specified address into bl
 	
-	movl $0, %eax
-	mov A, %al		#load accumulator into dl
-	mov A, %ah
+	movl $0, %eax			# clear eax
+	mov A, %al			# load accumulator into dl
+	mov A, %ah			# and into ah as well
 	
-	movl $0, %edx
-	mov P, %dl
-	
-	andb $0x08, %dl
-	cmp $0, %dl
-	je ADC_continue
+	testb $0x08, P			# check if the decimal flag is set
+	jz ADC_continue			# if it's 0, skip converting from BCD to hex
 
-	pushl %eax
-	call frombcd
-	popl %eax
-	movb %al, %ah
+	pushl %eax			# push the current accumulator on the stack
+	call frombcd			# convert the accumulator from a BCD to a normal hex number
+	popl %eax			# and store the converted accumulator back into eax
+	movb %al, %ah			# also copy the new accumulator into ah, so al and ah contain the same value
 
-	pushl %ebx
-	call frombcd
-	popl %ebx
+	pushl %ebx			# push the argument onto the stack
+	call frombcd			# and convert the accumulator from a BCD to a normal hex number
+	popl %ebx			# then store the converted number back in ebx
 
-ADC_continue:
-	call load_C		#set the x86 carry flag	
+ADC_continue:				# continue here if the decimal mode flag is not set
+	call load_C			# set the x86 carry flag based on the P register
+
+	adc %bl, %al			# add argument to accumulator with carry
+	pushf				# and store the current x86 processor status on the stack
+	mov %al, A			# store al back in the accumulator
 	
-
-	adc %bl, %al		#add bl to al
-	pushf
-	mov %al, A	#store dl back in the accumulator
-	
-	#set the carry flag to either 1 or 0
-	mov $0xFF, %cx			#maximum value for non-BCD mode
-	mov P, %dl
-	andb $0x08, %dl
-	cmp $0, %dl
-	je ADC_end2
-	mov $99, %cx			#maximum value for BCD mode
+	mov $0xFF, %cx			# store maximum value for non-BCD mode before carry occurs in cx
+	testb $0x08, P			# test if the decimal flag is set
+	jz ADC_end2			# if not, continue at ADC_end2
+	mov $99, %cx			# store maximum value for BCD mode before carry occurs in cx
 ADC_end2:
-	mov %ah, %al
-	mov $0, %ah
-	adc %bx, %ax
-	cmp %cx, %ax
-	ja ADC_carry
-	call set_carry_0
-	jmp ADC_carry_end
-	ADC_carry:
-	call set_carry_1
-	movw $0, %ax
-	mov A, %al
-	movb $100, %bl
-	divb %bl
-	movb %ah, A
-	ADC_carry_end:
+	mov %ah, %al			# store the high register into the low register
+	mov $0, %ah			# and clear out the old high register
+	adc %bx, %ax			# add the argument to the (second instance of the) accumulator
+	cmp %cx, %ax			# if the result is too high for the current mode (BCD or non-BCD)
+	ja ADC_carry			# then, jump to ADC_carry to set the carry flag
+	call set_carry_0		# otherwise, set the carry flag to 0
+	jmp ADC_carry_end		
+ADC_carry:			
+	call set_carry_1		# set the carry flag
+ADC_carry_end:
 	
+	call check_O			# store the x86 overflow flag into the P register, using the processor status on the stack
 	
-	#store the x86 overflow into the 6052 flags
-	call check_O		
+	push A				# push the accumulator on the stack
+	call check_ZS			# properly set the zero and negative flags in the P register
 	
-	#properly set the zero and negative flags in the 6052 processor status
-	push A
-	call check_ZS
-	
-	
-	
-	movl $0, %edx
-	mov P, %dl
-	andb $0x08, %dl
-	cmp $0, %dl
-	je ADC_end
+	testb $0x08, P			# check if the decimal flag is set
+	jz ADC_end			# if not, jump to the end of the function
 
-
-	movl $0, %eax
-	movb A, %al
-	pushl %eax
-	call tobcd
-	popl %eax
-	movb %al, A
-
-	
-	
+	movl $0, %eax			# clear eax
+	movb A, %al			# store the accumulator into al
+	pushl %eax			# and push the accumulator in eax on the stack
+	call tobcd			# convert the BCD accumulator to a normal hex value
+	popl %eax			# load the result back into eax
+	movb %al, A			# and store the result back in the accumulator
 
 ADC_end:
-	
 	movl %ebp, %esp
 	popl %ebp
 	ret
@@ -1673,20 +1647,23 @@ tobcd:
 	pushl %ecx
 	movl %esp, %ebp
 
-	movl $0, %ebx
-	movl $0, %eax
-	movl $0x0A, %ecx	
-	mov 20(%ebp), %eax
+	movl $0, %ebx			# clear the ebx register
+	movl $0xA, %ecx			# store 0xA in the ecx register (hex equivalent of decimal 10)
+	movl 20(%ebp), %eax		# store the argument into eax
 
+	div %cl				# divide the argument with decimal 10, putting tens in al and ones in ah
+
+	movb %ah, %bl			# store the ones-count in bl
+	movb $0, %ah			# and clear the ones-count register (ah)
+	shl $4, %al			# move the tens from al 4 bits to the left
+	add %bl, %al			# add the ones to the shifted tens
 	
-	div %cl
-
-	mov %al, %bl	
-	shl $4, %bl
-	add %ah, %bl
+	movl $0xA0, %ebx		# store the value for '100' in ebx
+	divb %bl			# and divide the result by this number, storing the actual result in ah
 	
-	mov %ebx, 20(%ebp)
-
+	movzbl %ah, %ebx		# move the actual result to ebx
+	mov %ebx, 20(%ebp)		# and place this back on the stack
+	
 	movl %ebp, %esp
 	popl %ecx
 	popl %ebx
