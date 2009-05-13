@@ -34,7 +34,7 @@
 start:
 	movl %esp, %ebp
 
-	movb $0xFF, S			#Initialize the Stack points
+	movb $0xFF, S			#Initialize the Stack points and registers
 	movb $0, A
 	movb $0, X
 	movb $0, Y
@@ -42,9 +42,9 @@ start:
 	movw $0, IR
 	movb $0, P
 
-	movl $0, %eax			
+	movl $0, %eax			#reset eax
 
-	memloop:				#Initialize the memory to 0
+	memloop:			#Initialize the memory to 0
 	movl $0, MEM(%eax)		
 	addl $4, %eax
 	
@@ -59,9 +59,9 @@ start:
 
 	movl %ebp, %esp
 	
-	movl $0, %eax
-	movb error, %al
-	pushl %eax
+	movl $0, %eax			#Reset eax
+	movb error, %al			#Move error-value to al
+	pushl %eax			#Push the error code
 
  	call exit
 
