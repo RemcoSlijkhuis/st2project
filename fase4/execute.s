@@ -309,8 +309,11 @@ BIT_end:
 	ret
 	
 
-
-	##checks if negative flag is set, if so branch is taken, else execution resumes normally.
+#################################################################
+## BMI:                                                        ##
+## checks if negative flag is set, if so branch is taken,      ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BMI:
 	pushl %ebp
 	movl %esp, %ebp
@@ -332,8 +335,11 @@ BMI_end:
 	ret
 
 
-
-	##checks if zero flag is set, if not branch is taken, else execution resumes normally.
+#################################################################
+## BNE:                                                        ##
+## checks if zero flag is set, if not branch is taken,         ##
+## else execution resumes normally.                            ##
+#################################################################	
 execute_BNE:	
 	pushl %ebp
 	movl %esp, %ebp
@@ -357,7 +363,12 @@ BNE_end:
 
 
 
-	##checks if negative flag is set, if not branch is taken, else execution resumes normally.
+	
+#################################################################
+## BPL:                                                        ##
+## checks if negative flag is set, if not branch is taken,     ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BPL:
 	pushl %ebp
 	movl %esp, %ebp
@@ -381,8 +392,11 @@ BPL_end:
 	ret
 
 
-
-	#runs interrupt subroutine, after pushing current SP+2 on stack, low byte first and pushing the status register and 0x10.
+######################################################################
+## BRK:                                                             ##
+## runs interrupt subroutine, after pushing current SP+2 on stack,  ##
+## low byte first and pushing the status register and 0x10.         ##
+######################################################################
 execute_BRK:
 	pushl %ebp
 	pushl %eax
@@ -429,8 +443,11 @@ execute_BRK:
 	popl %ebp
 	ret
 
-
-##checks if overflow flag is set, if not branch is taken, else execution resumes normally.
+#################################################################
+## BVC:                                                        ##
+## checks if overflow flag is set, if not branch is taken,     ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BVC:
 	pushl %ebp
 	movl %esp, %ebp
@@ -454,7 +471,11 @@ BVC_end:
 
 	
 
-##checks if overflow flag is set, if so branch is taken, else execution resumes normally.
+#################################################################
+## BVS:                                                        ##
+## checks if overflow flag is set, if so branch is taken,      ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BVS:
 	pushl %ebp
 	movl %esp, %ebp
@@ -476,39 +497,39 @@ BVS_end:
 	popl %ebp
 	ret
 
-
 #################################################################
-######################CLC: Clear carry flag######################
+## CLC: Clear carry flag                                       ##
 #################################################################
 execute_CLC:
 	pushl %ebp
 	movl %esp, %ebp
 	
 	mov P, %al
-	and $0xFE, %al	##change the first bit to 0
+	and $0xFE, %al			# change the first bit to 0
 	mov %al, P
 
 	movl %ebp, %esp
 	popl %ebp
 	ret		
 
-#################################
-#####CLD: clear decimal flag#####
-#################################
+#################################################################
+## CLD: Clear decimal flag                                     ##
+#################################################################
 execute_CLD:
 	pushl %ebp
 	movl %esp, %ebp
 
-	mov P, %al		#store processor status in al
-	and $0xF7, %al		#clear Decimal flag
-	mov %al, P		#store al back into processor status
+	mov P, %al			# store processor status in al
+	and $0xF7, %al			# clear Decimal flag
+	mov %al, P			# store al back into processor status
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
 	
-
-##Sets the interrupt disable bit to 0
+#################################################################
+## CLI: Sets the interrupt disable bit to 0                    ##
+#################################################################
 execute_CLI:
 	pushl %ebp
 	movl %esp, %ebp
@@ -523,7 +544,7 @@ execute_CLI:
 	
 
 #################################################################
-####################CLV: Clear overflow flag#####################
+## CLV: Clear overflow flag                                    ##
 #################################################################
 execute_CLV:
 	pushl %ebp
@@ -538,9 +559,9 @@ execute_CLV:
 	ret
 		
 
-#############################################
-#####CMP: Compare memory and accumulator#####
-#############################################
+#################################################################
+## CMP: Compare memory and accumulator                         ##
+#################################################################
 execute_CMP:
 	pushl %ebp
 	movl %esp, %ebp	
@@ -568,9 +589,9 @@ CMP_end:
 	ret
 	
 
-###################################
-#####CPX: Compare memory and X#####
-###################################
+#################################################################
+## CPX: Compare memory and X                                   ##
+#################################################################
 execute_CPX:
 	pushl %ebp
 	movl %esp, %ebp	
@@ -598,9 +619,9 @@ CPX_end:
 	popl %ebp
 	ret	
 
-###################################
-#####CPY: Compare memory and Y#####
-###################################
+#################################################################
+## CPY: Compare memory and Y                                   ##
+#################################################################
 execute_CPY:
 	pushl %ebp
 	movl %esp, %ebp	
@@ -698,17 +719,18 @@ execute_EOR:
 	popl %ebp
 	ret	
 
-
-#increments memory by one
+#################################################################
+## INC: Increments memory by one                               ##
+#################################################################
 execute_INC:
 	pushl %ebp
 	movl %esp, %ebp
 	
 	movl $0, %ebx
 	
-	mov MEM(%ecx), %bl	#load old value from memory
-	inc %bl			#increment with one
-	mov %bl, MEM(%ecx)	#store back in memory
+	mov MEM(%ecx), %bl		# load old value from memory
+	inc %bl				# increment with one
+	mov %bl, MEM(%ecx)		# store back in memory
 	
 	push %ebx
 	call check_ZS
@@ -717,8 +739,9 @@ execute_INC:
 	popl %ebp
 	ret	
 
-
-#increment x register by one
+#################################################################
+## INX: Increments x register by one                           ##
+#################################################################
 execute_INX:
 	pushl %ebp
 	movl %esp, %ebp
@@ -733,7 +756,10 @@ execute_INX:
 	movl %ebp, %esp
 	popl %ebp
 	ret	
-#increment y register by one
+
+#################################################################
+## INY: Increments y register by one                           ##
+#################################################################
 execute_INY:
 	pushl %ebp
 	movl %esp, %ebp
@@ -749,7 +775,9 @@ execute_INY:
 	popl %ebp
 	ret	
 
-##jumps by setting the program counter to a new value
+#################################################################
+## JMP: Jumps by setting the program counter to a new value    ##
+#################################################################
 execute_JMP:
 
 	pushl %ebp
@@ -763,8 +791,11 @@ execute_JMP:
 	popl %ebp
 	ret
 
-
-##jumps by setting the program counter ta a new value, stores second byte after jsr instruction on stack
+#################################################################
+## JSR:                                                        ##
+## Jumps by setting the program counter ta a new value,        ##
+## stores second byte after jsr instruction on stack           ##
+#################################################################
 execute_JSR:
 	pushl %ebp
 	pushl %eax
@@ -795,11 +826,11 @@ execute_JSR:
 	popl %ebp
 	ret	
 
-
-
-
-
-	##load accumulator with memory, affects negative and zero flags
+#################################################################
+## LDA:                                                        ##
+## load accumulator with memory,                               ##
+## affects negative and zero flags                             ##
+#################################################################
 execute_LDA:
 	pushl %ebp
 	pushl %eax
@@ -821,7 +852,11 @@ execute_LDA:
 
 
 	
-	##load X register with memory, affects negative and zero flags
+#################################################################
+## LDX:                                                        ##
+## load x register with memory,                                ##
+## affects negative and zero flags                             ##
+#################################################################
 execute_LDX:
 	pushl %ebp
 	pushl %eax
@@ -843,7 +878,11 @@ execute_LDX:
 
 
 	
-	##load Y register with memory, affects negative and zero flags
+#################################################################
+## LDY:                                                        ##
+## load y register with memory,                                ##
+## affects negative and zero flags                             ##
+#################################################################
 execute_LDY:
 	pushl %ebp
 	pushl %eax
@@ -995,13 +1034,13 @@ execute_PLP:
 	movl %esp, %ebp
 	
 	
-	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
-	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
-	inc %al			#increase the stack pointer value with 1
-	mov %al, S		#and store the stack pointer
-	#ax now contains the mem pointer for the location of the new processor status
-	mov MEM(%eax),%bl	#store the value in memory on the position indicated by mem pointer ax in bl
-	mov %bl, P		#store bl in the processor status
+	mov $0x0100,%eax		# set the mem pointer ax to be 01:XX (currently 01:00)
+	mov S, %al			# set the last byte of the mem pointer ax to the stack pointer value
+	inc %al				# increase the stack pointer value with 1
+	mov %al, S			# and store the stack pointer
+
+	mov MEM(%eax),%bl		# store the value in memory on the position indicated by mem pointer ax in bl
+	mov %bl, P			# store bl in the processor status
 	
 	
 	movl %ebp, %esp
@@ -1208,6 +1247,7 @@ execute_SBC:
 	popl %ebx			# and store it back in ebx
 
 SBC_continue:
+	
 	call load_C			# set the x86 carry flag
 	call swap_carry			# invert the carry, because x86 uses borrow instead of carry
 
@@ -1235,8 +1275,8 @@ SBC_BCD_no_carry:
 	
 	pushl %edx			# push the new accumulator on the stack
 	call tobcd			# convert the result back to a BCD
-	popl A				# and store the result in the A register
-
+	popl %eax			# get the result in eax
+	movb %al, A			# and store the result in the A register
 SBC_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -1349,8 +1389,8 @@ execute_TAY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov A, %al	#move accumulator to al register
-	mov %al, Y	#move al register to Y
+	mov A, %al			# move accumulator to al register
+	mov %al, Y			# move al register to Y
 	push Y
 	call check_ZS
 	
@@ -1363,10 +1403,10 @@ execute_TSX:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov S, %al		#move the stack pointer to al
-	mov %al, X		#move al to the x register
-	push X			#push al onto the stack for check_ZS
-	call check_ZS		#set negative and zero flags
+	mov S, %al			# move the stack pointer to al
+	mov %al, X			# move al to the x register
+	push X				# push al onto the stack for check_ZS
+	call check_ZS			# set negative and zero flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1377,10 +1417,10 @@ execute_TXA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov X, %al	#move the x register to al
-	mov %al, A	#move al to the accumulator
-	push A		#push the new value of the accumulator onto the stack
-	call check_ZS	#set negative and zero flags
+	mov X, %al			# move the x register to al
+	mov %al, A			# move al to the accumulator
+	push A				# push the new value of the accumulator onto the stack
+	call check_ZS			# set negative and zero flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1392,10 +1432,10 @@ execute_TXS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov X, %al		#move the x register to al
-	mov %al, S		#move al to the stack pointer
-	push S			#push al onto the stack for check_ZS
-	call check_ZS		#set negative and zero flags
+	mov X, %al			# move the x register to al
+	mov %al, S			# move al to the stack pointer
+	push S				# push al onto the stack for check_ZS
+	call check_ZS			# set negative and zero flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1406,10 +1446,10 @@ execute_TYA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov Y, %al		#move the y register to al
-	mov %al, A		#move al to the accumulator
-	push A			#push al onto the stack for check_ZS
-	call check_ZS		#set negative and zero flags
+	mov Y, %al			# move the y register to al
+	mov %al, A			# move al to the accumulator
+	push A				# push al onto the stack for check_ZS
+	call check_ZS			# set negative and zero flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1524,7 +1564,7 @@ check_O:
 	push %eax
 	popf
 	
-	jo O_overflow		#if there's overflow, set overflow flag to 1
+	jo O_overflow			# if there's overflow, set overflow flag to 1
 	
 	#overflow flag set to 0:
 	call set_overflow_0
@@ -1532,7 +1572,7 @@ check_O:
 	
 	#overflow flag set to 1:
 	O_overflow:
-	call set_overflow_1	#set overflow flag to 1
+	call set_overflow_1		# set overflow flag to 1
 	
 	O_overflow_end:
 	
@@ -1595,7 +1635,7 @@ frombcd:
 
 	movl $0, %ebx
 	movl $0, %eax
-	mov 20(%ebp),%eax	##read number
+	mov 20(%ebp),%eax		# read number
 	
 	andb $0xF0, %al
 	
@@ -1610,7 +1650,7 @@ frombcd:
 
 	addb %bl, %al	
 	
-	mov %eax, 20(%ebp)	##adjust number
+	mov %eax, 20(%ebp)		# adjust number
 	movl %ebp, %esp
 	popl %edx
 	popl %ebx
