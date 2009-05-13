@@ -139,19 +139,21 @@ execute_AND:
 	pushl %ebp
 	movl %esp, %ebp
 
-	mov MEM(%ecx), %al
-	and %al, A
-	push A
-	call check_ZS	##adjust zero en neg. flags
+	mov MEM(%ecx), %al		# store the argument into al
+	and %al, A			# add the argument to the accumulator
+	push A				# push the new accumulator on the stack
+	call check_ZS			# adjust zero en negative flags
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
 	
 
-
-	## shift bits one place to the left, LSB is set 0, affects sign and zero flags
-	## the bit that is shifted out affects the carry
+########################################################################################
+## ASL                                                                                ##
+## shift bits one place to the left, LSB is set 0, affects sign and zero flags        ##
+## the bit that is shifted out affects the carry                                      ##
+########################################################################################
 execute_ASL:
 
 	pushl %ebp
@@ -924,12 +926,12 @@ execute_ORA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov MEM(%ecx), %bl	#load argument into bl
-	or A, %bl		#or accumulator and bl
-	mov %bl, A		#move bl back to the accumulator
+	mov MEM(%ecx), %bl		# load argument into bl
+	or A, %bl			# or accumulator and bl
+	mov %bl, A			# move bl back to the accumulator
 	
-	push A
-	call check_ZS
+	push A				# push the new accumulator onto the stack
+	call check_ZS			# and set the zero and negative flags properly
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -940,12 +942,12 @@ execute_PHA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
-	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
-	mov A, %bl		#store the accumulator in bl
-	mov %bl, MEM(%eax)	#store bl in memory on the position indicated by mem pointer ax
-	dec %al			#decrease the stack pointer with 1
-	mov %al, S		#and store the stack pointer again
+	mov $0x0100,%eax		# set the mem pointer ax to be 01:XX (currently 01:00)
+	mov S, %al			# set the last byte of the mem pointer ax to the stack pointer value
+	mov A, %bl			# store the accumulator in bl
+	mov %bl, MEM(%eax)		# store bl in memory on the position indicated by mem pointer ax
+	dec %al				# decrease the stack pointer with 1
+	mov %al, S			# and store the stack pointer again
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -956,12 +958,12 @@ execute_PHP:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov $0x0100,%eax	#set the mem pointer ax to be 01:XX (currently 01:00)
-	mov S, %al		#set the last byte of the mem pointer ax to the stack pointer value
-	mov P, %bl		#store the processor status in bl
-	mov %bl, MEM(%eax)	#store bl in memory on the position indicated by mem pointer ax
-	dec %al			#decrease the stack pointer with 1
-	mov %al, S		#and store the stack pointer again
+	mov $0x0100,%eax		# set the mem pointer ax to be 01:XX (currently 01:00)
+	mov S, %al			# set the last byte of the mem pointer ax to the stack pointer value
+	mov P, %bl			# store the processor status in bl
+	mov %bl, MEM(%eax)		# store bl in memory on the position indicated by mem pointer ax
+	dec %al				# decrease the stack pointer with 1
+	mov %al, S			# and store the stack pointer again
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1452,41 +1454,41 @@ check_ZS:
 	
 	mov 8(%ebp),%al
 	cmp $0, %al
-	jz set_zero		##Declare the zero flag true, the negative flag unknown
-	js set_neg		##Declare the zero flag false, the negative flag true 
-	jmp set_none		##Declare the zero flag false and the negative flag false 
+	jz set_zero			# Declare the zero flag true, the negative flag unknown
+	js set_neg			# Declare the zero flag false, the negative flag true 
+	jmp set_none			# Declare the zero flag false and the negative flag false 
 
 set_zero:
-	js set_both		##set both zero flag and negative flag to true
-	or $0x02, %bl		##zero flag true
-	and $0x7F, %bl 		##negative flag false
+	js set_both			# set both zero flag and negative flag to true
+	or $0x02, %bl			# zero flag true
+	and $0x7F, %bl 			# negative flag false
 	jmp set_end
 
 set_neg:
-	and $0xFD, %bl		##zero flag false
-	or $0x80, %bl		##negative flag true
+	and $0xFD, %bl			# zero flag false
+	or $0x80, %bl			# negative flag true
 	jmp set_end
 
 set_none:
-	and $0xFD, %bl		##zero flag false
-	and $0x7F, %bl 		##zero flag false
+	and $0xFD, %bl			# zero flag false
+	and $0x7F, %bl 			# zero flag false
 	jmp set_end
 set_both:
-	or $0x02, %bl		##zero flag true
-	or $0x80, %bl		##negative flag true
+	or $0x02, %bl			# zero flag true
+	or $0x80, %bl			# negative flag true
 	jmp set_end		
-set_end:			##close the function
+set_end:				# close the function
 	mov %bl, P
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
 swap_carry:
-	jc SC_carry	#if carry is set, jump to SC_carry
-	stc		#carry is not set, so set it
+	jc SC_carry			# if carry is set, jump to SC_carry
+	stc				# carry is not set, so set it
 	jmp SC_end
-	SC_carry:	#carry is set, so:
-	clc		#clear carry
+	SC_carry:			# carry is set, so:
+	clc				# clear carry
 	SC_end:
 	ret
 	
@@ -1500,10 +1502,10 @@ check_CO:
 	push %eax
 	popf
 	
-	jo CO_overflow		#if there's overflow, set overflow flag to 1
+	jo CO_overflow			# if there's overflow, set overflow flag to 1
 	
 	#overflow flag set to 0:
-	jc CO_noverflow_carry	#if x86 carry = 0, set carry to 0
+	jc CO_noverflow_carry		# if x86 carry = 0, set carry to 0
 	call set_overflow_0
 	call set_carry_0
 	jmp CO_overflow_end
@@ -1516,12 +1518,12 @@ check_CO:
 	#overflow flag set to 1:
 	CO_overflow:
 	jc CO_overflow_carry
-	call set_overflow_1	#set overflow flag to 1
+	call set_overflow_1		# set overflow flag to 1
 	call set_carry_0
 	jmp CO_overflow_end
 	
 	CO_overflow_carry:
-	call set_overflow_1	#set overflow flag to 1
+	call set_overflow_1		# set overflow flag to 1
 	call set_carry_1	
 	CO_overflow_end:
 	
@@ -1560,14 +1562,12 @@ load_C:
 	pushl %eax
 	movl %esp, %ebp
 	
-	mov P, %al		#move the processor status to al
-	and $0x1, %al		#make al 0x1 if carry, 0x0 if no carry
-	cmp $0x0, %al		
-	je LoadC_nocarry	#if carry flag is 0, set no carry
-	stc			#set x86 carry
+	test $0x1, P		# check to see if the carry flag is set		
+	jz LoadC_nocarry	# if carry flag is 0, clear x86 carry flag
+	stc			# set x86 carry flag to 1
 	jmp LoadC_end
-	LoadC_nocarry:		#if no carry,
-	clc			#set x86 carry to 0
+	LoadC_nocarry:		# if no carry,
+	clc			# set x86 carry flag to 0
 	LoadC_end:
 	
 	movl %ebp, %esp
