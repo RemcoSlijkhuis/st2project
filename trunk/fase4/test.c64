@@ -1,66 +1,23 @@
 	processor 6502
 ; start at 80:00
 	org $8000
-
-	LDX #$0
-optelx
-	INX			; x gaat optellen
-	CPX #$6		; x gaat tot 6 en stopt dan met optellen
-	BNE optelx
-	dc $db
-aftelx
-	DEX
-	CPX #$2		; x telt af tot 1
-	BMI aftelx
-
-	;zelfde voor y
 	
-	LDY #$0
-optely
-	INY			; y gaat optellen
-	CPY #$6		; y gaat tot 6 en stopt dan met optellen
-	BNE optely
-aftely
-	DEY
-	CPY #$2		; y telt af tot 1
-	BMI aftely
-	JMP vervolg ; spring naar vervolg code
-error
-	LDA #$AA
-	LDY #$AA
-	LDA #$AA
-	dc $de
-vervolg
-	LDA #$FD
-	BPL error		; zou niet moeten springen
-	CLC
-	ADC #$ff	;moet overflow setten
-	BVS carry_test	;zou jump moeten maken
-carry_test
-	SEC 
-	BCC error
-	CLC
-	BCS error
-	BCC carry2
-	JMP error
-carry2
-	SEC
-	BCS bittest
-	JMP error
-bittest
-	LDA #$f0 
-	STA $0200
-	LDA #$0f
-	BIT $0200	
-	BEQ bittest2
-    JMP error
-bittest2
+	
 	LDA #$10
-	BIT $0200
-	BEQ error
-	JSR sub
 
-	dc $de
-sub
-	LDA #$BB
-	RTS
+	SBC #$5
+
+	LDA #$10
+	
+	SED
+
+	SBC #$5
+
+	
+	
+
+	dc $db
+
+
+
+	
