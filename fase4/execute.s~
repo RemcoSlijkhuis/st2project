@@ -69,22 +69,44 @@ execute_ADC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	call load_C		#set the x86 carry flag
-	
-	mov $0, %bx
-	mov $0, %dx
+
+	movl $0, %ebx
 	mov MEM(%ecx), %bl	#load argument into bl
-	mov A, %dl		#load accumulator into dl
-	mov A, %dh		#load accumulator into dh as well
-	adc %bl, %dl		#add bl to dl
+	
+	movl $0, %eax
+	mov A, %al		#load accumulator into dl
+	mov A, %ah
+	
+	movl $0, %edx
+	mov P, %dl
+	andb $0x08, %dl
+	cmp $0, %dl
+	je ADC_continue
+
+	pushl %eax
+	call tobcd
+	popl %eax
+	movb %al, %ah
+
+	pushl %ebx
+	call tobcd
+	popl %ebx
+	
+	
+
+ADC_continue:
+	call load_C		#set the x86 carry flag	
+	
+
+	adc %bl, %al		#add bl to al
 	pushf
-	mov %dl, A	#store dl back in the accumulator
+	mov %al, A	#store dl back in the accumulator
 	
 	#set the carry flag to either 1 or 0
-	mov %dh, %dl
-	mov $0, %dh
-	adc %bx, %dx
-	cmp $0x1, %dh
+	mov %ah, %al
+	mov $0, %ah
+	adc %bx, %ax
+	cmp $0x1, %ah
 	jge ADC_carry
 	call set_carry_0
 	jmp ADC_carry_end
@@ -99,6 +121,26 @@ execute_ADC:
 	push A
 	call check_ZS
 	
+
+
+	movl $0, %edx
+	mov P, %dl
+	andb $0x08, %dl
+	cmp $0, %dl
+	je ADC_end
+
+
+	movl $0, %eax
+	movb A, %al
+	pushl %eax
+	call frombcd
+	popl %eax
+	movb %al, A
+
+	
+	
+
+ADC_end:
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -224,6 +266,8 @@ execute_BEQ:
 	#change PC to simulate jump
 	mov %cx, PC
 
+	decb PC
+
 	#restore stack pointer and return
 BEQ_end:
 	movl %ebp, %esp
@@ -287,13 +331,15 @@ execute_BMI:
 	movl %esp, %ebp
 	
 	#check if negative flag is set
-	andb $0x80, P
-	cmp $0x0, P
+	movl $0, %ebx
+	mov P, %bl
+	andb $0x80, %bl
+	cmp $0x0, %bl
 	#jump to end if negative flag is not set
 	je BMI_end
 	#change PC to simulate jump
 	mov %cx, PC
-
+	decb PC
 	#restore stack pointer and return
 BMI_end:
 	movl %ebp, %esp
@@ -308,8 +354,10 @@ execute_BNE:
 	movl %esp, %ebp
 	
 	#check if zero flag is set
-	and $0x02, P
-	cmp $0x0, P
+	movl $0, %ebx
+	mov P, %bl
+	and $0x02, %bl
+	cmp $0x0, %bl
 	#jump to end if zero is set
 	jne BNE_end
 	#change PC to simulate jump
@@ -330,12 +378,16 @@ execute_BPL:
 	movl %esp, %ebp
 	
 	#check if negative flag is set
-	andb $0x80, P
-	cmp $0x0, P
+	movl $0, %ebx
+	mov P, %bl
+	andb $0x80, %bl
+	cmp $0x0, %bl
 	#jump to end if negative flag is set
 	jne BPL_end
 	#change PC to simulate jump
 	mov %cx, PC
+	
+	decb PC
 
 	#restore stack pointer and return
 BPL_end:
@@ -353,7 +405,7 @@ execute_BRK:
 	movl %esp, %ebp
 	
 	movl $0, %eax
-	movl $0, %ebx
+	movl $0x0100, %ebx
 	#load current stack pointer
 	mov S, %bl
 	#push PC+2 on stack, low byte first
@@ -363,6 +415,8 @@ execute_BRK:
 	dec %bl
 	mov %ah, MEM(%ebx)
 	dec %bl
+
+
 	#push processor status + 00010000B on stack
 	mov P, %dl
 	mov %dl, MEM(%ebx)
@@ -382,7 +436,7 @@ execute_BRK:
 	mov MEM(%eax), %bh
 	mov %bx, PC
 	#adjust PC, because fetch ends with incrementing PC.
-	decl PC
+	decb PC
 	
 	movl %ebp, %esp
 	popl %ebx
@@ -397,13 +451,16 @@ execute_BVC:
 	movl %esp, %ebp
 	
 	#check if overflow flag is set
-	and $0x40, P
-	cmp $0x0, P
+	movl $0, %ebx
+	mov P, %bl
+	and $0x40, %bl
+	cmp $0x0, %bl
 	#jump to end if overflow flag is set
 	jne BVC_end
 	#change PC to simulate jump
 	mov %cx, PC
 
+	decb PC
 	#restore stack pointer and return
 BVC_end:
 	movl %ebp, %esp
@@ -418,12 +475,15 @@ execute_BVS:
 	movl %esp, %ebp
 	
 	#check if overflow flag is set
-	and $0x40, P
-	cmp $0x0, P
+	movl $0, %ebx
+	mov P, %bl
+	and $0x40, %bl
+	cmp $0x0, %bl
 	#jump to end if overflow flag is not set
 	je BVS_end
 	#change PC to simulate jump
 	mov %cx, PC
+	decb PC
 
 	#restore stack pointer and return
 BVS_end:
@@ -500,9 +560,10 @@ execute_CMP:
 	pushl %ebp
 	movl %esp, %ebp	
 
-	mov A, %eax
-	sub MEM(%ecx), %eax
-	cmp $0, %eax
+	movl $0, %ebx
+	mov A, %bl
+	sub MEM(%ecx), %ebx
+	cmp $0, %ebx
 	jl CMP_setcarry
 	jmp CMP_clcarry
 
@@ -515,7 +576,7 @@ CMP_clcarry:
 	jmp CMP_end
 
 CMP_end:
-	push %eax
+	push %ebx
 	call check_ZS
 	movl %ebp, %esp
 	popl %ebp
@@ -546,10 +607,6 @@ CPX_clcarry:
 
 CPX_end:
 	push %ebx
-	push $test2
-	call printf
-	
-	push %ebx
 	call check_ZS
 	
 	movl %ebp, %esp
@@ -563,9 +620,10 @@ execute_CPY:
 	pushl %ebp
 	movl %esp, %ebp	
 
-	mov Y, %eax
-	sub MEM(%ecx), %eax
-	cmp $0, %eax
+	movl $0, %ebx
+	mov Y, %bl
+	sub MEM(%ecx), %ebx
+	cmp $0, %ebx
 	jl CPY_setcarry
 	jmp CPY_clcarry
 
@@ -578,7 +636,7 @@ CPY_clcarry:
 	jmp CPY_end
 
 CPY_end:
-	push %eax
+	push %ebx
 	call check_ZS
 	movl %ebp, %esp
 	popl %ebp
@@ -711,6 +769,8 @@ execute_JMP:
 	movl %esp, %ebp
 	#load new program counter
 	movw %cx, PC
+
+	decb PC
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -724,20 +784,24 @@ execute_JSR:
 	pushl %ebx
 	movl %esp, %ebp
 	#push PC +  on (6502)stack (PC already points at second byte, due to fetch_abs subroutine
-	movl $0, %eax
-	movl $0, %ebx
-	movl PC, %eax 
+	movl $0, %edx
+	movl $0x0100, %ebx
+	movw PC, %dx 
 	#load stack pointer
 	mov S, %bl
-	mov %al, MEM(%ebx)
-	dec %bl
-	mov %ah, MEM(%ebx)
+	mov %dl, MEM(%ebx)
+	dec %bl	
+	mov %dh, MEM(%ebx)
 	#update stack pointer
+	dec %bl
 	mov %bl, S
 	
 	#load new program counter
 	movw %cx, PC
+
+	decb PC
 	
+
 	movl %ebp, %esp
 	popl %ebx
 	popl %eax
@@ -1078,23 +1142,31 @@ execute_RTI:
 	pushl %eax
 	pushl %ebx
 	movl %esp, %ebp
+
+	
+	
 	
 	#pull processor status from stack
 	call execute_PLP
+
+
 	#pull program counter from stack
-	movl $0x04, %eax
+	movl $0x0100, %eax
 	movl $0, %ebx
 	mov S, %al
 	#get low byte
-	mov MEM(%eax), %bl
 	incl %eax
-	#get high byte
 	mov MEM(%eax), %bh
+	
+	#get high byte
 	incl %eax
+	mov MEM(%eax), %bl
+	
 	#load PC and restore S
 	mov %bx, PC
 	mov %al, S
-	
+	decb PC	
+
 	movl %ebp, %esp
 	popl %ebx
 	popl %eax
@@ -1111,17 +1183,21 @@ execute_RTS:
 	movl %esp, %ebp
 	
 	#pull program counter from stack
-	movl $0x04, %eax
+	movl $0x0100, %eax
 	movl $0, %ebx
 	mov S, %al
 	#get low byte
-	mov MEM(%eax), %bl
 	incl %eax
-	#get high byte
 	mov MEM(%eax), %bh
-	incl %eax
+	
+	#get high byte
+	incl %eax	
+	mov MEM(%eax), %bl
+	
 	#load PC and restore S
 	mov %bx, PC
+	
+
 	mov %al, S
 	
 	movl %ebp, %esp
@@ -1136,11 +1212,30 @@ execute_SBC:
 	pushl %ebp
 	movl %esp, %ebp
 	
+	movl $0, %ebx
+	movl $0, %edx
 	call load_C		#set the x86 carry flag
 	call swap_carry	#account for x86 carry/borrow
 	
 	mov MEM(%ecx), %bl	#load argument into bl
 	mov A, %dl		#load accumulator into dl
+
+	movl $0, %eax
+	mov P, %al
+	andb $0x08, %al
+	cmp $0, %al
+	je SBC_continue
+
+	pushl %edx
+	call tobcd
+	popl %edx
+
+	pushl %ebx
+	call tobcd
+	popl %ebx
+
+
+SBC_continue:
 	sbb %bl, %dl		#subtract dl with bl
 	pushf
 	mov %dl, A	#store dl back in the accumulator
@@ -1156,6 +1251,20 @@ execute_SBC:
 	push A
 	call check_ZS
 	
+	movl $0, %eax
+	mov P, %al
+	andb $0x08, %al
+	cmp $0, %al
+	je SBC_end
+
+	pushl %edx
+	call tobcd
+	popl %edx
+	mov %dl, A
+
+
+
+SBC_end:
 	movl %ebp, %esp
 	popl %ebp
 	ret		
@@ -1463,6 +1572,7 @@ check_O:
 #loads the carry flag from the 6052 processor status into the x86 flag
 load_C:
 	pushl %ebp
+	pushl %eax
 	movl %esp, %ebp
 	
 	mov P, %al		#move the processor status to al
@@ -1476,6 +1586,7 @@ load_C:
 	LoadC_end:
 	
 	movl %ebp, %esp
+	popl %eax
 	popl %ebp
 	ret
 
@@ -1510,37 +1621,33 @@ set_carry_1:
 #####################################
 tobcd:
 	pushl %ebp
+	pushl %eax
+	pushl %ebx
+	pushl %edx
 	movl %esp, %ebp
 
-	mov 8(%ebp),%eax	##read number
-	cmp $0x9, %al		##check wether last number =>a
-	jg tobcd_last_adjust	##adjust
-	jmp tobcd_first_check	##go check first number
+	movl $0, %ebx
+	movl $0, %eax
+	mov 20(%ebp),%eax	##read number
+	
+	andb $0xF0, %al
+	
+	shr $4, %al
 
-tobcd_last_adjust:
-	sub $0x09, %eax		##adjust
-	add $0x10, %eax
-	cmp $0x10, %eax		##check case was: 0xf*
-	jl tobcd_overflow
-	jmp tobcd_first_check
+	mov $0x0A, %dl	
+	mul %dl
 
-tobcd_first_check:
-	cmp $0xa0, %eax		##check first number =>a
-	jge tobcd_first_adjust	
-	jmp tobcd_end
+	mov 20(%ebp), %ebx
 
-tobcd_first_adjust:
-	sub $0x90, %eax		##adjust
-	call set_overflow_1	##set overflow flag to 1
-	jmp tobcd_end
+	andb $0x0F, %bl
 
-tobcd_overflow:
-	call set_overflow_1	##set overflow flag to 1
-	jmp tobcd_end
-
-tobcd_end:
-	mov %eax, 8(%ebp)	##adjust number
+	addb %bl, %al	
+	
+	mov %eax, 20(%ebp)	##adjust number
 	movl %ebp, %esp
+	popl %edx
+	popl %ebx
+	popl %eax
 	popl %ebp
 	ret
 
@@ -1549,19 +1656,28 @@ tobcd_end:
 #######################################
 frombcd:
 	pushl %ebp
+	pushl %eax
+	pushl %ebx
+	pushl %ecx
 	movl %esp, %ebp
 
-	movl $0x0, %eax
+	movl $0, %ebx
+	movl $0, %eax
+	movl $0x0A, %ecx	
+	mov 20(%ebp), %eax
+
 	
-	mov 8(%ebp),%ebx	##read number
-	mov %bh, %al
-	mov $0x10, %cl
-	mul %cl
-	mov $0, %bh
-	add %bx, %ax
+	div %cl
+
+	mov %al, %bl	
+	shl $4, %bl
+	add %ah, %bl
 	
-	mov %eax, 8(%ebp)	##adjust number
+	mov %ebx, 20(%ebp)
 
 	movl %ebp, %esp
+	popl %ecx
+	popl %ebx
+	popl %eax
 	popl %ebp
 	ret
