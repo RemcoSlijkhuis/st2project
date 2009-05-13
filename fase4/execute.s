@@ -1562,7 +1562,7 @@ load_C:
 	pushl %eax
 	movl %esp, %ebp
 	
-	test $0x1, P		# check to see if the carry flag is set		
+	testb $0x1, P		# check to see if the carry flag is set		
 	jz LoadC_nocarry	# if carry flag is 0, clear x86 carry flag
 	stc			# set x86 carry flag to 1
 	jmp LoadC_end
