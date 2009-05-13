@@ -1,0 +1,29 @@
+Notule 08-05-2009
+
+Start tijd: 11.18
+
+Voorzitter: Casper
+Notulist: Sebastiaan
+
+Afwezige zonder kennisgeving: Jelle
+
+Huidige situatie: Lopen goed op schema, vandaag 3b afkrijgen en laten testen.
+
+Verdere planning van de dag:
+	Fase 3b: Laatste bugs opzoeken en verbeteren
+	Fase 4: Laatste functies maken en vervolgens debuggen
+	
+
+Afspraak mbt svn:
+	Committen met commentaar!
+
+Taakverdeling:
+	Fase 4 proberen te compilen (Leendert en Sebastiaan)
+	Code ordenen (Chris)
+	Test programma schrijven (Casper)
+
+Volgende vergadering:
+	Datum: 15 - 05 - 2009
+	Notulist: Chris
+	Voorzitter: Sebastiaan
+
