@@ -1119,39 +1119,32 @@ ROR_acc:
 	
 	
 		
-
-##return program control after (any)interrupt handling
-##Processor status is restored from stack and PC is restored from stack
+###############################################################################
+## RTI:                                                                      ##
+## return program control after (any)interrupt handling                      ##
+## Processor status is restored from stack and PC is restored from stack     ##
+###############################################################################
 execute_RTI:
 	pushl %ebp
 	pushl %eax
 	pushl %ebx
 	movl %esp, %ebp
 
+	call execute_PLP 		# pull processor status from stack
 	
+	movl $0x0100, %eax		# set eax to 01:00
+	mov S, %al			# and store the stack pointer on the lowest byte of eax
 	
+	incb %al			# increase the stack pointer to read something from the stack
+	movb MEM(%eax), %bh		# store the value on the stack at this position in the bh register
 	
-	#pull processor status from stack
-	call execute_PLP
-
-
-	#pull program counter from stack
-	movl $0x0100, %eax
-	movl $0, %ebx
-	mov S, %al
-	#get low byte
-	incl %eax
-	mov MEM(%eax), %bh
+	incb %al			# increase the stack pointer to read the next byte from the stack
+	movb MEM(%eax), %bl		# and store the value at the stack pointer in the bl register
 	
-	#get high byte
-	incl %eax
-	mov MEM(%eax), %bl
+	mov %bx, PC			# store the 2 byte value from the stack in the program counter
+	mov %al, S			# and store the new, increased stack pointer in the S register
+	decb PC				# decrease the program counter with one to compensate for the increment in fetch
 	
-	#load PC and restore S
-	mov %bx, PC
-	mov %al, S
-	decb PC	
-
 	movl %ebp, %esp
 	popl %ebx
 	popl %eax
@@ -1159,8 +1152,9 @@ execute_RTI:
 	ret
 
 
-
-##return from subroutine, restores PC from stack
+##########################################################
+## RTS: return from subroutine, restores PC from stack  ##
+##########################################################
 execute_RTS:
 	pushl %ebp
 	pushl %eax
@@ -1191,155 +1185,144 @@ execute_RTS:
 	popl %ebp
 	ret
 	
-
-#subtract memory from accumulator with borrow
+##########################################################
+## SBC: subtract memory from accumulator with borrow    ##
+##########################################################
 execute_SBC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	movl $0, %ebx
-	movl $0, %edx
+	movzbl MEM(%ecx), %ebx		# load argument into bl
+	movzbl A, %edx			# load accumulator into dl
 
-	
-	mov MEM(%ecx), %bl	#load argument into bl
-	mov A, %dl		#load accumulator into dl
+	testb $0x08, P			# check if the decimal mode flag is set
+	jz SBC_continue			# if not, continue at SBC_continue (ie don't convert numbers from BCD to hex)
 
-	movl $0, %eax
-	mov P, %al
-	andb $0x08, %al
-	cmp $0, %al
-	je SBC_continue
+	pushl %edx			# push the accumulator on the stack
+	call frombcd			# convert it from BCD to hex
+	popl %edx			# and store it back in edx
 
-	pushl %edx
-	call frombcd
-	popl %edx
-
-	pushl %ebx
-	call frombcd
-	popl %ebx
-
+	pushl %ebx			# push the argument on the stack
+	call frombcd			# convert it from BCD to hex
+	popl %ebx			# and store it back in ebx
 
 SBC_continue:
-	call load_C		#set the x86 carry flag
-	call swap_carry	#account for x86 carry/borrow
+	call load_C			# set the x86 carry flag
+	call swap_carry			# invert the carry, because x86 uses borrow instead of carry
 
-	sbb %bl, %dl		#subtract dl with bl
-	pushf
-	mov %dl, A	#store dl back in the accumulator
+	sbb %bl, %dl			# subtract the accumulator with the argument
+	mov %dl, A			# store dl back in the accumulator
 	
+	call swap_carry			# invert x86 carry flag, to account for carry/borrow difference
+	pushf				# push the x86 processor status on the stack
+	call check_CO			# properly set carry and overflow flags based on the processor status on the stack
 	
-	#store the x86 overflow and carry flags into the 6052 flags
-	popf
-	call swap_carry	#account for x86 carry/borrow
-	pushf
-	call check_CO		
+	push A				# push the accumulator on the stack
+	call check_ZS			# properly set the zero and negative flags in the 6052 processor status
 	
-	#properly set the zero and negative flags in the 6052 processor status
-	push A
-	call check_ZS
+	testb $0x08, P			# check if the decimal mode flag is set
+	jz SBC_end			# if not, continue at SBC_end, skipping the hex to BCD conversion
 	
-	movl $0, %eax
-	mov P, %al
-	andb $0x08, %al
-	cmp $0, %al
-	je SBC_end
-
-	pushl %edx
-	call tobcd
-	popl %edx
-	mov %dl, A
-
-
+	call set_carry_1		# set carry flag to 1 -borrow is 0- when in BCD mode to begin with
+	call set_sign_0			# set sign flag to 0 in BCD mode
+	movl $100, %ecx			# maximum value for decimal before borrow occurs
+	cmp %ecx, %edx			# if the accumulator is below this maximum value
+	jb SBC_BCD_no_carry		# then, skip borrow handling
+	subl $0x9C, %edx		# subtract 0x9C from the result to compensate for byte overflow vs decimal overflow
+	call set_carry_0		# and set carry flag to 0, because a borrow occurred
+SBC_BCD_no_carry:
+	
+	pushl %edx			# push the new accumulator on the stack
+	call tobcd			# convert the result back to a BCD
+	popl A				# and store the result in the A register
 
 SBC_end:
 	movl %ebp, %esp
 	popl %ebp
 	ret		
 
-#set carry flag
+##############################################
+## SEC: Set carry flag                      ##
+##############################################
 execute_SEC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov P, %al
-	or $0x01, %al	##change the first bit to 1
-	mov %al, P
+	orb $0x01, P			# set the carry flag
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
 
-###############################
-#####SED: Set decimal flag#####
-###############################
+##############################################
+## SED: Set decimal flag                    ##
+##############################################
 execute_SED:
 	pushl %ebp
 	movl %esp, %ebp
 
-	mov P, %al		#store processor status in al
-	or $0x08, %al		#set Decimal flag
-	mov %al, P		#store al back into processor status
+	orb $0x08, P			# set the decimal flag to 1
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
-
-
-	
-##sets interrupt disable flag
+##############################################
+## SEI: Set interrupt disable flag          ##
+##############################################
 execute_SEI:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#set bit 2 to zero
-	or $0x04,P
+	orb $0x04,P			# set the interrupt disable flag to 1
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
-
-#store accumulator in memory
+##############################################
+## STA: store accumulator in memory         ##
+##############################################
 execute_STA:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov A, %al			#store the accumulator in al
-	mov %al, MEM(%ecx)		#store al in memory at the given address
+	mov A, %al			# store the accumulator in al
+	mov %al, MEM(%ecx)		# store al in memory at the given address
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
-
+	
+##############################################
+## STP: stop instruction                    ##
+##############################################
 execute_STP:
-	pushl %ebp
-	movl %esp, %ebp
-	
-	movl %ebp, %esp
-	popl %ebp
 	ret	
 
-#store the x register into memory
+##############################################
+## STX: store the x register into memory    ##
+##############################################
 execute_STX:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov X, %al			#store the x register in al
-	mov %al, MEM(%ecx)		#store al in memory at the given address
-	
+	mov X, %al			# store the x register in al
+	mov %al, MEM(%ecx)		# store al in memory at the given address
 	
 	movl %ebp, %esp
 	popl %ebp
 	ret	
 
-#store the y register into memory
+##############################################
+## STY: store the y register into memory    ##
+##############################################
 execute_STY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov Y, %al			#store the y register in al
-	mov %al, MEM(%ecx)		#store al in memory at the given address
+	mov Y, %al			# store the y register in al
+	mov %al, MEM(%ecx)		# store al in memory at the given address
 	
 	
 	movl %ebp, %esp
@@ -1351,10 +1334,10 @@ execute_TAX:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	mov A, %al	#move accumulator to al register
-	mov %al, X	#move al register to X
-	push X
-	call check_ZS
+	mov A, %al			# move accumulator to al register
+	mov %al, X			# move al register to X
+	push X				# push the new X value on the stack
+	call check_ZS			# and properly set the zero and sign flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1562,12 +1545,12 @@ load_C:
 	pushl %eax
 	movl %esp, %ebp
 	
-	testb $0x1, P		# check to see if the carry flag is set		
-	jz LoadC_nocarry	# if carry flag is 0, clear x86 carry flag
-	stc			# set x86 carry flag to 1
+	testb $0x1, P			# check to see if the carry flag is set		
+	jz LoadC_nocarry		# if carry flag is 0, clear x86 carry flag
+	stc				# set x86 carry flag to 1
 	jmp LoadC_end
-	LoadC_nocarry:		# if no carry,
-	clc			# set x86 carry flag to 0
+	LoadC_nocarry:			# if no carry,
+	clc				# set x86 carry flag to 0
 	LoadC_end:
 	
 	movl %ebp, %esp
@@ -1576,30 +1559,28 @@ load_C:
 	ret
 
 set_overflow_0:
-	mov P, %al		#store processor status in al
-	and $0xBF, %al		#set overflow flag
-	mov %al, P		#store al back into processor status
+	andb $0xBF, P			# set overflow flag
 	ret
 	
 set_overflow_1:
-	mov P, %al		#store processor status in al
-	or $0x40, %al		#clear overflow flag
-	mov %al, P		#store al back into processor status
+	orb $0x40, P			# clear overflow flag
 	ret
 
 set_carry_0:
-	mov P, %al		#store processor status in al
-	and $0xFE, %al		#set overflow flag
-	mov %al, P		#store al back into processor status
+	andb $0xFE, P			# set overflow flag
 	ret
 	
 set_carry_1:
-	mov P, %al		#store processor status in al
-	or $0x1, %al		#clear overflow flag
-	mov %al, P		#store al back into processor status
+	orb $0x1, P			# clear overflow flag
 	ret
 
+set_sign_0:
+	andb $0x7F, P			# clear sign flag
+	ret
 
+set_sign_1:
+	orb $0x80, P			# set sign flag
+	ret
 
 #######################################
 #####frombcd: Convert a BDC to hex#####
