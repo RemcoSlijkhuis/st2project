@@ -1,20 +1,9 @@
 	processor 6502
-; start at 80:00
+
 	org $8000
 	
-	
-	LDA #$10
 
-	SBC #$5
 
-	LDA #$10
-	
-	SED
-
-	SBC #$5
-
-	
-	
 
 	dc $db
 

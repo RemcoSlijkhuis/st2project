@@ -260,50 +260,52 @@ BEQ_end:
 	ret
 	
 
-	##checks if memory adress and accumulator are different for each bit by performing an AND operation, without changing them
-	##the negative flag is set equal to bit 7 of the memory value and the overflow value is set equals to bit 6 of the memory value
-	## the zero flag is set according to the result of the AND operation (1 if each bit is not equal)
+##checks if memory adress and accumulator are different for each bit by performing an AND operation, without changing them
+##the negative flag is set equal to bit 7 of the memory value and the overflow value is set equals to bit 6 of the memory value
+## the zero flag is set according to the result of the AND operation (1 if each bit is not equal)
 execute_BIT:
-	pushl %ebp
+	pushl %ebp				#Prolog
 	pushl %eax
 	pushl %ebx
 	movl %esp, %ebp
 	
-	#retrieve memory value and accumulator value and perform AND operation
-	movl $0, %eax
+	
+	movl $0, %eax				#clear some registers
 	movl $0, %ebx
-	mov A, %al
+	mov A, %al				#retrieve memory value and accumulator value and perform AND operation
 	mov MEM(%ecx), %bl
 	AND %bl, %al
-	#let check_ZS decide if zero
+				
 	pushl %eax
-	call check_ZS
+	call check_ZS				#let check_ZS decide if zero
 	popl %eax
-	#retrieve bit 7 of memory value and set negative flag accordingly
-	AND $0x80, %bl
+	
+	AND $0x80, %bl				#retrieve bit 7 of memory value and set negative flag accordingly
 	cmp $0, %bl
 	jne BIT_negative
-	#value is negative, set flag
-	AND $0x7F, P
+	
+	AND $0x7F, P				#value is negative, set flag
 	jmp BIT_OVtest
-BIT_negative:
-	#value is positive, clear flag
-	orb $0x80, P
+
+BIT_negative:	
+	orb $0x80, P				#value is positive, clear flag
+
 BIT_OVtest:
-	#retrieve bit 6 of memory value and set overflow flag accordingly
-	AND $0x40, %bl
+	
+	AND $0x40, %bl				#retrieve bit 6 of memory value and set overflow flag accordingly
 	cmp $0, %bl
 	je BIT_OV
-	#bit is 0, clear overflow flag 
-	call set_overflow_0
+	
+	call set_overflow_0			#bit is 0, clear overflow flag 
 	jmp BIT_end
-BIT_OV:
-	#bit is 1, set overflow flag
-	call set_overflow_1
+
+BIT_OV:	
+	call set_overflow_1			#bit is 1, set overflow flag
+
 BIT_end:
-	#no return or changed values
-	movl %ebp, %esp
-	popl %ebx
+	
+	movl %ebp, %esp				#no return or changed values
+	popl %ebx				#restore registers
 	popl %eax
 	popl %ebp	
 	ret
@@ -563,28 +565,28 @@ execute_CLV:
 ## CMP: Compare memory and accumulator                         ##
 #################################################################
 execute_CMP:
-	pushl %ebp
+	pushl %ebp			#Prolog
+	pushl %ebx
 	movl %esp, %ebp	
 
-	movl $0, %ebx
+	movl $0, %ebx			#Clear ebx and move the accumulator in it
 	mov A, %bl
-	sub MEM(%ecx), %ebx
-	cmp $0, %ebx
-	jl CMP_setcarry
-	jmp CMP_clcarry
+	sub MEM(%ecx), %ebx		#Substract the operand from ebx
+	cmp $0, %ebx			#Compare ebx with zero
+	jge CMP_setcarry		#Sets the carry if memory is lower or equal than the accumulator
+
+	call set_carry_0		#Else resets the carry to zero
+	jmp CMP_end
 
 CMP_setcarry:
-	call set_carry_1
-	jmp CMP_end
-
-CMP_clcarry:
-	call set_carry_0
-	jmp CMP_end
+	call set_carry_1		#Sets the carry to 1
+	
 
 CMP_end:
-	push %ebx
-	call check_ZS
-	movl %ebp, %esp
+	push %ebx			#Push ebx for a check for the zero and negative flag	
+	call check_ZS			#Subroutine check_ZS
+	movl %ebp, %esp			#Restore the registers
+	popl %ebx
 	popl %ebp
 	ret
 	
@@ -593,29 +595,27 @@ CMP_end:
 ## CPX: Compare memory and X                                   ##
 #################################################################
 execute_CPX:
-	pushl %ebp
+	pushl %ebp			#Prolog
 	movl %esp, %ebp	
 	
-	movl $0, %ebx
+	movl $0, %ebx			#Clear ebx and move the X register in it
 	mov X, %bl
-	sub MEM(%ecx), %ebx
-	cmp $0, %ebx
-	jl CPX_setcarry
-	jmp CPX_clcarry
+	sub MEM(%ecx), %ebx		#Substract the memory from ebx
+	cmp $0, %ebx			#Compare ebx with zero
+	jge CPX_setcarry		#Jump to setcarry if the memory is lower or equal than X
+
+	call set_carry_0		#Resets the carry to 0
+	jmp CPX_end
 
 CPX_setcarry:
-	call set_carry_1
-	jmp CPX_end
-
-CPX_clcarry:
-	call set_carry_0
-	jmp CPX_end
+	call set_carry_1		#Sets the carry to 1
+		
 
 CPX_end:
-	push %ebx
-	call check_ZS
+	push %ebx			#Push ebx to check the zero and negative flag
+	call check_ZS			#Subroutine check_ZS
 	
-	movl %ebp, %esp
+	movl %ebp, %esp			#Restore the registers
 	popl %ebp
 	ret	
 
@@ -623,28 +623,26 @@ CPX_end:
 ## CPY: Compare memory and Y                                   ##
 #################################################################
 execute_CPY:
-	pushl %ebp
+	pushl %ebp			#Prolog
 	movl %esp, %ebp	
 
-	movl $0, %ebx
+	movl $0, %ebx			#Resets ebx and move the Y register in it
 	mov Y, %bl
-	sub MEM(%ecx), %ebx
-	cmp $0, %ebx
-	jl CPY_setcarry
-	jmp CPY_clcarry
+	sub MEM(%ecx), %ebx		#Substract the memory from ebx
+	cmp $0, %ebx			#Compare ebx with zero
+	jge CPY_setcarry		#Jump to setcarry if the memory is lower or equal than X
+
+	call set_carry_0		#Resets the carry to 0
+	jmp CPY_end
 
 CPY_setcarry:
-	call set_carry_1
-	jmp CPY_end
-
-CPY_clcarry:
-	call set_carry_0
-	jmp CPY_end
-
+	call set_carry_1		#Sets the carry to 1
+		
 CPY_end:
-	push %ebx
-	call check_ZS
-	movl %ebp, %esp
+	push %ebx			#Push ebx to check the zero and negative flag
+	call check_ZS			#Subroutine check_Z
+
+	movl %ebp, %esp			#Restore the registers
 	popl %ebp
 	ret		
 
