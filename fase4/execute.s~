@@ -371,9 +371,9 @@ execute_BRK:
 	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
 	addw $2, %ax				# increment the program counter with 2
-	movb %al, MEM(%ebx)			# first store the lower byte on the stack
+	movb %ah, MEM(%ebx)			# first store the lower byte on the stack
 	decb %bl				# decrease the stack pointer
-	movb %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
+	movb %al, MEM(%ebx)			# store the higher byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer
 	
 	movb P, %dl				# store the processor status in dl
@@ -404,18 +404,10 @@ execute_BVC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if overflow flag is set
-	movl $0, %ebx
-	mov P, %bl
-	and $0x40, %bl
-	cmp $0x0, %bl
-	#jump to end if overflow flag is set
-	jne BVC_end
-	#change PC to simulate jump
-	mov %cx, PC
-
-	decw PC
-	#restore stack pointer and return
+	testb $0x40, P				# check if overflow flag is set
+	jnz BVC_end				# jump to end if overflow flag is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for PC
 BVC_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -432,18 +424,11 @@ execute_BVS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if overflow flag is set
-	movl $0, %ebx
-	mov P, %bl
-	and $0x40, %bl
-	cmp $0x0, %bl
-	#jump to end if overflow flag is not set
-	je BVS_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC
+	testb $0x40, P				# check if overflow flag is set
+	jz BVS_end				# jump to end if overflow flag is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for PC
 
-	#restore stack pointer and return
 BVS_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -754,9 +739,9 @@ execute_JSR:
 	movzwl PC, %edx 			# load the program counter
 	
 	movb S, %bl				# load stack pointer
-	movb %dl, MEM(%ebx)			# store the low byte of the program counter
+	movb %dh, MEM(%ebx)			# store the low byte of the program counter
 	decb %bl				# decrease the stack pointer with one
-	movb %dh, MEM(%ebx)			# store the high byte of the program counter on the stack
+	movb %dl, MEM(%ebx)			# store the high byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer again
 	mov %bl, S				# store the stack pointer back
 	
@@ -1149,10 +1134,10 @@ execute_RTS:
 	movb S, %al			# store the stack pointer on the mem pointer at 01:SS
 	
 	incb %al			# increase the stack pointer with one to read the first value from the stack
-	movb MEM(%eax), %bh		# read the high byte for the new program counter from the stack
+	movb MEM(%eax), %bl		# read the high byte for the new program counter from the stack
 	
 	incb %al			# increase the stack pointer with one to read the second value from the stack
-	mov MEM(%eax), %bl		# read the low byte for the new program counter from the stack
+	mov MEM(%eax), %bh		# read the low byte for the new program counter from the stack
 	
 	
 	mov %bx, PC			# load new PC 
