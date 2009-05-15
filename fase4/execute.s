@@ -396,39 +396,29 @@ execute_BRK:
 	pushl %ebx
 	movl %esp, %ebp
 	
-	movl $0, %eax
-	movl $0x0100, %ebx
-	#load current stack pointer
-	mov S, %bl
-	#push PC+2 on stack, low byte first
-	mov PC, %ax
-	add $2, %ax
-	mov %al, MEM(%ebx)
-	dec %bl
-	mov %ah, MEM(%ebx)
-	dec %bl
-
-
-	#push processor status + 00010000B on stack
-	mov P, %dl
-	mov %dl, MEM(%ebx)
-	dec %bl
-	movb $0x10, MEM(%ebx)
-	dec %bl
-	#update S
-	mov %bl, S
-	#load adress off interrupt handler in PC
-	movl $0, %eax
-	movl $0, %ebx
-	#retrive low byte off handler
-	movw $0xFFFE, %ax
-	mov MEM(%eax), %bl
-	#retrieve high byte off handler
-	movw $0xFFFF, %ax
-	mov MEM(%eax), %bh
-	mov %bx, PC
-	#adjust PC, because fetch ends with incrementing PC.
-	decw PC
+	movl $0x0100, %ebx			# set the ebx to point at the 01:00 page
+	mov S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
+	movzwl PC, %eax				# load the program counter in ax
+	addw $2, %ax				# increment the program counter with 2
+	mov %al, MEM(%ebx)			# first store the lower byte on the stack
+	decb %bl				# decrease the stack pointer
+	mov %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
+	decb %bl				# decrease the stack pointer
+	
+	movb P, %dl				# store the processor status in dl
+	movb %dl, MEM(%ebx)			# and store it on the stack
+	decb %bl				# decrease the program counter
+	movb $0x10, MEM(%ebx)			# store the break flag on the stack
+	decb %bl				# and decrease the stack pointer again
+	
+	movb %bl, S				# store the new stack pointer
+	
+	movl $0xFFFE, %eax			# where to look for low byte of handler address
+	movzbl MEM(%eax), %ebx			# retreive low byte off handler
+	movl $0xFFFF, %eax			# where to look for high byte of handler address
+	movb MEM(%eax), %bh			# retreive high byte off handler
+	movw %bx, PC				# store the location of the interrupt handler in the PC
+	decw PC					# adjust PC, because fetch ends with incrementing PC.
 	
 	movl %ebp, %esp
 	popl %ebx
@@ -564,7 +554,7 @@ execute_CMP:
 	movzbl A, %ebx			# Clear ebx and move the accumulator in it
 	
 	cmp MEM(%ecx), %ebx		# Compare ebx with zero
-	jl CMP_end			# if the memory value was bigger than the accumulator, skip setting the carry flag
+	jb CMP_end			# if the memory value was bigger than the accumulator, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
 CMP_end:
@@ -592,7 +582,7 @@ execute_CPX:
 	movzbl X, %ebx			# Clear ebx and move the x register in it
 	
 	cmp MEM(%ecx), %ebx		# Compare ebx with zero
-	jl CPX_end			# if the memory value was bigger than the x register, skip setting the carry flag
+	jb CPX_end			# if the memory value was bigger than the x register, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
 CPX_end:
@@ -619,7 +609,7 @@ execute_CPY:
 	movzbl Y, %ebx			# Clear ebx and move the y register in it
 	
 	cmp MEM(%ecx), %ebx		# Compare ebx with zero
-	jl CPY_end			# if the memory value was bigger than the y register, skip setting the carry flag
+	jb CPY_end			# if the memory value was bigger than the y register, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
 CPY_end:
@@ -779,7 +769,7 @@ execute_JMP:
 
 #################################################################
 ## JSR:                                                        ##
-## Jumps by setting the program counter ta a new value,        ##
+## Jumps by setting the program counter to a new value,        ##
 ## stores second byte after jsr instruction on stack           ##
 #################################################################
 execute_JSR:
@@ -787,25 +777,20 @@ execute_JSR:
 	pushl %eax
 	pushl %ebx
 	movl %esp, %ebp
-	#push PC +  on (6502)stack (PC already points at second byte, due to fetch_abs subroutine
-	movl $0, %edx
-	movl $0x0100, %ebx
-	movw PC, %dx 
-	#load stack pointer
-	mov S, %bl
-	mov %dl, MEM(%ebx)
-	dec %bl	
-	mov %dh, MEM(%ebx)
-	#update stack pointer
-	dec %bl
-	mov %bl, S
 	
-	#load new program counter
-	movw %cx, PC
-
-	decw PC
+	movl $0x0100, %ebx			# preload the mem pointer to 01:00
+	movzwl PC, %edx 			# load the program counter
 	
-
+	movb S, %bl				# load stack pointer
+	movb %dl, MEM(%ebx)			# store the low byte of the program counter
+	decb %bl				# decrease the stack pointer with one
+	movb %dh, MEM(%ebx)			# store the high byte of the program counter on the stack
+	decb %bl				# decrease the stack pointer again
+	mov %bl, S				# store the stack pointer back
+	
+	movw %cx, PC				# load new program counter
+	decw PC					# decrease the new program counter with one to compensate for fetch
+	
 	movl %ebp, %esp
 	popl %ebx
 	popl %eax
