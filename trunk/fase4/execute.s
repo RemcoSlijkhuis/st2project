@@ -392,17 +392,15 @@ BPL_end:
 ######################################################################
 execute_BRK:
 	pushl %ebp
-	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 	
 	movl $0x0100, %ebx			# set the ebx to point at the 01:00 page
-	mov S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
+	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
 	addw $2, %ax				# increment the program counter with 2
-	mov %al, MEM(%ebx)			# first store the lower byte on the stack
+	movb %al, MEM(%ebx)			# first store the lower byte on the stack
 	decb %bl				# decrease the stack pointer
-	mov %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
+	movb %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer
 	
 	movb P, %dl				# store the processor status in dl
@@ -421,8 +419,6 @@ execute_BRK:
 	decw PC					# adjust PC, because fetch ends with incrementing PC.
 	
 	movl %ebp, %esp
-	popl %ebx
-	popl %eax
 	popl %ebp
 	ret
 
@@ -553,7 +549,8 @@ execute_CMP:
 	call set_carry_0		# always clear the carry flag
 	movzbl A, %ebx			# Clear ebx and move the accumulator in it
 	
-	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	movzbl MEM(%ecx), %edx		# temporarily store the memory value at the specified address in edx
+	cmp %edx, %ebx			# Compare ebx with zero
 	jb CMP_end			# if the memory value was bigger than the accumulator, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
@@ -1002,19 +999,22 @@ execute_PLA:
 #pull processor status from stack
 execute_PLP:
 	pushl %ebp
+	pushl %eax
+	pushl %ebx
 	movl %esp, %ebp
 	
 	
-	mov $0x0100,%eax		# set the mem pointer ax to be 01:XX (currently 01:00)
-	mov S, %al			# set the last byte of the mem pointer ax to the stack pointer value
-	inc %al				# increase the stack pointer value with 1
-	mov %al, S			# and store the stack pointer
+	movl $0x0100, %eax		# set the mem pointer ax to be 01:XX (currently 01:00)
+	movb S, %al			# set the last byte of the mem pointer ax to the stack pointer value
+	incb %al			# increase the stack pointer value with 1
+	movb %al, S			# and store the stack pointer
 
-	mov MEM(%eax),%bl		# store the value in memory on the position indicated by mem pointer ax in bl
-	mov %bl, P			# store bl in the processor status
-	
+	movb MEM(%eax),%bl		# store the value in memory on the position indicated by mem pointer ax in bl
+	movb %bl, P			# store bl in the processor status
 	
 	movl %ebp, %esp
+	popl %ebx
+	popl %eax
 	popl %ebp
 	ret	
 
@@ -1137,14 +1137,12 @@ ROR_acc:
 ###############################################################################
 execute_RTI:
 	pushl %ebp
-	pushl %eax
-	pushl %ebx
 	movl %esp, %ebp
 
 	call execute_PLP 		# pull processor status from stack
 	
 	movl $0x0100, %eax		# set eax to 01:00
-	mov S, %al			# and store the stack pointer on the lowest byte of eax
+	movb S, %al			# and store the stack pointer on the lowest byte of eax
 	
 	incb %al			# increase the stack pointer to read something from the stack
 	movb MEM(%eax), %bh		# store the value on the stack at this position in the bh register
@@ -1152,13 +1150,11 @@ execute_RTI:
 	incb %al			# increase the stack pointer to read the next byte from the stack
 	movb MEM(%eax), %bl		# and store the value at the stack pointer in the bl register
 	
-	mov %bx, PC			# store the 2 byte value from the stack in the program counter
-	mov %al, S			# and store the new, increased stack pointer in the S register
+	movw %bx, PC			# store the 2 byte value from the stack in the program counter
+	movb %al, S			# and store the new, increased stack pointer in the S register
 	decw PC				# decrease the program counter with one to compensate for the increment in fetch
 	
 	movl %ebp, %esp
-	popl %ebx
-	popl %eax
 	popl %ebp
 	ret
 
@@ -1172,23 +1168,22 @@ execute_RTS:
 	pushl %ebx
 	movl %esp, %ebp
 	
-	#pull program counter from stack
-	movl $0x0100, %eax
-	movl $0, %ebx
-	mov S, %al
-	#get low byte
-	incl %eax
-	mov MEM(%eax), %bh
 	
-	#get high byte
-	incl %eax	
-	mov MEM(%eax), %bl
+	movl $0x0100, %eax		# set eax to 01:00
+	movl $0, %ebx			# clear ebx
+	movb S, %al			# store the stack pointer on the mem pointer at 01:SS
 	
-	#load PC and restore S
-	mov %bx, PC
+	incb %al			# increase the stack pointer with one to read the first value from the stack
+	movb MEM(%eax), %bh		# read the high byte for the new program counter from the stack
 	
+	incb %al			# increase the stack pointer with one to read the second value from the stack
+	mov MEM(%eax), %bl		# read the low byte for the new program counter from the stack
+	
+	
+	mov %bx, PC			# load new PC 
+	decw PC				# decrease the program counter to compensate for fetch
 
-	mov %al, S
+	mov %al, S			# store the new stack pointer back in the S register
 	
 	movl %ebp, %esp
 	popl %ebx
