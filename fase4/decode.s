@@ -7,7 +7,6 @@ error:  .byte 0x00
 .global decode
 
 .data
-	protector: .long
 	
 	opTable:
 #0x
