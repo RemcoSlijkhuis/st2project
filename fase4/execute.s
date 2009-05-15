@@ -291,17 +291,10 @@ BIT_negative:
 	orb $0x80, P				#value is positive, clear flag
 
 BIT_OVtest:
-	
-	AND $0x40, %bl				#retrieve bit 6 of memory value and set overflow flag accordingly
-	cmp $0, %bl
-	je BIT_OV
-	
-	call set_overflow_0			#bit is 0, clear overflow flag 
-	jmp BIT_end
-
-BIT_OV:	
-	call set_overflow_1			#bit is 1, set overflow flag
-
+	call set_overflow_0			# always clear overflow flag
+	testb $0x40, %bl			# test if the 6th bit is set
+	jz BIT_end				# if not, skip setting the overflow flag
+	call set_overflow_1			# else, set the overflow flag
 BIT_end:
 	
 	movl %ebp, %esp				#no return or changed values
