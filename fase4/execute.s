@@ -210,7 +210,7 @@ execute_BCC:
 	jne BCC_end
 	#change PC to simulate jump
 	mov %cx, PC
-	decb PC 		#decrease program counter with 1
+	decw PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCC_end:
@@ -230,7 +230,7 @@ execute_BCS:
 	je BCS_end
 	#change PC to simulate jump
 	mov %cx, PC
-	decb PC 		#decrease program counter with 1
+	decw PC 		#decrease program counter with 1
 
 	#restore stack pointer and return
 BCS_end:
@@ -251,7 +251,7 @@ execute_BEQ:
 	#change PC to simulate jump
 	mov %cx, PC
 
-	decb PC
+	decw PC
 
 	#restore stack pointer and return
 BEQ_end:
@@ -269,26 +269,24 @@ execute_BIT:
 	pushl %ebx
 	movl %esp, %ebp
 	
+	movzbl A, %eax				# load the accumulator for the and operation
+	movzbl MEM(%ecx), %ebx			# retrieve memory value
+	AND %bl, %al				# perform AND operation on accumulator and memory value
 	
-	movl $0, %eax				#clear some registers
-	movl $0, %ebx
-	mov A, %al				#retrieve memory value and accumulator value and perform AND operation
-	mov MEM(%ecx), %bl
-	AND %bl, %al
-				
-	pushl %eax
-	call check_ZS				#let check_ZS decide if zero
-	popl %eax
+	andb $0xFD, P				# always clear the zero flag
+	cmpb $0x0, %al				# see if the result of the and operation is zero
+	jnz BIT_zero_end			# if not, skip setting the zero flag
+	orb $0x02, P				# otherwise, set the zero flag
+
+BIT_zero_end:
 	
-	AND $0x80, %bl				#retrieve bit 7 of memory value and set negative flag accordingly
-	cmp $0, %bl
-	jne BIT_negative
-	
-	AND $0x7F, P				#value is negative, set flag
+	testb $0x80, %bl			#retrieve bit 7 of memory value and set negative flag accordingly
+	jnz BIT_negative
+	AND $0x7F, P				#value is positive, clear negative flag
 	jmp BIT_OVtest
 
 BIT_negative:	
-	orb $0x80, P				#value is positive, clear flag
+	orb $0x80, P				#value is negative, set negative flag
 
 BIT_OVtest:
 	call set_overflow_0			# always clear overflow flag
@@ -322,7 +320,7 @@ execute_BMI:
 	je BMI_end
 	#change PC to simulate jump
 	mov %cx, PC
-	decb PC
+	decw PC
 	#restore stack pointer and return
 BMI_end:
 	movl %ebp, %esp
@@ -348,7 +346,7 @@ execute_BNE:
 	jne BNE_end
 	#change PC to simulate jump
 	mov %cx, PC
-	decb PC
+	decw PC
 
 	#restore stack pointer and return
 BNE_end:
@@ -378,7 +376,7 @@ execute_BPL:
 	#change PC to simulate jump
 	mov %cx, PC
 	
-	decb PC
+	decw PC
 
 	#restore stack pointer and return
 BPL_end:
@@ -430,7 +428,7 @@ execute_BRK:
 	mov MEM(%eax), %bh
 	mov %bx, PC
 	#adjust PC, because fetch ends with incrementing PC.
-	decb PC
+	decw PC
 	
 	movl %ebp, %esp
 	popl %ebx
@@ -457,7 +455,7 @@ execute_BVC:
 	#change PC to simulate jump
 	mov %cx, PC
 
-	decb PC
+	decw PC
 	#restore stack pointer and return
 BVC_end:
 	movl %ebp, %esp
@@ -484,7 +482,7 @@ execute_BVS:
 	je BVS_end
 	#change PC to simulate jump
 	mov %cx, PC
-	decb PC
+	decw PC
 
 	#restore stack pointer and return
 BVS_end:
@@ -558,27 +556,25 @@ execute_CLV:
 ## CMP: Compare memory and accumulator                         ##
 #################################################################
 execute_CMP:
-	pushl %ebp			#Prolog
+	pushl %ebp			# Prolog
 	pushl %ebx
 	movl %esp, %ebp	
-
-	movl $0, %ebx			#Clear ebx and move the accumulator in it
-	mov A, %bl
-	sub MEM(%ecx), %ebx		#Substract the operand from ebx
-	cmp $0, %ebx			#Compare ebx with zero
-	jge CMP_setcarry		#Sets the carry if memory is lower or equal than the accumulator
-
-	call set_carry_0		#Else resets the carry to zero
-	jmp CMP_end
-
-CMP_setcarry:
-	call set_carry_1		#Sets the carry to 1
 	
+	call set_carry_0		# always clear the carry flag
+	movzbl A, %ebx			# Clear ebx and move the accumulator in it
+	
+	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	jl CMP_end			# if the memory value was bigger than the accumulator, skip setting the carry flag
+	call set_carry_1		# else, set the carry flag
 
 CMP_end:
-	push %ebx			#Push ebx for a check for the zero and negative flag	
-	call check_ZS			#Subroutine check_ZS
-	movl %ebp, %esp			#Restore the registers
+	
+	subb MEM(%ecx), %bl		# Substract the operand from ebx
+	
+	push %ebx			# Push ebx for a check for the zero and negative flag	
+	call check_ZS			# Subroutine check_ZS
+	movl %ebp, %esp			# Restore the registers
+	
 	popl %ebx
 	popl %ebp
 	ret
@@ -588,27 +584,26 @@ CMP_end:
 ## CPX: Compare memory and X                                   ##
 #################################################################
 execute_CPX:
-	pushl %ebp			#Prolog
+	pushl %ebp			# Prolog
+	pushl %ebx
 	movl %esp, %ebp	
 	
-	movl $0, %ebx			#Clear ebx and move the X register in it
-	mov X, %bl
-	sub MEM(%ecx), %ebx		#Substract the memory from ebx
-	cmp $0, %ebx			#Compare ebx with zero
-	jge CPX_setcarry		#Jump to setcarry if the memory is lower or equal than X
-
-	call set_carry_0		#Resets the carry to 0
-	jmp CPX_end
-
-CPX_setcarry:
-	call set_carry_1		#Sets the carry to 1
-		
+	call set_carry_0		# always clear the carry flag
+	movzbl X, %ebx			# Clear ebx and move the x register in it
+	
+	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	jl CPX_end			# if the memory value was bigger than the x register, skip setting the carry flag
+	call set_carry_1		# else, set the carry flag
 
 CPX_end:
-	push %ebx			#Push ebx to check the zero and negative flag
-	call check_ZS			#Subroutine check_ZS
 	
-	movl %ebp, %esp			#Restore the registers
+	subb MEM(%ecx), %bl		# Substract the operand from ebx
+	
+	push %ebx			# Push ebx for a check for the zero and negative flag	
+	call check_ZS			# Subroutine check_ZS
+	movl %ebp, %esp			# Restore the registers
+	
+	popl %ebx
 	popl %ebp
 	ret	
 
@@ -616,28 +611,28 @@ CPX_end:
 ## CPY: Compare memory and Y                                   ##
 #################################################################
 execute_CPY:
-	pushl %ebp			#Prolog
+	pushl %ebp			# Prolog
+	pushl %ebx
 	movl %esp, %ebp	
+	
+	call set_carry_0		# always clear the carry flag
+	movzbl Y, %ebx			# Clear ebx and move the y register in it
+	
+	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	jl CPY_end			# if the memory value was bigger than the y register, skip setting the carry flag
+	call set_carry_1		# else, set the carry flag
 
-	movl $0, %ebx			#Resets ebx and move the Y register in it
-	mov Y, %bl
-	sub MEM(%ecx), %ebx		#Substract the memory from ebx
-	cmp $0, %ebx			#Compare ebx with zero
-	jge CPY_setcarry		#Jump to setcarry if the memory is lower or equal than X
-
-	call set_carry_0		#Resets the carry to 0
-	jmp CPY_end
-
-CPY_setcarry:
-	call set_carry_1		#Sets the carry to 1
-		
 CPY_end:
-	push %ebx			#Push ebx to check the zero and negative flag
-	call check_ZS			#Subroutine check_Z
-
-	movl %ebp, %esp			#Restore the registers
+	
+	subb MEM(%ecx), %bl		# Substract the operand from ebx
+	
+	push %ebx			# Push ebx for a check for the zero and negative flag	
+	call check_ZS			# Subroutine check_ZS
+	movl %ebp, %esp			# Restore the registers
+	
+	popl %ebx
 	popl %ebp
-	ret		
+	ret			
 
 
 #################################################################
@@ -776,7 +771,7 @@ execute_JMP:
 	#load new program counter
 	movw %cx, PC
 
-	decb PC
+	decw PC
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -808,7 +803,7 @@ execute_JSR:
 	#load new program counter
 	movw %cx, PC
 
-	decb PC
+	decw PC
 	
 
 	movl %ebp, %esp
@@ -1174,7 +1169,7 @@ execute_RTI:
 	
 	mov %bx, PC			# store the 2 byte value from the stack in the program counter
 	mov %al, S			# and store the new, increased stack pointer in the S register
-	decb PC				# decrease the program counter with one to compensate for the increment in fetch
+	decw PC				# decrease the program counter with one to compensate for the increment in fetch
 	
 	movl %ebp, %esp
 	popl %ebx
