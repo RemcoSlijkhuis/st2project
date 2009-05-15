@@ -1,0 +1,10 @@
+Agenda 15-5
+
+1	Opening
+2	Vaststellen agenda
+3	Notulen vorige vergadering
+4	Status Project		
+5	Overgebleven execute functies verdelen om te debuggen
+6	Afspraken volgende vergadering
+7	WVTTK
+8	Slot
