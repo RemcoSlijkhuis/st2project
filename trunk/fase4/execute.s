@@ -71,11 +71,11 @@ execute_ADC:
 	
 
 	movl $0, %ebx			# clear ebx
-	mov MEM(%ecx), %bl		# load value at specified address into bl
+	movb MEM(%ecx), %bl		# load value at specified address into bl
 	
 	movl $0, %eax			# clear eax
-	mov A, %al			# load accumulator into dl
-	mov A, %ah			# and into ah as well
+	movb A, %al			# load accumulator into dl
+	movb A, %ah			# and into ah as well
 	
 	testb $0x08, P			# check if the decimal flag is set
 	jz ADC_continue			# if it's 0, skip converting from BCD to hex
@@ -94,17 +94,17 @@ ADC_continue:				# continue here if the decimal mode flag is not set
 
 	adc %bl, %al			# add argument to accumulator with carry
 	pushf				# and store the current x86 processor status on the stack
-	mov %al, A			# store al back in the accumulator
+	movb %al, A			# store al back in the accumulator
 	
-	mov $0xFF, %cx			# store maximum value for non-BCD mode before carry occurs in cx
+	movw $0xFF, %cx			# store maximum value for non-BCD mode before carry occurs in cx
 	testb $0x08, P			# test if the decimal flag is set
 	jz ADC_end2			# if not, continue at ADC_end2
-	mov $99, %cx			# store maximum value for BCD mode before carry occurs in cx
+	movw $99, %cx			# store maximum value for BCD mode before carry occurs in cx
 ADC_end2:
-	mov %ah, %al			# store the high register into the low register
-	mov $0, %ah			# and clear out the old high register
+	movb %ah, %al			# store the high register into the low register
+	movb $0, %ah			# and clear out the old high register
 	adc %bx, %ax			# add the argument to the (second instance of the) accumulator
-	cmp %cx, %ax			# if the result is too high for the current mode (BCD or non-BCD)
+	cmpw %cx, %ax			# if the result is too high for the current mode (BCD or non-BCD)
 	ja ADC_carry			# then, jump to ADC_carry to set the carry flag
 	call set_carry_0		# otherwise, set the carry flag to 0
 	jmp ADC_carry_end		
@@ -114,14 +114,14 @@ ADC_carry_end:
 	
 	call check_O			# store the x86 overflow flag into the P register, using the processor status on the stack
 	
-	push A				# push the accumulator on the stack
+	movzbl A, %edx
+	pushl %edx			# push the accumulator on the stack
 	call check_ZS			# properly set the zero and negative flags in the P register
 	
 	testb $0x08, P			# check if the decimal flag is set
 	jz ADC_end			# if not, jump to the end of the function
 
-	movl $0, %eax			# clear eax
-	movb A, %al			# store the accumulator into al
+	movzbl A, %eax			# store the accumulator into al
 	pushl %eax			# and push the accumulator in eax on the stack
 	call tobcd			# convert the BCD accumulator to a normal hex value
 	popl %eax			# load the result back into eax
@@ -198,62 +198,57 @@ ASL_acc:
 
 
 
-	##checks if carry flag is set, if not branch is taken, else execution resumes normally.
+########################################################################################
+## BCC                                                                                ##
+## checks if carry flag is set, if not branch is taken,                               ##
+## else execution resumes normally.                                                   ##
+########################################################################################
 execute_BCC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if carry is set
-	and $0x01, P
-	cmp $0x0, P
-	#jump to end if carry is set
-	jne BCC_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC 		#decrease program counter with 1
-
-	#restore stack pointer and return
+	testb $0x01, P				# check if carry is set
+	jnz BCC_end				# jump to end if carry is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC 				# decrease program counter with 1
+	
 BCC_end:
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
-	##checks if carry flag is set, if so branch is taken, else execution resumes normally.
+########################################################################################
+## BCS                                                                                ##
+## checks if carry flag is set, if so branch is taken,                                ##
+## else execution resumes normally.                                                   ##
+########################################################################################
 execute_BCS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if carry is set
-	and $0x01, P
-	cmp $0x0, P
-	#jump to end if carry is not set
-	je BCS_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC 		#decrease program counter with 1
-
-	#restore stack pointer and return
+	testb $0x01, P				# check if carry is set
+	jz BCS_end				# jump to end if carry is not set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC 				# decrease program counter with 1
+	
 BCS_end:
 	movl %ebp, %esp
 	popl %ebp
 	ret
 	
-	##checks if zero flag is set, if so branch is taken, else execution resumes normally.
+########################################################################################
+## BEQ                                                                                ##
+## checks if zero flag is set, if so branch is taken,                                 ##
+## else execution resumes normally.                                                   ##
+########################################################################################
 execute_BEQ:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if zero flag is set
-	and $0x02, P
-	cmp $0x0, P
-	#jump to end if zero flag is not set
-	je BEQ_end
-	#change PC to simulate jump
-	mov %cx, PC
-
-	decw PC
-
-	#restore stack pointer and return
+	testb $0x02, P				# check if carry is set
+	jz BCS_end				# jump to end if zero is not set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC 				# decrease program counter with 1
 BEQ_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -271,7 +266,7 @@ execute_BIT:
 	
 	movzbl A, %eax				# load the accumulator for the and operation
 	movzbl MEM(%ecx), %ebx			# retrieve memory value
-	AND %bl, %al				# perform AND operation on accumulator and memory value
+	andb %bl, %al				# perform AND operation on accumulator and memory value
 	
 	andb $0xFD, P				# always clear the zero flag
 	cmpb $0x0, %al				# see if the result of the and operation is zero
@@ -282,7 +277,7 @@ BIT_zero_end:
 	
 	testb $0x80, %bl			#retrieve bit 7 of memory value and set negative flag accordingly
 	jnz BIT_negative
-	AND $0x7F, P				#value is positive, clear negative flag
+	andb $0x7F, P				#value is positive, clear negative flag
 	jmp BIT_OVtest
 
 BIT_negative:	
@@ -311,17 +306,10 @@ execute_BMI:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if negative flag is set
-	movl $0, %ebx
-	mov P, %bl
-	andb $0x80, %bl
-	cmp $0x0, %bl
-	#jump to end if negative flag is not set
-	je BMI_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC
-	#restore stack pointer and return
+	testb $0x80, P				# check if negative flag is set
+	jz BMI_end				# jump to end if negative flag is not set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to account for fetch
 BMI_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -337,18 +325,11 @@ execute_BNE:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if zero flag is set
-	movl $0, %ebx
-	mov P, %bl
-	and $0x02, %bl
-	cmp $0x0, %bl
-	#jump to end if zero is set
-	jne BNE_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC
-
-	#restore stack pointer and return
+	testb $0x02, P				# check if the zero flag is set
+	jnz BNE_end				# jump to end if zero is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for fetch
+	
 BNE_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -366,19 +347,11 @@ execute_BPL:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if negative flag is set
-	movl $0, %ebx
-	mov P, %bl
-	andb $0x80, %bl
-	cmp $0x0, %bl
-	#jump to end if negative flag is set
-	jne BPL_end
-	#change PC to simulate jump
-	mov %cx, PC
-	
-	decw PC
+	testb $0x80, P				# check if negative flag is set
+	jnz BPL_end				# jump to end if negative flag is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for fetch
 
-	#restore stack pointer and return
 BPL_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -431,18 +404,10 @@ execute_BVC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if overflow flag is set
-	movl $0, %ebx
-	mov P, %bl
-	and $0x40, %bl
-	cmp $0x0, %bl
-	#jump to end if overflow flag is set
-	jne BVC_end
-	#change PC to simulate jump
-	mov %cx, PC
-
-	decw PC
-	#restore stack pointer and return
+	testb $0x40, P				# check if overflow flag is set
+	jnz BVC_end				# jump to end if overflow flag is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for PC
 BVC_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -459,18 +424,11 @@ execute_BVS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#check if overflow flag is set
-	movl $0, %ebx
-	mov P, %bl
-	and $0x40, %bl
-	cmp $0x0, %bl
-	#jump to end if overflow flag is not set
-	je BVS_end
-	#change PC to simulate jump
-	mov %cx, PC
-	decw PC
+	testb $0x40, P				# check if overflow flag is set
+	jz BVS_end				# jump to end if overflow flag is set
+	movw %cx, PC				# change PC to simulate jump
+	decw PC					# decrease PC to compensate for PC
 
-	#restore stack pointer and return
 BVS_end:
 	movl %ebp, %esp
 	popl %ebp
@@ -578,7 +536,8 @@ execute_CPX:
 	call set_carry_0		# always clear the carry flag
 	movzbl X, %ebx			# Clear ebx and move the x register in it
 	
-	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	movzbl MEM(%ecx), %edx		# temporarily store the memory value at the specified address in edx
+	cmp %edx, %ebx			# Compare ebx with zero
 	jb CPX_end			# if the memory value was bigger than the x register, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
@@ -605,7 +564,8 @@ execute_CPY:
 	call set_carry_0		# always clear the carry flag
 	movzbl Y, %ebx			# Clear ebx and move the y register in it
 	
-	cmp MEM(%ecx), %ebx		# Compare ebx with zero
+	movzbl MEM(%ecx), %edx		# temporarily store the memory value at the specified address in edx
+	cmp %edx, %ebx			# Compare ebx with zero
 	jb CPY_end			# if the memory value was bigger than the y register, skip setting the carry flag
 	call set_carry_1		# else, set the carry flag
 
@@ -1181,7 +1141,6 @@ execute_RTS:
 	
 	
 	mov %bx, PC			# load new PC 
-	decw PC				# decrease the program counter to compensate for fetch
 
 	mov %al, S			# store the new stack pointer back in the S register
 	
