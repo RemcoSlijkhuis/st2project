@@ -47,7 +47,7 @@ fetchloop:
 	cmp $0xdb, %bl			
 	je endloop				
 	#no end instruction, increment PC and jump back to loop	
-	incl PC
+	incw PC
 	jmp fetchloop	
 endloop:	
 	#end function
@@ -69,7 +69,7 @@ fetch_abs:
 	movl %esp, %ebp
 	
 	#increment PC to point at 1st operand
-	incl PC
+	incw PC
 	movl $0, %eax
 	movl $0, %ecx
 	#get PC
@@ -80,7 +80,7 @@ fetch_abs:
 	mov MEM(%eax),%ch
 	
 	#increment PC to point at next instruction and return
-	incl PC						
+	incw PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
@@ -91,7 +91,7 @@ fetch_abX:
 	pushl %eax
 	movl %esp, %ebp
 	#increment PC to point at 1st operand
-	incl PC	
+	incw PC	
 	movl $0, %eax
 	movl $0, %ecx
 	# get PC
@@ -106,7 +106,7 @@ fetch_abX:
 	add %dx, %cx
 	 				
 	#increment PC to point at next instruction and return
-	incl PC						
+	incw PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
@@ -118,7 +118,7 @@ fetch_abY:
 	movl %esp, %ebp				
 	
 	#increment PC to point at 1st operand
-	incl PC	
+	incw PC	
 	movl $0, %eax
 	movl $0, %ecx
 	# get PC
@@ -136,7 +136,7 @@ fetch_abY:
 	
 	
 	#increment PC to point at next instruction and return
-	incl PC						
+	incw PC						
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
@@ -158,7 +158,7 @@ fetch_imm:
 	movl %esp, %ebp
 
 	#increment PC to point at first operand
-	incl PC					
+	incw PC					
 	#load adress pointing to immediate (=PC) in ecx 
 	movl $0, %ecx	
 	mov PC, %cx				
@@ -173,7 +173,7 @@ fetch_ind:
 	pushl %ebx
 	movl %esp, %ebp
 
-	incl PC
+	incw PC
 	movl $0, %eax
 	movl $0, %ebx
 	movl $0, %ecx	
@@ -188,7 +188,7 @@ fetch_ind:
 	incl %ebx					
 	mov MEM(%ebx), %ch		
 	#increment PC to point at next instruction
-	incl PC				
+	incw PC				
 	
 	movl %ebp, %esp
 	popl %ebx
@@ -202,7 +202,7 @@ fetch_inX:
 	pushl %ebx
 	movl %esp, %ebp
 
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
+	incw PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl $0, %eax
 	movl $0, %ecx
@@ -232,7 +232,7 @@ fetch_inY:
 	pushl %ebx	
 	movl %esp, %ebp
 
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
+	incw PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl $0, %eax
 	movl $0, %ecx	
@@ -260,7 +260,7 @@ fetch_rel:
 	pushl %eax
 	movl %esp, %ebp
 	
-	incl PC					#PC + 1 to point to the first argument
+	incw PC					#PC + 1 to point to the first argument
 		
 	movl $0, %eax				#first clear eax
 	
@@ -296,7 +296,7 @@ fetch_zp:
 	pushl %eax
 	movl %esp, %ebp
 
-	incl PC				#PC + 1 om naar volgende opcode/operand  te wijzen	
+	incw PC				#PC + 1 om naar volgende opcode/operand  te wijzen	
 
 	movl $0, %eax	
 	mov PC, %ax
@@ -315,7 +315,7 @@ fetch_zpX:
 	pushl %eax
 	movl %esp, %ebp
 
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen	
+	incw PC					#PC + 1 om naar volgende opcode/operand  te wijzen	
 	
 	movl $0, %eax
 	movl $0, %ecx	
@@ -335,7 +335,7 @@ fetch_zpY:
 	pushl %eax
 	movl %esp, %ebp
 
-	incl PC					#PC + 1 om naar volgende opcode/operand  te wijzen
+	incw PC					#PC + 1 om naar volgende opcode/operand  te wijzen
 	
 	movl $0, %eax
 	movl $0, %ecx	
