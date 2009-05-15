@@ -73,11 +73,11 @@ fetch_abs:
 	movl $0, %eax
 	movl $0, %ecx
 	#get PC
-	mov PC, %ax 			
+	movw PC, %ax 			
 	#store low and high byte off effective adress in cx
-	mov MEM(%eax), %cl		
+	movb MEM(%eax), %cl		
 	incl %eax					
-	mov MEM(%eax),%ch
+	movb MEM(%eax),%ch
 	
 	#increment PC to point at next instruction and return
 	incw PC						
