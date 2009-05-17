@@ -188,11 +188,11 @@ ASL_acc:
 
 
 
-########################################################################################
-## BCC                                                                                ##
-## checks if carry flag is set, if not branch is taken,                               ##
-## else execution resumes normally.                                                   ##
-########################################################################################
+#################################################################
+## BCC                                                         ##
+## checks if carry flag is set, if not branch is taken,        ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BCC:
 	pushl %ebp
 	movl %esp, %ebp
@@ -207,11 +207,11 @@ BCC_end:
 	popl %ebp
 	ret
 
-########################################################################################
-## BCS                                                                                ##
-## checks if carry flag is set, if so branch is taken,                                ##
-## else execution resumes normally.                                                   ##
-########################################################################################
+#################################################################
+## BCS                                                         ##
+## checks if carry flag is set, if so branch is taken,         ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BCS:
 	pushl %ebp
 	movl %esp, %ebp
@@ -226,11 +226,11 @@ BCS_end:
 	popl %ebp
 	ret
 	
-########################################################################################
-## BEQ                                                                                ##
-## checks if zero flag is set, if so branch is taken,                                 ##
-## else execution resumes normally.                                                   ##
-########################################################################################
+#################################################################
+## BEQ                                                         ##
+## checks if zero flag is set, if so branch is taken,          ##
+## else execution resumes normally.                            ##
+#################################################################
 execute_BEQ:
 	pushl %ebp
 	movl %esp, %ebp
@@ -352,11 +352,11 @@ BPL_end:
 	ret
 
 
-######################################################################
-## BRK:                                                             ##
-## runs interrupt subroutine, after pushing current SP+2 on stack,  ##
-## low byte first and pushing the status register and 0x10.         ##
-######################################################################
+#################################################################
+## BRK:                                                        ##
+## runs interrupt subroutine, pushes current S+2 on stack,     ##
+## low byte first and pushing the status register and 0x10.    ##
+#################################################################
 execute_BRK:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1054,11 +1054,12 @@ ROR_acc:
 	
 	
 		
-###############################################################################
-## RTI:                                                                      ##
-## return program control after (any)interrupt handling                      ##
-## Processor status is restored from stack and PC is restored from stack     ##
-###############################################################################
+#################################################################
+## RTI:                                                        ##
+## return program control after (any)interrupt handling        ##
+## Processor status is restored from stack                     ##
+## and PC is restored from stack                               ##
+#################################################################
 execute_RTI:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1083,9 +1084,9 @@ execute_RTI:
 	ret
 
 
-##########################################################
-## RTS: return from subroutine, restores PC from stack  ##
-##########################################################
+#################################################################
+## RTS: return from subroutine, restores PC from stack         ##
+#################################################################
 execute_RTS:
 	pushl %ebp
 	pushl %eax
@@ -1114,9 +1115,9 @@ execute_RTS:
 	popl %ebp
 	ret
 	
-##########################################################
-## SBC: subtract memory from accumulator with borrow    ##
-##########################################################
+#################################################################
+## SBC: subtract memory from accumulator with borrow           ##
+#################################################################
 execute_SBC:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1171,9 +1172,9 @@ SBC_end:
 	popl %ebp
 	ret		
 
-##############################################
-## SEC: Set carry flag                      ##
-##############################################
+#################################################################
+## SEC: Set carry flag                                         ##
+#################################################################
 execute_SEC:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1184,9 +1185,9 @@ execute_SEC:
 	popl %ebp
 	ret	
 
-##############################################
-## SED: Set decimal flag                    ##
-##############################################
+#################################################################
+## SED: Set decimal flag                                       ##
+#################################################################
 execute_SED:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1197,9 +1198,9 @@ execute_SED:
 	popl %ebp
 	ret
 
-##############################################
-## SEI: Set interrupt disable flag          ##
-##############################################
+#################################################################
+## SEI: Set interrupt disable flag                             ##
+#################################################################
 execute_SEI:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1210,9 +1211,9 @@ execute_SEI:
 	popl %ebp
 	ret
 
-##############################################
-## STA: store accumulator in memory         ##
-##############################################
+#################################################################
+## STA: store accumulator in memory                            ##
+#################################################################
 execute_STA:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1224,15 +1225,15 @@ execute_STA:
 	popl %ebp
 	ret	
 	
-##############################################
-## STP: stop instruction                    ##
-##############################################
+#################################################################
+## STP: stop instruction                                       ##
+#################################################################
 execute_STP:
 	ret	
 
-##############################################
-## STX: store the x register into memory    ##
-##############################################
+#################################################################
+## STX: store the x register into memory                       ##
+#################################################################
 execute_STX:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1244,9 +1245,9 @@ execute_STX:
 	popl %ebp
 	ret	
 
-##############################################
-## STY: store the y register into memory    ##
-##############################################
+#################################################################
+## STY: store the y register into memory                       ##
+#################################################################
 execute_STY:
 	pushl %ebp
 	movl %esp, %ebp
@@ -1416,7 +1417,7 @@ swap_carry:
 	clc					# clear carry
 	SC_end:
 	ret
-	
+
 #################################################################
 ## check_CO                                                    ##
 ## checks for x86 carry and overflow flags,                    ##
@@ -1488,9 +1489,9 @@ check_O:
 	popl %ebp
 	ret
 
-################################################################################
-## loads the carry flag from the 6052 processor status into the x86 flag      ##
-################################################################################
+#################################################################
+## load_C: loads the 6052 carry flag into the x86 flag         ##
+#################################################################
 load_C:
 	pushl %ebp
 	pushl %eax
