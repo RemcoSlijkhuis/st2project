@@ -365,9 +365,9 @@ execute_BRK:
 	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
 	addw $2, %ax				# increment the program counter with 2
-	movb %ah, MEM(%ebx)			# first store the lower byte on the stack
+	movb %al, MEM(%ebx)			# first store the lower byte on the stack
 	decb %bl				# decrease the stack pointer
-	movb %al, MEM(%ebx)			# store the higher byte of the program counter on the stack
+	movb %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer
 	
 	movb P, %dl				# store the processor status in dl
@@ -721,9 +721,9 @@ execute_JSR:
 	movzwl PC, %edx 			# load the program counter
 	
 	movb S, %bl				# load stack pointer
-	movb %dh, MEM(%ebx)			# store the low byte of the program counter
+	movb %dl, MEM(%ebx)			# store the low byte of the program counter
 	decb %bl				# decrease the stack pointer with one
-	movb %dl, MEM(%ebx)			# store the high byte of the program counter on the stack
+	movb %dh, MEM(%ebx)			# store the high byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer again
 	mov %bl, S				# store the stack pointer back
 	
@@ -1070,10 +1070,10 @@ execute_RTI:
 	movb S, %al				# and store the stack pointer on the lowest byte of eax
 	
 	incb %al				# increase the stack pointer to read something from the stack
-	movb MEM(%eax), %bl			# store the value on the stack at this position in the bh register
+	movb MEM(%eax), %bh			# store the value on the stack at this position in the bh register
 	
 	incb %al				# increase the stack pointer to read the next byte from the stack
-	movb MEM(%eax), %bh			# and store the value at the stack pointer in the bl register
+	movb MEM(%eax), %bl			# and store the value at the stack pointer in the bl register
 	
 	movw %bx, PC				# store the 2 byte value from the stack in the program counter
 	movb %al, S				# and store the new, increased stack pointer in the S register
@@ -1099,10 +1099,10 @@ execute_RTS:
 	movb S, %al				# store the stack pointer on the mem pointer at 01:SS
 	
 	incb %al				# increase the stack pointer with one to read the first value from the stack
-	movb MEM(%eax), %bl			# read the high byte for the new program counter from the stack
+	movb MEM(%eax), %bh			# read the high byte for the new program counter from the stack
 	
 	incb %al				# increase the stack pointer with one to read the second value from the stack
-	mov MEM(%eax), %bh			# read the low byte for the new program counter from the stack
+	mov MEM(%eax), %bl			# read the low byte for the new program counter from the stack
 	
 	
 	mov %bx, PC				# load new PC 
