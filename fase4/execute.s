@@ -361,6 +361,9 @@ execute_BRK:
 	pushl %ebp
 	movl %esp, %ebp
 	
+	testb $0x04, P				# see if the IRQ disable flag is set
+	jnz BRK_end				# if it's set, skip this function
+	
 	movl $0x0100, %ebx			# set the ebx to point at the 01:00 page
 	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
@@ -384,6 +387,8 @@ execute_BRK:
 	movb MEM(%eax), %bh			# retreive high byte off handler
 	movw %bx, PC				# store the location of the interrupt handler in the PC
 	decw PC					# adjust PC, because fetch ends with incrementing PC.
+	
+BRK_end:
 	
 	movl %ebp, %esp
 	popl %ebp
