@@ -1380,40 +1380,30 @@ check_ZS:
 	movl %esp, %ebp
 
 	mov P, %bl
+	
+	and $0x7F, %bl				# resets the zero flag
+	and $0xFD, %bl				# resets the negative flag
 
-	
-	
 	mov 8(%ebp),%al
 	cmp $0, %al
-	jz set_zero				# Declare the zero flag true, the negative flag unknown
-	js set_neg				# Declare the zero flag false, the negative flag true 
-	jmp set_none				# Declare the zero flag false and the negative flag false 
 
-set_zero:
-	js set_both				# set both zero flag and negative flag to true
-	or $0x02, %bl				# zero flag true
-	and $0x7F, %bl 				# negative flag false
-	jmp set_end
+	jnz not_zero				# jumps to not_zero if the zero flag must not be set			
+	or $0x02, %bl				# else, set the zero flag
+not_zero:
+	jns not_neg				# jumps to not_neg if the negative flag must not be set
+	or $0x80, %bl				# else, set the negative flag
+not_neg:
+	
+	mov %bl, P				# save the processor status
 
-set_neg:
-	and $0xFD, %bl				# zero flag false
-	or $0x80, %bl				# negative flag true
-	jmp set_end
-
-set_none:
-	and $0xFD, %bl				# zero flag false
-	and $0x7F, %bl 				# zero flag false
-	jmp set_end
-set_both:
-	or $0x02, %bl				# zero flag true
-	or $0x80, %bl				# negative flag true
-	jmp set_end		
-set_end:					# close the function
-	mov %bl, P
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
+#################################################################
+## swap_carry						       ##
+## swaps the borrow and carry				       ##
+#################################################################
 swap_carry:
 	jc SC_carry				# if carry is set, jump to SC_carry
 	stc					# carry is not set, so set it

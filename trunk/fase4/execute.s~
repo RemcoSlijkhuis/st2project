@@ -1019,25 +1019,22 @@ execute_ROR:
 	movl %esp, %ebp
 
 	cmp $0x0000FFFF, %ecx			#check if adressing mode is fetch_accumulator
-	ja ROR_acc				# if so, jump to ROR_acc
-						
+	ja ROR_acc				# if so, jump to ROR_acc						
 	
 	call load_C				# first store the 6502 carry flag in the x86 carry flag
 	movzbl MEM(%ecx), %eax			# store the argument in eax
 
 	rcr $1,%al				# move the value one bit to the left
-	pushf	
+	pushf					# push the processor status
 	mov %al, MEM(%ecx)			# store the result back in memory
 
 ROR_checks:
 	pushl %eax				# push the original result on the stack
-	call check_ZS				# and check for the zero and sign flags
-	
-	popl %eax
-	popf	
+	call check_ZS				# and check for the zero and sign flags	
+	popl %eax				# pop eax
+	popf					# pop the processor status
 
 	call set_carry_0			# set the carry flag to 0
-
 	jnc ROR_end				# if the carry flag must be set
 	call set_carry_1			# set the carry flag
 
@@ -1383,40 +1380,29 @@ check_ZS:
 	movl %esp, %ebp
 
 	mov P, %bl
+	
+	and $0x7F, %bl				# resets the zero flag
+	and $0xFD, %bl				# resets the negative flag
 
-	
-	
 	mov 8(%ebp),%al
 	cmp $0, %al
-	jz set_zero				# Declare the zero flag true, the negative flag unknown
-	js set_neg				# Declare the zero flag false, the negative flag true 
-	jmp set_none				# Declare the zero flag false and the negative flag false 
 
-set_zero:
-	js set_both				# set both zero flag and negative flag to true
-	or $0x02, %bl				# zero flag true
-	and $0x7F, %bl 				# negative flag false
-	jmp set_end
-
-set_neg:
-	and $0xFD, %bl				# zero flag false
-	or $0x80, %bl				# negative flag true
-	jmp set_end
-
-set_none:
-	and $0xFD, %bl				# zero flag false
-	and $0x7F, %bl 				# zero flag false
-	jmp set_end
-set_both:
-	or $0x02, %bl				# zero flag true
-	or $0x80, %bl				# negative flag true
-	jmp set_end		
-set_end:					# close the function
+	jnz not_zero				#			
+	or $0x02, %bl
+not_zero:
+	jns not_neg
+	or $0x80, %bl
+not_neg:
+	
 	mov %bl, P
 	movl %ebp, %esp
 	popl %ebp
 	ret
 
+#################################################################
+## swap_carry						       ##
+## swaps the borrow and carry				       ##
+#################################################################
 swap_carry:
 	jc SC_carry				# if carry is set, jump to SC_carry
 	stc					# carry is not set, so set it
