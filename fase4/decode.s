@@ -2,6 +2,8 @@
 
 .data
 error:  .byte 0x00
+.text
+message: .asciz "Illegal instruction encountered. Program terminated. \n"
 
 .global do_ERROR
 .global decode
@@ -1626,45 +1628,36 @@ do_INC_abX:
 	popl	%ebp
 	ret
 
-.text
-message: .asciz "Illegal instruction encountered. Program terminated. \n"
+
 
 # Description : Print error message if illegal instruction is encountered.
 do_ERROR:
-		pushl %ebp
-		movl %esp, %ebp	
-	
-		
+	pushl %ebp			#Prolog
+	movl %esp, %ebp	
 
-		movl $1, %eax
-		movb %al, error
+	movl $1, %eax			#Move 1 to eax as error code to point out illigal instruction error
+	movb %al, error			#Move the error code to global variable error
 		
-		push $message
-		call printf
+	push $message			#Push illigal instruction message
+	call printf			#Print illigal instruction message
 		
-		movl %ebp, %esp
-		popl %ebp
+	movl %ebp, %esp			#restore stack pointer
+	popl %ebp
 
-		ret
-
+	ret
 
 # Description:	Use opTable to check which instruction shuold be executed, jump to there.
 decode:
-		pushl %ebp
-		movl %esp, %ebp	
+	pushl %ebp			#Prolog
+	movl %esp, %ebp	
 		
-		movl $0, %ebx
-		movb IR, %bl
-		shl $2, %ebx
+	movzbl IR, %ebx			#Move instruction register to lower part of ebx
+	shl $2, %ebx			#multiply ebx by 4
 		
-		
-		
-		
-		movl opTable(%ebx), %ebx 	# load the address from the table
-		
-		call *%ebx 			# call the subroutine
+	movl opTable(%ebx), %ebx 	# load the address from the table
+	call *%ebx 			# call the subroutine
 
-		movl %ebp, %esp
-		popl %ebp
+	movl %ebp, %esp			#restore stack pointer
+	popl %ebp
 
-		ret
+	ret
