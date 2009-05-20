@@ -361,13 +361,16 @@ execute_BRK:
 	pushl %ebp
 	movl %esp, %ebp
 	
+	testb $0x04, P				# see if the IRQ disable flag is set
+	jnz BRK_end				# if it's set, skip this function
+	
 	movl $0x0100, %ebx			# set the ebx to point at the 01:00 page
 	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
 	addw $2, %ax				# increment the program counter with 2
-	movb %al, MEM(%ebx)			# first store the lower byte on the stack
+	movb %ah, MEM(%ebx)			# first store the lower byte on the stack
 	decb %bl				# decrease the stack pointer
-	movb %ah, MEM(%ebx)			# store the higher byte of the program counter on the stack
+	movb %al, MEM(%ebx)			# store the higher byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer
 	
 	movb P, %dl				# store the processor status in dl
@@ -384,6 +387,8 @@ execute_BRK:
 	movb MEM(%eax), %bh			# retreive high byte off handler
 	movw %bx, PC				# store the location of the interrupt handler in the PC
 	decw PC					# adjust PC, because fetch ends with incrementing PC.
+	
+BRK_end:
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -721,9 +726,9 @@ execute_JSR:
 	movzwl PC, %edx 			# load the program counter
 	
 	movb S, %bl				# load stack pointer
-	movb %dl, MEM(%ebx)			# store the low byte of the program counter
+	movb %dh, MEM(%ebx)			# store the low byte of the program counter
 	decb %bl				# decrease the stack pointer with one
-	movb %dh, MEM(%ebx)			# store the high byte of the program counter on the stack
+	movb %dl, MEM(%ebx)			# store the high byte of the program counter on the stack
 	decb %bl				# decrease the stack pointer again
 	mov %bl, S				# store the stack pointer back
 	
@@ -805,7 +810,8 @@ execute_LDY:
 
 
 #################################################################
-## LSR                                                         #### shift bits one place to the right, MSB is set 0,            ##
+## LSR                                                         ##
+## shift bits one place to the right, MSB is set 0,            ##
 ## affects sign and zero flags                                 ##
 ## the bit that is shifted out affects the carry               ##
 #################################################################
@@ -1003,52 +1009,52 @@ ROL_acc:					# accumulator mode
 #################################################################
 ## ROR                                                         ##
 ## shift bits one place to the right, MSB gets carry value,    ##
-## affects sign and zero flags                                 #### the bit that is shifted out sets new carry	               ##
+## affects sign and zero flags                                 ##
+## the bit that is shifted out sets new carry	               ##
 #################################################################
 execute_ROR:
 
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
-	movl $0, %eax
 
-	#check if adressing mode is fetch_accumulator
-	cmp $0x0000FFFF, %ecx
-	ja ROR_acc
-	#normal adressing mode
-	#get value from memory
-	call load_C
-	mov MEM(%ecx), %al
-	#shift 1 right, save flags for checks and update value
-	rcr $1,%al
-	pushf
-	mov %al, MEM(%ecx)	
+	cmp $0x0000FFFF, %ecx			#check if adressing mode is fetch_accumulator
+	ja ROR_acc				# if so, jump to ROR_acc
+						
+	
+	call load_C				# first store the 6502 carry flag in the x86 carry flag
+	movzbl MEM(%ecx), %eax			# store the argument in eax
+
+	rcr $1,%al				# move the value one bit to the left
+	pushf	
+	mov %al, MEM(%ecx)			# store the result back in memory
+
 ROR_checks:
-	pushl %eax
-	call check_ZS
-	#retrieve flags and check for carry and set if necessary
+	pushl %eax				# push the original result on the stack
+	call check_ZS				# and check for the zero and sign flags
+	
 	popl %eax
 	popf	
-	jc ROR_setC
-	call set_carry_0
-	jmp ROR_end
-ROR_setC:
-	call set_carry_1
+
+	call set_carry_0			# set the carry flag to 0
+
+	jnc ROR_end				# if the carry flag must be set
+	call set_carry_1			# set the carry flag
+
 ROR_end:
-	#restore values and return
-	movl %ebp, %esp
+	
+	movl %ebp, %esp				#restore values and return
 	popl %eax
 	popl %ebp
 	ret
-ROR_acc:
-	#accumulator adressing mode, value already in cx
-	call load_C	
-	mov %cl, %al
-	#shift 1 right, save flags for checks and update value
-	rcr $1,%al
+
+ROR_acc:					# accumulator mode
+	call load_C				# first store the 6502 carry flag in the x86 carry flag
+	mov %cl, %al				# store the argument (accumulator value) in eax
+	rcr $1,%al				# shift 1 right, save flags for checks and update value
 	pushf
-	mov %al, A
-	jmp ROR_checks
+	mov %al, A				# move the result back to the accumulator
+	jmp ROR_checks				# and continue with the other checks
 	
 
 	
@@ -1070,10 +1076,10 @@ execute_RTI:
 	movb S, %al				# and store the stack pointer on the lowest byte of eax
 	
 	incb %al				# increase the stack pointer to read something from the stack
-	movb MEM(%eax), %bh			# store the value on the stack at this position in the bh register
+	movb MEM(%eax), %bl			# store the value on the stack at this position in the bh register
 	
 	incb %al				# increase the stack pointer to read the next byte from the stack
-	movb MEM(%eax), %bl			# and store the value at the stack pointer in the bl register
+	movb MEM(%eax), %bh			# and store the value at the stack pointer in the bl register
 	
 	movw %bx, PC				# store the 2 byte value from the stack in the program counter
 	movb %al, S				# and store the new, increased stack pointer in the S register
@@ -1099,10 +1105,10 @@ execute_RTS:
 	movb S, %al				# store the stack pointer on the mem pointer at 01:SS
 	
 	incb %al				# increase the stack pointer with one to read the first value from the stack
-	movb MEM(%eax), %bh			# read the high byte for the new program counter from the stack
+	movb MEM(%eax), %bl			# read the high byte for the new program counter from the stack
 	
 	incb %al				# increase the stack pointer with one to read the second value from the stack
-	mov MEM(%eax), %bl			# read the low byte for the new program counter from the stack
+	mov MEM(%eax), %bh			# read the low byte for the new program counter from the stack
 	
 	
 	mov %bx, PC				# load new PC 
@@ -1285,8 +1291,8 @@ execute_TAY:
 	
 	mov A, %al				# move accumulator to al register
 	mov %al, Y				# move al register to Y
-	push Y
-	call check_ZS
+	push Y					# push the new Y value on the stack
+	call check_ZS				# and properly set the zero and sign flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1377,6 +1383,8 @@ check_ZS:
 	movl %esp, %ebp
 
 	mov P, %bl
+
+	
 	
 	mov 8(%ebp),%al
 	cmp $0, %al
