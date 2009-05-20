@@ -1017,45 +1017,41 @@ execute_ROR:
 	pushl %ebp
 	pushl %eax
 	movl %esp, %ebp
-	movl $0, %eax
 
-	#check if adressing mode is fetch_accumulator
-	cmp $0x0000FFFF, %ecx
-	ja ROR_acc
-	#normal adressing mode
-	#get value from memory
-	call load_C
-	mov MEM(%ecx), %al
-	#shift 1 right, save flags for checks and update value
-	rcr $1,%al
-	pushf
-	mov %al, MEM(%ecx)	
+	cmp $0x0000FFFF, %ecx			#check if adressing mode is fetch_accumulator
+	ja ROR_acc				# if so, jump to ROR_acc						
+	
+	call load_C				# first store the 6502 carry flag in the x86 carry flag
+	movzbl MEM(%ecx), %eax			# store the argument in eax
+
+	rcr $1,%al				# move the value one bit to the left
+	pushf					# push the processor status
+	mov %al, MEM(%ecx)			# store the result back in memory
+
 ROR_checks:
-	pushl %eax
-	call check_ZS
-	#retrieve flags and check for carry and set if necessary
-	popl %eax
-	popf	
-	jc ROR_setC
-	call set_carry_0
-	jmp ROR_end
-ROR_setC:
-	call set_carry_1
+	pushl %eax				# push the original result on the stack
+	call check_ZS				# and check for the zero and sign flags	
+	popl %eax				# pop eax
+	popf					# pop the processor status
+
+	call set_carry_0			# set the carry flag to 0
+	jnc ROR_end				# if the carry flag must be set
+	call set_carry_1			# set the carry flag
+
 ROR_end:
-	#restore values and return
-	movl %ebp, %esp
+	
+	movl %ebp, %esp				#restore values and return
 	popl %eax
 	popl %ebp
 	ret
-ROR_acc:
-	#accumulator adressing mode, value already in cx
-	call load_C	
-	mov %cl, %al
-	#shift 1 right, save flags for checks and update value
-	rcr $1,%al
+
+ROR_acc:					# accumulator mode
+	call load_C				# first store the 6502 carry flag in the x86 carry flag
+	mov %cl, %al				# store the argument (accumulator value) in eax
+	rcr $1,%al				# shift 1 right, save flags for checks and update value
 	pushf
-	mov %al, A
-	jmp ROR_checks
+	mov %al, A				# move the result back to the accumulator
+	jmp ROR_checks				# and continue with the other checks
 	
 
 	
@@ -1292,8 +1288,8 @@ execute_TAY:
 	
 	mov A, %al				# move accumulator to al register
 	mov %al, Y				# move al register to Y
-	push Y
-	call check_ZS
+	push Y					# push the new Y value on the stack
+	call check_ZS				# and properly set the zero and sign flags
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1384,6 +1380,8 @@ check_ZS:
 	movl %esp, %ebp
 
 	mov P, %bl
+
+	
 	
 	mov 8(%ebp),%al
 	cmp $0, %al
