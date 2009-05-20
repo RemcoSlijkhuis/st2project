@@ -14,14 +14,12 @@ readimage:
 	pushl	%ebp
 	mov	%esp,%ebp
 
-	# int fd
-	pushl	$0
+	pushl	$0			# int fd
 
-	# int origin
-	pushl	$0
+	pushl	$0			# int origin
 
-	# clear memory
-	mov	$65536/4, %ecx
+	
+	mov	$65536/4, %ecx		# clear memory
 	mov	12(%ebp), %edi
 clearloop:
 	movl	$0, (%edi)
@@ -29,8 +27,8 @@ clearloop:
 	dec	%ecx
 	jnz	clearloop
 
-	# open( filename, O_RDONLY )
-	pushl	$0
+	
+	pushl	$0			# open( filename, O_RDONLY )
 	pushl	8(%ebp)
 	call	open
 	addl	$8,%esp
@@ -40,43 +38,43 @@ clearloop:
 
 	movl	%eax,-4(%ebp)
 
-	# read origin
-	# read( fd, &origin, 2 )
-	movl	%ebp,%eax
-	subl	$8,%eax		# eax = ebp-8
+	
+	
+	movl	%ebp,%eax			# read origin
+	subl	$8,%eax				# eax = ebp-8
 	pushl	$2
 	pushl	%eax
 	pushl	-4(%ebp)
-	call	read
+	call	read				# read( fd, &origin, 2 )
 	addl	$12,%esp
 
-	# read data
-	# read( fd, &mem+origin, 65536 )
-	mov	12(%ebp),%eax
+	
+	
+	mov	12(%ebp),%eax			# read data
 	addl	-8(%ebp),%eax
 	pushl	$65536
 	pushl	%eax
 	pushl	-4(%ebp)
-	call	read
+	call	read				# read( fd, &mem+origin, 65536 )
 	addl	$12,%esp
 
-	# set PC to 80:00
-	mov	12(%ebp),%eax
+	
+	mov	12(%ebp),%eax			# set PC to 80:00
 	movw	-8(%ebp),%bx
 	movw	%bx,0xFFFC(%eax)
 
 done:
-	# close( fd )
-	pushl	-4(%ebp)
+	
+	pushl	-4(%ebp)			# close( fd )
 	call	close
 	addl	$4,%esp
 
-	# no error: clear EAX
-	xor	%eax,%eax
+	
+	xor	%eax,%eax			# no error: clear EAX
 
 err:
-	# if error, EAX is set to -1 earlier
-	mov	%ebp,%esp
+	
+	mov	%ebp,%esp			# if error, EAX is set to -1 earlier
 	popl	%ebp
 	ret
 

@@ -6,9 +6,9 @@ filename: .asciz "image.bin"
 
 readprog:
 	
-	pushl $MEM
-	pushl $filename
-	call  readimage
-	addl  $8,%esp
+	pushl $MEM		#push the memory 
+	pushl $filename		#push the filename
+	call  readimage		#read the file into the memory
+	addl  $8,%esp		#restore the stack
 
 	ret
