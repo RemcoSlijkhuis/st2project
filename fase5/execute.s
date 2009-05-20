@@ -18,6 +18,7 @@
 .global execute_CLC
 .global execute_CLD
 .global execute_CLI
+.global execute_CLS			#custom
 .global execute_CLV
 .global execute_CMP
 .global execute_CPX
@@ -26,6 +27,8 @@
 .global execute_DEX
 .global execute_DEY
 .global execute_EOR
+.global execute_GETKEY			#custom
+.global execute_GOTOXY			#custom
 .global execute_INC
 .global execute_INX
 .global execute_INY
@@ -41,6 +44,8 @@
 .global execute_PHP
 .global execute_PLA
 .global execute_PLP
+.global execute_PRINT			#custom
+.global execute_RAND			#custom
 .global execute_ROL
 .global execute_ROR
 .global execute_RTI
@@ -49,6 +54,8 @@
 .global execute_SEC
 .global execute_SED
 .global execute_SEI
+.global execute_SETCOLOR		#custom
+.global execute_SLEEP			#custom
 .global execute_STA
 .global execute_STP
 .global execute_STX
@@ -364,9 +371,6 @@ execute_BRK:
 	testb $0x04, P				# see if the IRQ disable flag is set
 	jnz BRK_end				# if it's set, skip this function
 	
-	testb $0x04, P				# see if the IRQ disable flag is set
-	jnz BRK_end				# if it's set, skip this function
-	
 	movl $0x0100, %ebx			# set the ebx to point at the 01:00 page
 	movb S, %bl				# store the stack pointer on the low byte of ebx (01:SS)
 	movzwl PC, %eax				# load the program counter in ax
@@ -390,8 +394,6 @@ execute_BRK:
 	movb MEM(%eax), %bh			# retreive high byte off handler
 	movw %bx, PC				# store the location of the interrupt handler in the PC
 	decw PC					# adjust PC, because fetch ends with incrementing PC.
-	
-BRK_end:
 	
 BRK_end:
 	
@@ -477,7 +479,20 @@ execute_CLI:
 	popl %ebp
 	ret
 
+
+#################################################################
+## CLS: clear screen                                           ##
+#################################################################
+execute_CLS:
+	pushl %ebp
+	movl %esp, %ebp
 	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
 
 #################################################################
 ## CLV: Clear overflow flag                                    ##
@@ -646,6 +661,34 @@ execute_EOR:
 	movl %ebp, %esp
 	popl %ebp
 	ret	
+
+#################################################################
+## GETKEY: loads currently pressed key into accumulator        ##
+#################################################################
+execute_GETKEY:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
+#################################################################
+## GOTOXY:                                                     ##
+## move the cursor to position indicated by X and Y registers  ##
+#################################################################
+execute_GOTOXY:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+	
 
 #################################################################
 ## INC: Increments memory by one                               ##
@@ -958,6 +1001,31 @@ execute_PLP:
 	popl %ebp
 	ret	
 
+#################################################################
+## PRINT: print text loaded from given address                 ##
+#################################################################
+execute_PRINT:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#################################################################
+## RAND: load the accumulator with a random value              ##
+#################################################################
+execute_RAND:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
 
 #################################################################
 ## ROL                                                         ##
@@ -1214,6 +1282,35 @@ execute_SEI:
 	movl %esp, %ebp
 	
 	orb $0x04,P				# set the interrupt disable flag to 1
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#################################################################
+## SETCOLOR:                                                   ##
+## sets the current cursor color to the given colors           ##
+## lowest 4 bits are foreground, highest 4 background          ##
+#################################################################
+execute_SETCOLOR:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
+	
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+
+#################################################################
+## SLEEP: sleep for a given amount of milliseconds             ##
+#################################################################
+execute_SLEEP:
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#todo
 	
 	movl %ebp, %esp
 	popl %ebp
