@@ -1379,19 +1379,19 @@ check_ZS:
 	pushl %ebp
 	movl %esp, %ebp
 
-	mov P, %bl
+	movzbl P, %ebx
 	
-	and $0x7F, %bl				# resets the zero flag
-	and $0xFD, %bl				# resets the negative flag
+	andb $0x7F, %bl				# resets the zero flag
+	andb $0xFD, %bl				# resets the negative flag
 
-	mov 8(%ebp),%al
-	cmp $0, %al
+	movb 8(%ebp),%al			# move the value tested to al
+	cmp $0, %al				# compare the value with 0
 
 	jnz not_zero				# jumps to not_zero if the zero flag must not be set			
-	or $0x02, %bl				# else, set the zero flag
+	orb $0x02, %bl				# else, set the zero flag
 not_zero:
 	jns not_neg				# jumps to not_neg if the negative flag must not be set
-	or $0x80, %bl				# else, set the negative flag
+	orb $0x80, %bl				# else, set the negative flag
 not_neg:
 	
 	mov %bl, P				# save the processor status
@@ -1405,12 +1405,15 @@ not_neg:
 ## swaps the borrow and carry				       ##
 #################################################################
 swap_carry:
+
 	jc SC_carry				# if carry is set, jump to SC_carry
 	stc					# carry is not set, so set it
 	jmp SC_end
-	SC_carry:				# carry is set, so:
+
+SC_carry:					# carry is set, so:
 	clc					# clear carry
-	SC_end:
+SC_end:
+
 	ret
 
 #################################################################
@@ -1420,39 +1423,29 @@ swap_carry:
 ## requires processor status pushed on the stack               ##
 #################################################################
 check_CO:
-	pushl %ebp
+	pushl %ebp				# prolog
+	pushl %eax
 	movl %esp, %ebp
 
-	mov 8(%ebp),%eax
-	push %eax
-	popf
+	mov 8(%ebp),%eax			# move 6502 processor status to eax
+	pushl %eax				# push the value			
+	popf					# and pop it into the x86 processor status
+
+	call set_overflow_0			# resets the overflow
+	call set_carry_0			# resets the carry
 	
-	jo CO_overflow				# if there's overflow, set overflow flag to 1
-	
-	#overflow flag set to 0:
-	jc CO_noverflow_carry			# if x86 carry = 0, set carry to 0
-	call set_overflow_0
-	call set_carry_0
-	jmp CO_overflow_end
-	
-	CO_noverflow_carry:
-	call set_overflow_0	
-	call set_carry_1
-	jmp CO_overflow_end	
-	
-	#overflow flag set to 1:
-	CO_overflow:
-	jc CO_overflow_carry
-	call set_overflow_1			# set overflow flag to 1
-	call set_carry_0
-	jmp CO_overflow_end
-	
-	CO_overflow_carry:
-	call set_overflow_1			# set overflow flag to 1
-	call set_carry_1	
-	CO_overflow_end:
+	jno CO_no_overflow			# if there's no overflow, jump to carry test
+	call set_overflow_1			# else set the overflow
+
+CO_no_overflow:	
+
+	jnc CO_no_carry				# if there's no carry, jump to the end
+	call set_carry_1			# else set the carry
+
+CO_no_carry:
 	
 	movl %ebp, %esp
+	popl %eax
 	popl %ebp
 	ret
 
@@ -1462,25 +1455,22 @@ check_CO:
 #################################################################
 check_O:
 	pushl %ebp
+	pushl %eax
 	movl %esp, %ebp
 
-	mov 8(%ebp),%eax
-	push %eax
-	popf
+	mov 8(%ebp),%eax			# move 6502 processor status to eax
+	push %eax				# push the status
+	popf					# and pop it into the x86 processor status
+		
+	call set_overflow_0			# resets the overflow flag
+
+	jno check_O_end				# if there's no overflow, jump to the end
+	call set_overflow_1			# else set the overflow flag
+
+check_O_end:
 	
-	jo O_overflow				# if there's overflow, set overflow flag to 1
-	
-	#overflow flag set to 0:
-	call set_overflow_0
-	jmp O_overflow_end
-	
-	#overflow flag set to 1:
-	O_overflow:
-	call set_overflow_1			# set overflow flag to 1
-	
-	O_overflow_end:
-	
-	movl %ebp, %esp
+	movl %ebp, %esp				# return from subroutine
+	popl %eax
 	popl %ebp
 	ret
 
