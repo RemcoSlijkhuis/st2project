@@ -687,7 +687,7 @@ execute_GETKEY:
 	
 	movl $142, %eax				# load 142 in the eax register for a newselect (checking if any key is pressed, non-blocking)
 	movl $1, %ebx				# load 1 in the ebx register for looking at the input
-	bts $0, -128(%esp)			# clear
+	movw $0, -128(%esp)			# clear
 	lea -128(%esp), %ecx			# a place on the stack for the fd_set struct
 	movl $0, %edx				# set edx to 0 for writefds
 	movl $0, %esi				# set esi to 0 for exceptfds
