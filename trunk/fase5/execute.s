@@ -75,6 +75,9 @@
 	GOTOXY_format:
 		.byte 0x1B
 		.ascii "[00;00H"
+	SETCOLOR_format:
+		.byte 0x1B
+		.ascii "[30;40m"
 	GETKEY_timeout:
 		.long 0
 		.long 0
@@ -687,7 +690,7 @@ execute_GETKEY:
 	
 	movl $142, %eax				# load 142 in the eax register for a newselect (checking if any key is pressed, non-blocking)
 	movl $1, %ebx				# load 1 in the ebx register for looking at the input
-	movw $0, -128(%esp)			# clear
+	movb $1, -128(%esp)			# load 1 on the place on the stack for the fd_struct
 	lea -128(%esp), %ecx			# a place on the stack for the fd_set struct
 	movl $0, %edx				# set edx to 0 for writefds
 	movl $0, %esi				# set esi to 0 for exceptfds
@@ -1082,9 +1085,6 @@ PRINT_readloop:
 	
 	int $0x80				# generate a 0x80 interrupt, performing the write action
 	
-#	pushl %ecx
-#	call printf
-	
 	movl %ebp, %esp
 	popl %ebp
 	ret
@@ -1371,7 +1371,26 @@ execute_SETCOLOR:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	movl MEM(%ecx), %ecx			# replace ecx with the value in MEM at ecx
+	
+	movl %ecx, %eax				# store a copy of the argument into eax
+	andb $0x0F, %al				# only get the lowest 4 bits
+	addb $0x30, %al				# add 0x30 to this number to make it an ascii code
+	movl $SETCOLOR_format+3, %edx
+	movb %al, (%edx)			# and store it in the set position string
+	
+	andb $0xF0, %cl				# get the highest 4 bits from the argument
+	shr $4, %cl				# shift this value 4 bits right
+	addb $0x30, %cl				# add 0x30 to this number to make it an ascii code
+	movl $SETCOLOR_format+6, %edx
+	movb %cl, (%edx)			# and store it in the set position string
+	
+	movl $SETCOLOR_format, %ecx		# store the x86 address of the set-color string in ecx
+	movl $8, %edx				# store 5 in edx for the length of the string
+	movl $4, %eax				# store 4 in eax, for a sys_write call
+	movl $1, %ebx				# store 1 in ebx, for writing to stdout
+	
+	int $0x80				# generate a 0x80 interrupt, performing the write action
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1802,6 +1821,7 @@ tobcd:
 ## requires the hex in eax, and address of destiny in ebx       ## 
 ##################################################################
 hexstring:
+	pushl %ecx
 	movb $10, %cl				# store 0x10 in cl
 	divb %cl				# divide the source (eax) by 0x10 out of cl
 	add $0x30, %al				# add 0x30 to the high (tens) result part to convert it to an ascii char
@@ -1809,5 +1829,6 @@ hexstring:
 	add $0x30, %ah				# now add 0x30 to the low (singles) result part to convert it to an ascii char
 	incl %ebx				# increment the given memory address with one to place the next char in the next byte
 	movb %ah, (%ebx)			# and place the singles result part into the specified memory address +1
+	popl %ecx
 	ret
 
