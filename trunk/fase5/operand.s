@@ -32,9 +32,9 @@ fetchloop:
 	movb MEM(%eax), %bl	#Load from memory to lower part of ebx
 	movb %bl, IR		#load instruction from bl in IR	
 	
-	call showi		#Print out IR and PC registers 					
+	#call showi		#Print out IR and PC registers 					
 	call decode		#decode instruction
-	call showr		#Print out the rest of registers 	
+	#call showr		#Print out the rest of registers 	
 	
 	movb error,%al 		#move error to al
 	cmp $1,%al		#compare error with illigal instruction value
