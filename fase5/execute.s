@@ -67,6 +67,11 @@
 .global execute_TXS
 .global execute_TYA
 
+.data
+	CLS_format: .asciz "\033[H\033[2J"
+	GOTOXY_format: .asciz "\033[%d;%dH"
+	PRINT_test: .asciz "Teststring"
+
 ## execute subroutines
 
 #################################################################
@@ -487,7 +492,8 @@ execute_CLS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	pushl $CLS_format
+	call printf
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -683,7 +689,13 @@ execute_GOTOXY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	movzbl X, %eax				# load the X register into eax and pad with 0s
+	movzbl Y, %ebx				# load the Y register into ebx and pad with 0s
+	
+	pushl %eax				# push the X register as part of the call to set the position
+	pushl %ebx				# and push Y as well
+	pushl $GOTOXY_format			# push the format to move the cursor in the terminal
+	call printf				# and actually move the cursor
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1008,7 +1020,8 @@ execute_PRINT:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	pushl $PRINT_test
+	call printf
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1310,7 +1323,18 @@ execute_SLEEP:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	movl %ecx, %eax			# load the argument into eax
+	movl $1000000, %ebx		# load the multiplication factor in ebx (1000000) for the conversation from ns to ms 
+	mull %ebx			# multiply the original argument with one million
+	
+	movl $255000000, %eax		#TEMP
+	
+	movl $162, %eax			# code for sys_nanosleep
+	movl $0, -8(%esp)		# set amount of seconds to 0
+	movl %eax, -4(%esp)		# set amount of nanoseconds to the argument times 1000
+	lea -8(%esp), %ebx		# TODO: fix
+	movl $0, %ecx			# ignore remainder
+	int $0x80
 	
 	movl %ebp, %esp
 	popl %ebp
