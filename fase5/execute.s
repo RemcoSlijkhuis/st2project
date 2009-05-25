@@ -1,7 +1,3 @@
-
-.data
-
-
 .global execute_ADC
 .global execute_AND
 .global execute_ASL
@@ -67,10 +63,21 @@
 .global execute_TXS
 .global execute_TYA
 
+.bss
+	GETKEY_buffer: .byte 0x00
+
 .data
-	CLS_format: .asciz "\033[H\033[2J"
-	GOTOXY_format: .asciz "\033[%d;%dH"
-	PRINT_test: .asciz "Teststring"
+	CLS_format:
+		.byte 0x1B		
+		.ascii "[H"
+		.byte 0x1B
+		.ascii "[2J"
+	GOTOXY_format:
+		.byte 0x1B
+		.ascii "[00;00H"
+	GETKEY_timeout:
+		.long 0
+		.long 0
 
 ## execute subroutines
 
@@ -81,7 +88,6 @@ execute_ADC:
 	pushl %ebp
 	movl %esp, %ebp
 	
-
 	movzbl MEM(%ecx), %ebx			# load value at specified address into bl
 	
 	movzbl A, %eax				# load accumulator into dl
@@ -492,8 +498,12 @@ execute_CLS:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	pushl $CLS_format
-	call printf
+	movl $CLS_format, %ecx			# store the x86 address of the clear string in ecx
+	movl $7, %edx				# store 7 in edx for the length of the string
+	movl $4, %eax				# store 4 in eax, for a sys_write call
+	movl $1, %ebx				# store 1 in ebx, for writing to stdout
+	
+	int $0x80				# generate a 0x80 interrupt, performing the write action
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -675,7 +685,30 @@ execute_GETKEY:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	movl $142, %eax				# load 142 in the eax register for a newselect (checking if any key is pressed, non-blocking)
+	movl $1, %ebx				# load 1 in the ebx register for looking at the input
+	bts $0, -128(%esp)			# clear
+	lea -128(%esp), %ecx			# a place on the stack for the fd_set struct
+	movl $0, %edx				# set edx to 0 for writefds
+	movl $0, %esi				# set esi to 0 for exceptfds
+	movl $GETKEY_timeout, %edi		# set edi to the GETKEY_timeout, which is 0 for no timeout
+	int $0x80				# generate an 0x80 interrupt to perform the newselect action
+	
+	movb $0, A				# load NULL (0) into the accumulator by default
+	
+	cmp $0, %eax				# see if any key has been pressed
+	je GETKEY_end				# if no key has been pressed, skip getting the keycode
+	
+	movl $3, %eax				# set eax to 3 for a sys_read call
+	movl $0, %ebx				# set ebx to 0 for the stdin file descriptor
+	movl $GETKEY_buffer, %ecx		# set ecx to the address of the GETKEY_buffer, to store the result here
+	movl $1, %edx				# set edx to 1 to specify the amount of chars that has be read
+	int $0x80				# generate the 0x80 interrupt to perform the sys_read action
+	
+	movb GETKEY_buffer, %al			# store the pressed key in the accumulator 
+	movb %al, A
+	
+GETKEY_end:					# continue here if no key has been pressed
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -690,12 +723,22 @@ execute_GOTOXY:
 	movl %esp, %ebp
 	
 	movzbl X, %eax				# load the X register into eax and pad with 0s
-	movzbl Y, %ebx				# load the Y register into ebx and pad with 0s
+	incl %eax				# increment the value with one to compensate for the terminal position starting at 1 instead of 0
+	movl $GOTOXY_format+5, %ebx		# load the address of the x position in the positioning string into ebx
+	call hexstring				# and call hexstring to convert the x value to a ascii decimal
 	
-	pushl %eax				# push the X register as part of the call to set the position
-	pushl %ebx				# and push Y as well
-	pushl $GOTOXY_format			# push the format to move the cursor in the terminal
-	call printf				# and actually move the cursor
+	movzbl Y, %eax				# load the Y register into eax and pad with 0s
+	incl %eax				# increment the value with one to compensate for the terminal position starting at 1 instead of 0
+	movl $GOTOXY_format+2, %ebx		# load the address of the y position in the positioning string into ebx
+	call hexstring				# and call hexstring to convert the y value to a ascii decimal
+	
+	
+	movl $GOTOXY_format, %ecx		# store the x86 address of the move cursor string in ecx
+	movl $8, %edx				# store 8 in edx for the length of the string
+	movl $4, %eax				# store 4 in eax, for a sys_write call
+	movl $1, %ebx				# store 1 in ebx, for writing to stdout
+	
+	int $0x80				# generate a 0x80 interrupt, performing the write action
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1020,8 +1063,27 @@ execute_PRINT:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	pushl $PRINT_test
-	call printf
+	movl $0, %edx				# store the length-counter for the string in edx
+PRINT_readloop:	
+	movl %ecx, %ebx				# store the memory location in ebx
+	addl %edx, %ebx				# and add the current length of the checked string to the position
+	movzbl MEM(%ebx), %eax			# store the current character from the string in eax
+	incl %edx				# increment the offset with one to move to the next character
+	
+	cmp $0, %eax				# see if the current character is NULL (0)
+	jne PRINT_readloop			# if the NULL sign hasn't been read yet, keep on reading
+	
+	decl %edx				# subtract one from the edx, to prevent the NULL character from being printed
+	
+	addl $MEM, %ecx				# store the x86 address of the 6052 mem pointer (ecx)  in ecx, this will be the beginning of the string
+	
+	movl $4, %eax				# store 4 in eax, for a sys_write call
+	movl $1, %ebx				# store 1 in ebx, for writing to stdout
+	
+	int $0x80				# generate a 0x80 interrupt, performing the write action
+	
+#	pushl %ecx
+#	call printf
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -1323,16 +1385,16 @@ execute_SLEEP:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	movl %ecx, %eax			# load the argument into eax
+	movzbl MEM(%ecx), %eax		# load the argument into eax
 	movl $1000000, %ebx		# load the multiplication factor in ebx (1000000) for the conversation from ns to ms 
 	mull %ebx			# multiply the original argument with one million
-	
-	movl $255000000, %eax		#TEMP
+	movl %eax, %ebx			# store the result back in ebx
 	
 	movl $162, %eax			# code for sys_nanosleep
-	movl $0, -8(%esp)		# set amount of seconds to 0
-	movl %eax, -4(%esp)		# set amount of nanoseconds to the argument times 1000
-	lea -8(%esp), %ebx		# TODO: fix
+	movl $0, -8(%esp)		# set amount of seconds to 0 on the stack
+	movl %ebx, -4(%esp)		# set amount of nanoseconds to (the argument times 1000) on the stack
+	lea -8(%esp), %ebx		# push the location of the stack pointer -8 as the address for the time to sleep
+	
 	movl $0, %ecx			# ignore remainder
 	int $0x80
 	
@@ -1553,7 +1615,7 @@ check_CO:
 	pushl %eax
 	movl %esp, %ebp
 
-	mov 8(%ebp),%eax			# move 6502 processor status to eax
+	mov 12(%ebp),%eax			# move 6502 processor status to eax
 	pushl %eax				# push the value			
 	popf					# and pop it into the x86 processor status
 
@@ -1584,7 +1646,7 @@ check_O:
 	pushl %eax
 	movl %esp, %ebp
 
-	mov 8(%ebp),%eax			# move 6502 processor status to eax
+	mov 12(%ebp),%eax			# move 6502 processor status to eax
 	push %eax				# push the status
 	popf					# and pop it into the x86 processor status
 		
@@ -1732,3 +1794,20 @@ tobcd:
 	popl %eax
 	popl %ebp
 	ret
+
+
+##################################################################
+## hexstring:                                                   ##
+## Convert a hexadecimal number to a string                     ##
+## requires the hex in eax, and address of destiny in ebx       ## 
+##################################################################
+hexstring:
+	movb $10, %cl				# store 0x10 in cl
+	divb %cl				# divide the source (eax) by 0x10 out of cl
+	add $0x30, %al				# add 0x30 to the high (tens) result part to convert it to an ascii char
+	movb %al, (%ebx)			# and store this result into the specified memory address
+	add $0x30, %ah				# now add 0x30 to the low (singles) result part to convert it to an ascii char
+	incl %ebx				# increment the given memory address with one to place the next char in the next byte
+	movb %ah, (%ebx)			# and place the singles result part into the specified memory address +1
+	ret
+
