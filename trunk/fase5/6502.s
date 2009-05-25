@@ -1,3 +1,4 @@
+
 .data
 
 .global start	
@@ -29,33 +30,38 @@
 	test2: .asciz "Value: %x\n"
 
 ##################################################
-############## start: Main routine ###############
+## start: Main routine                          ##
 ##################################################
 start:
 	movl %esp, %ebp
 
-	movb $0xFF, S			#Initialize the Stack points
-	movb $0, A
+	movb $0xFF, S			# Initialize the Stack pointer
+	movb $0, A			# initialise all register with value 0
 	movb $0, X
 	movb $0, Y
 	movw $0, PC
 	movw $0, IR
 	movb $0, P
-
-	movl $0, %eax			
-
-	memloop:			#Initialize the memory to 0
-	movl $0, MEM(%eax)		
-	addl $4, %eax
 	
-	cmpl $65536, %eax		#while %eax <= 65536
-	jne memloop			#jump back 
+	movl $0, %eax
+
+	memloop:			# Initialize the memory to 0
+	movl $0, MEM(%eax)		# set 4 bytes to 0, at eax
+	addl $4, %eax			# increase the counter with 4
 	
-	call readprog
+	cmpl $65536, %eax		# while %eax <= 65536
+	jne memloop			# jump back 
+	
+	call readprog			# read the program from a file into mem
 
-	call initpc			#Initialize the Program counter	
+	call initpc			# Initialize the Program counter
+	
+	call init_terminal		# load the proper terminal settings	
 
-	call fetch
+	call fetch			# start executing the program
+
+	call restore_terminal		# restore the old terminal settings
+
 
 	movl %ebp, %esp
 	
@@ -65,11 +71,10 @@ start:
 
  	call exit
 
-##################################################
-###### initpc: initalise the program counter #####
-##################################################
-initpc:
-		
+########################################################
+## initpc: initalise the program counter              ##
+########################################################
+initpc:	
 	movl $0xfffd, %eax		#Move the memory location of the higher address of PC to ax	
 	
 	movl $0, %ebx			#clear ebx
@@ -83,3 +88,42 @@ initpc:
 
 	ret				#Return from subroutine
 
+
+########################################################
+## init_terminal: sets up the terminal for normal io  ##
+########################################################
+init_terminal:
+	lea -60(%esp), %edx		# load the data from the terminal 60 bytes before the stack pointer
+	mov $0x5401, %ecx		# set ecx to 5401, get the settings
+	call sys_ioctl			# perform an sys_ioctl call
+	
+	andb $245,-48(%esp) 		# turn off the flags for ICANON and ECHO
+	
+	mov $0x5403, %ecx		# set ecx to 5403, to set the new settings
+	call sys_ioctl
+	ret
+
+###########################################################
+## restore_terminal: restores the old terminal settings  ##
+###########################################################
+restore_terminal:
+	lea -60(%esp), %edx		# load the data from the terminal 60 bytes before the stack pointer
+	mov $0x5401, %ecx		# set ecx to 5401, get the settings
+	call sys_ioctl			# perform an sys_ioctl call
+	
+	orb $10,-48(%esp)		# turn on the flags for ICANON and ECHO
+	
+	mov $0x5403, %ecx		# set ecx to 5403, to set the new settings
+	call sys_ioctl
+	ret
+
+########################################################
+## sys_ioctl:                                         ##
+## requires the number of the ioctl in ecx            ##
+## and the address for termios struct in %edx         ##
+########################################################
+sys_ioctl:
+	movl $54, %eax			# set eax to 54 for a sys_ioctl call
+	movl $0, %ebx			# set ebx to 0 to read from stdin
+	int $0x80			# interrupt to linux kernel
+	ret

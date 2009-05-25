@@ -31,12 +31,12 @@ message: .asciz "Illegal instruction encountered. Program terminated. \n"
 #1x
 		.long do_BPL_rel
 		.long do_ORA_inY
-		.long do_ERROR
-		.long do_ERROR
-		.long do_ERROR
+		.long do_PRINT_ind		#originally: do_ERROR
+		.long do_PRINT_inX		#originally: do_ERROR
+		.long do_PRINT_inY		#originally: do_ERROR
 		.long do_ORA_zpX
 		.long do_ASL_zpX
-		.long do_ERROR
+		.long do_PRINT_abX
 		.long do_CLC
 		.long do_ORA_abY
 		.long do_ERROR
@@ -287,6 +287,26 @@ message: .asciz "Illegal instruction encountered. Program terminated. \n"
 
 do_PRINT_abs:
 	call fetch_abs
+	call execute_PRINT
+	ret
+
+do_PRINT_ind:
+	call fetch_ind
+	call execute_PRINT
+	ret
+
+do_PRINT_inX:
+	call fetch_inX
+	call execute_PRINT
+	ret
+
+do_PRINT_inY:
+	call fetch_inY
+	call execute_PRINT
+	ret
+
+do_PRINT_abX:
+	call fetch_abX
 	call execute_PRINT
 	ret
 
