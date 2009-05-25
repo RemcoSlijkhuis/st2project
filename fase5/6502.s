@@ -28,6 +28,24 @@
 .text
 	test: .asciz "Exitcode: %d\n"
 	test2: .asciz "Value: %x\n"
+	cursor_hide:			# also resets color
+		.byte 0x1B
+		.ascii "[?25l"
+		.byte 0x1B
+		.ascii "[0;39;49m"
+		.byte 0x1B		
+		.ascii "[H"
+		.byte 0x1B
+		.ascii "[2J"
+	cursor_show:
+		.byte 0x1b
+		.ascii "[?25h"
+		.byte 0x1B
+		.ascii "[0;39;49m"
+		.byte 0x1B		
+		.ascii "[H"
+		.byte 0x1B
+		.ascii "[2J"
 
 ##################################################
 ## start: Main routine                          ##
@@ -101,6 +119,13 @@ init_terminal:
 	
 	mov $0x5403, %ecx		# set ecx to 5403, to set the new settings
 	call sys_ioctl
+	
+	movl $cursor_hide, %ecx		# store the x86 address of the clear string in ecx
+	movl $23, %edx			# store 23 in edx for the length of the string
+	movl $4, %eax			# store 4 in eax, for a sys_write call
+	movl $1, %ebx			# store 1 in ebx, for writing to stdout
+	int $0x80			# generate a 0x80 interrupt, performing the write action
+	
 	ret
 
 ###########################################################
@@ -115,6 +140,13 @@ restore_terminal:
 	
 	mov $0x5403, %ecx		# set ecx to 5403, to set the new settings
 	call sys_ioctl
+	
+	movl $cursor_show, %ecx		# store the x86 address of the clear string in ecx
+	movl $23, %edx			# store 23 in edx for the length of the string
+	movl $4, %eax			# store 4 in eax, for a sys_write call
+	movl $1, %ebx			# store 1 in ebx, for writing to stdout
+	int $0x80			# generate a 0x80 interrupt, performing the write action
+	
 	ret
 
 ########################################################
