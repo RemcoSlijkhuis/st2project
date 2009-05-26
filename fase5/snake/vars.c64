@@ -33,19 +33,25 @@ DEF_QUIT			; Q: quit
 	DC #$75			; u
 	DC #$69			; i
 	DC #$74			; t
-	DC #$00
+	DC #$00			; NULL
+
+DEF_PAUSE			; p: pause
+	DC #$70			; p
+	DC #$3A			; :
+	DC #$20			;  
+	DC #$70			; p
+	DC #$61			; a
+	DC #$75			; u
+	DC #$73			; s
+	DC #$65			; e
+	DC #$00			; NULL
+	
 
 FRAMETICK
 	DC #$00
 
 IS_ARROW
 	DC #$00
-
-PLAYER1_COLOR
-	DC #$32
-
-PLAYER2_COLOR
-	DC #$32
 
 
 PLAYER1

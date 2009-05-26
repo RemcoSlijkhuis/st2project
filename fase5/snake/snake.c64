@@ -92,7 +92,12 @@ game_loop
 	CMP #$51			; see if key was 'Q'
 	BEQ game_end			; if so, quit
 	
-	JSR handle_keys
+	CMP #$70			; check if the key was 'p'
+	BNE nopause			; if not, don't pause the game
+	JSR pauser			; otherwise, pause until another key is pressed
+nopause
+	
+	JSR handle_keys			; update directions based on keys
 	
 game_step
 	INC FRAMETICK			; increase the frame ticker with one
@@ -239,6 +244,10 @@ init_screen_end
 	DC $04
 	Print DEF_QUIT			; and print the quit string
 	
+	LDY #$14			; move to (70;20)
+	DC $04				
+	Print DEF_PAUSE
+	
 	Show_player PLAYER1, #$31	; print new player positions
 	Show_player PLAYER2, #$34
 	
@@ -246,7 +255,7 @@ init_screen_end
 	RTS
 
 ;#####################################################################
-;## pauser: pauses the program until a key has been pressed         ##
+;## pauser: pauses the program until any key has been pressed       ##
 ;#####################################################################
 pauser
 	DC $0B				; sleep for 1ms
