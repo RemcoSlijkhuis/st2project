@@ -15,9 +15,12 @@
 ;#####################################################################	
 	MAC Show_player
 .OFFSET SET {1}
+.COLOR SET {2}
 	LDX .OFFSET
 	LDY .OFFSET+1
 	DC $04
+	DC $0F				; change color to the current player color
+	DC #.COLOR
 	Print DEF_SNAKEBODY
 	ENDM
 
@@ -101,8 +104,8 @@ game_step
 	Move_player PLAYER1		; move the players
 	Move_player PLAYER2
 	
-	Show_player PLAYER1		; print new player positions
-	Show_player PLAYER2
+	Show_player PLAYER1, #$31	; print new player positions
+	Show_player PLAYER2, #$34
 	
 	
 	
@@ -139,6 +142,7 @@ handle_keys_no_arrows
 	CMP #$1B			; see if the arrow start sign has been set
 	BNE handle_key_not_arrowst	; if it's not the arrow start sign, skip setting the flag
 	LDX #$01			; if it is, set the flag to 1
+	JMP handle_key_not_followup	; if the current key is the arrow start sign, it's not the followup sign
 handle_key_not_arrowst
 	LDY IS_ARROW			; see if the IS_ARROW flag is currently on
 	CPY #$01			; see if the flag is currently 1
@@ -235,8 +239,9 @@ init_screen_end
 	DC $04
 	Print DEF_QUIT			; and print the quit string
 	
-	Show_player PLAYER1		; print player start positions
-	Show_player PLAYER2
+	Show_player PLAYER1, #$31	; print new player positions
+	Show_player PLAYER2, #$34
+	
 	
 	RTS
 
