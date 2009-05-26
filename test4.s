@@ -3,7 +3,7 @@ buffer: .byte 0x0
 buffer2: .byte 0x0
 
 .data
-	fmt: .asciz "Buffer: %d\n"
+	fmt: .asciz "Buffer: %x\n"
 	jFmt: .asciz "\033[0;0H"
 	counter: .long 0x0
 	timeout: .long 0
@@ -29,7 +29,7 @@ buffer2: .byte 0x0
 .macro sys_nanosleep length
 	xor %eax, %eax
 	mov $162, %al			#sys_nanosleep
-	movl $0, -8(%esp)		#seconds
+	movl $1, -8(%esp)		#seconds
 	movl \length, -4(%esp)		#nanoseconds
 	lea -8(%esp), %ebx
 	xor %ecx, %ecx			#ignore remainder
@@ -77,7 +77,7 @@ basicLoop:
 	
 	incl counter
 	
-	sys_nanosleep $20000000
+	sys_nanosleep $100
 	
 	sys_newselect
 	test %eax, %eax
@@ -86,12 +86,15 @@ basicLoop:
 	movl $2, %edx
 	call sys_read
 	
-	call execute_restore_terminal
 	
 	movzbl buffer, %eax
 	pushl %eax
 	pushl $fmt
 	call printf
+	
+	jmp basicLoop
+	
+	call execute_restore_terminal
 	
 	pushl $0
   	call exit

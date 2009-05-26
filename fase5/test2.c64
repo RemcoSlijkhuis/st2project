@@ -1,0 +1,38 @@
+	processor 6502
+	org $8000
+	
+	LDA #$FF
+	LDX #$01
+	LDY #$02
+	dc $0C		;cls
+	
+	dc $04		;gotoxy (02,02)
+	
+	LDA #$61
+	STA $7000
+	LDA #$62
+	STA $7001
+	LDA #$63
+	STA $7002
+	LDA #$00
+	STA $7003
+	
+	dc $02		;print from 70:00
+	dc $00
+	dc $70
+	
+	;dc $db
+	
+loop
+	dc $0B		;sleep for 255ms
+	dc $FA
+	
+	dc $03		;getkey
+	
+	dc $02		;print from 70:01
+	dc $01
+	dc $70
+	
+	;jmp loop
+	
+	dc $db
