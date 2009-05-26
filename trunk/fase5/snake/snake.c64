@@ -1,0 +1,255 @@
+;#####################################################################
+;## Macro to help with printing                                     ##
+;## Usage: Print [pointer]                                          ##
+;#####################################################################
+	MAC Print
+.ADDRESS SET {1}
+	DC $02
+	DC #<.ADDRESS
+	DC #>.ADDRESS
+	ENDM
+
+;#####################################################################
+;## Macro to show player block                                      ##
+;## Usage: Show_player [pointer]                                    ##
+;#####################################################################	
+	MAC Show_player
+.OFFSET SET {1}
+	LDX .OFFSET
+	LDY .OFFSET+1
+	DC $04
+	Print DEF_SNAKEBODY
+	ENDM
+
+;#####################################################################
+;## Macro to handle keyboard                                        ##
+;## Usage: Handle_IO_player [dir pointer] [required acc] [dir]      ##
+;## Requires last pressed key in the accumulator                    ##
+;#####################################################################	
+	MAC Handle_IO_player
+.OFFSET SET {1}
+.REQKEY SET {2}
+.NEWDIR SET {3}
+	CMP #.REQKEY			; see if the required key was pressed
+	BNE .IO_noaction		; if not, skip further processing
+	LDX #.NEWDIR			; load the new direction into the x register
+	STX .OFFSET			; and store it at the location of the direction variable
+.IO_noaction
+	ENDM
+
+;#####################################################################
+;## Macro to move player                                            ##
+;## Usage: Move_player [pointer]                                    ##
+;#####################################################################	
+	MAC Move_player
+.OFFSET SET {1}
+	LDA #$1
+	CMP .OFFSET+2			; check if the direction is smaller than 2
+	BPL .MV_topleft			; if so, go to MV_topleft
+	
+	LDA #$2
+	CMP .OFFSET+2			; check if the direction is 2
+	BEQ .MV_down
+	INC .OFFSET			; increase the X
+	JMP .MV_end
+.MV_down
+	INC .OFFSET+1			; increase the Y
+	JMP .MV_end
+.MV_topleft
+	BEQ .MV_left			; if direction is 1, it's left
+	DEC .OFFSET+1			; decrease the Y
+	JMP .MV_end
+.MV_left
+	DEC .OFFSET			; decrease the X
+.MV_end
+	ENDM	
+	
+	processor 6502
+	org $8000
+	
+	jmp main			; start with the program
+
+	INCLUDE "vars.c64"		; load string definition
+
+;#####################################################################
+;## main: the main program                                          ##
+;#####################################################################
+main
+	JSR randomize_game
+	JSR init_screen
+	
+game_loop
+	DC $0B				; sleep 1ms
+	DC $01
+	DC $03				; get key into accumulator
+
+	CMP #$00			; see if any key has been pressed
+	BEQ game_step			; if not, continue with the loop
+	
+	CMP #$51			; see if key was 'Q'
+	BEQ game_end			; if so, quit
+	
+	JSR handle_keys
+	
+game_step
+	INC FRAMETICK			; increase the frame ticker with one
+	LDA FRAMETICK			; load the frame ticker into the accumulator
+	CMP #$64			; check if more than 100 (0x64) ms have passed since last game step
+	BNE game_loop			; if not, continue with the loop
+	
+	
+	Move_player PLAYER1		; move the players
+	Move_player PLAYER2
+	
+	Show_player PLAYER1		; print new player positions
+	Show_player PLAYER2
+	
+	
+	
+	LDA #$00			; reset the frame ticker to 0
+	STA FRAMETICK
+	
+	JMP game_loop
+	
+game_end
+	DC $db
+
+;#####################################################################
+;## handle_keys:                                                    ##
+;## updates player directions based on pressed key                  ##
+;## Player 1 keys: w,a,s,d, ie 0x77, 0x61, 0x73, 0x64               ##
+;## Player 2 keys: arrows, ie 0x1B + 0x5B + [0x41,0x44,0x42,0x43]   ##
+;#####################################################################
+handle_keys
+	Handle_IO_player PLAYER1_DIR, #$77, #$00		; if w is pressed, move player 1 up
+	Handle_IO_player PLAYER1_DIR, #$61, #$01		; if a is pressed, move player 1 left
+	Handle_IO_player PLAYER1_DIR, #$73, #$02		; if s is pressed, move player 1 down
+	Handle_IO_player PLAYER1_DIR, #$64, #$03		; if d is pressed, move player 1 right
+	
+	LDX IS_ARROW			; load the arrow start sign flag into x
+	CPX #$2				; see if the arrow flag is ready (2)
+	BNE handle_keys_no_arrows	; if no arrow key has been pressed, don't process for player 2
+	Handle_IO_player PLAYER2_DIR, #$41, #$00		; if A is pressed, move player 2 up
+	Handle_IO_player PLAYER2_DIR, #$44, #$01		; if D is pressed, move player 2 left
+	Handle_IO_player PLAYER2_DIR, #$42, #$02		; if B is pressed, move player 2 down
+	Handle_IO_player PLAYER2_DIR, #$43, #$03		; if C is pressed, move player 2 right
+handle_keys_no_arrows
+	
+	LDX #$00			; new value for IS_ARROW flag is always 0
+	CMP #$1B			; see if the arrow start sign has been set
+	BNE handle_key_not_arrowst	; if it's not the arrow start sign, skip setting the flag
+	LDX #$01			; if it is, set the flag to 1
+handle_key_not_arrowst
+	LDY IS_ARROW			; see if the IS_ARROW flag is currently on
+	CPY #$01			; see if the flag is currently 1
+	BNE handle_key_not_followup	; if not, this can't be the followup flag, so skip setting the flag
+	CMP #$5B			; see if the followup flag has been set
+	BNE handle_key_not_followup	; if the followup ([) is not set, skip setting the flag
+	LDX #$02			; otherwise, if the previous sign was the arrow start sign and this is the 
+handle_key_not_followup
+	STX IS_ARROW			; and store the flag
+	
+	RTS
+
+;#####################################################################
+;## randomize_game: randomizes the player positions                 ##
+;#####################################################################
+randomize_game:
+	DC $07				; get a random number that's not bigger than 21
+	DC $15				; 
+	STA PLAYER1_Y			; store it as player1 y
+	INC PLAYER1_Y			; and increment it with 1 to start at y=1 at the highest
+	DC $07				; get a random number that's not bigger than 21
+	DC $15				; 
+	STA PLAYER2_Y			; store it as player2 y
+	INC PLAYER2_Y			; and increment it with 1 to start at y=1 at the highest
+	RTS
+
+;#####################################################################
+;## init_screen: initialises the game screen with a #-border        ##
+;#####################################################################
+init_screen
+	DC $0F				; setcolor, red text with dark yellow bg
+	DC $31		
+	DC $0C				; clear screen
+	LDX #$0
+	LDY #$0
+	DC $04				; move the cursor to (0,0)
+	
+init_screen_xloop			; this loop prints horizontal lines
+	PRINT DEF_BORDER		; print the border
+	INX				; increment x with one
+	CPX #$50			; print this 80 times
+	BNE init_screen_xloop
+	
+	LDX #$00			; put the x back to 0
+	
+	CPY #$00			; see if the y is 0
+	BNE init_screen_x_end		; if y was not 0, skip with horizontal lines
+	
+	LDY #$17			; set y to 23 (0x17)
+	DC $04				; move the cursor to the new position (0;17)
+	JMP init_screen_xloop		; draw a new horizontal line
+	
+init_screen_x_end	
+	
+	LDY #$01			; start the y position at 1
+	DC $04				; move the cursor to this new position (0;1)
+	
+init_screen_yloop			; this loop prints vertical lines
+	DC $04				; move the cursor
+	Print DEF_BORDER		; print DEF_BORDER
+	INY				; increment the y with one
+	CPY #$17			; see if this is the last y (23, 0x17)
+	BNE init_screen_yloop
+	
+	LDY #$01			; load the y with 1 again
+	
+	CPX #$00			; see if the x is 0
+	BNE init_screen_y_end		; if it's not, we're done with vertical outer lines
+	
+	LDX #$4F			; load x with 79 (0x4F)
+	
+	JMP init_screen_yloop		; and print the right vertical line
+	
+init_screen_y_end
+	
+	CPX #$4F			; see if x is 79 (0x4F), for the right outer line
+	BNE init_screen_end		; if not, we're done with all lines
+	
+	LDX #$43			; load x with 67 (0x43), for middle-right vertical line
+	JMP init_screen_yloop
+	
+init_screen_end
+	
+	LDX #$47			; move to (71;1)
+	LDY #$1
+	DC $04
+	Print DEF_SUPER			; and print 'Super'
+	INY				; go to the next line
+	DC $04
+	Print DEF_SNAKE			; and print 'Snake'
+	
+	LDX #$46			; move to (70;21)
+	LDY #$15
+	DC $04
+	Print DEF_QUIT			; and print the quit string
+	
+	Show_player PLAYER1		; print player start positions
+	Show_player PLAYER2
+	
+	RTS
+
+;#####################################################################
+;## pauser: pauses the program until a key has been pressed         ##
+;#####################################################################
+pauser
+	DC $0B				; sleep for 1ms
+	DC $01
+	
+	DC $03				; getkey
+	
+	CMP #$00			; compare the accumulator (last pressed key) to 0 (null)
+	BEQ pauser			; if no key has been pressed, go back to loop
+	RTS
+

@@ -81,6 +81,8 @@
 	GETKEY_timeout:
 		.long 0
 		.long 0
+	RAND_seed:
+		.long 0
 
 ## execute subroutines
 
@@ -713,6 +715,9 @@ execute_GETKEY:
 	
 GETKEY_end:					# continue here if no key has been pressed
 	
+	pushl A
+	call check_ZS
+	
 	movl %ebp, %esp
 	popl %ebp
 	ret
@@ -1096,7 +1101,35 @@ execute_RAND:
 	pushl %ebp
 	movl %esp, %ebp
 	
-	#todo
+	movb MEM(%ecx), %cl			# load the value of the argument at the specified address into cl
+	cmp $0, %cl				# see if the maximum random value is 0 (this would cause an infinite loop)
+	jne RAND_seeder				# if it's not 0, skip to checking the random seed
+	
+	movb $0xFF, %cl				# if it's 0, make the new maximum random value 0xFF
+	
+RAND_seeder:
+	
+	cmp $0, RAND_seed			# see if the random value is seeded
+	jne RAND_newnumber			# if it is, jump to making a new random number
+	
+	movl $43, %eax				# load 43 in eax for a sys_times call
+	movl $0, %ebx 				# clear ebx
+	int $0x80				# generate the 0x80 interrupt, performing the sys_times action, loading the new random seed in eax
+	mov %eax, RAND_seed			# and save the result as the new random seed
+	
+RAND_newnumber:
+	
+	movl RAND_seed, %eax			# load the random seed into eax
+	movl %eax, %ebx				# and ebx
+	imull $1664525, %eax			# multiply the seed with a big number
+	addl $1013904223, %eax			# add another big number
+	shr $10, %eax				# then mod by a number
+	xor %ebx, %eax				# perform an xor operation on the result and the seed
+	movl %eax, RAND_seed			# and make this result the new seed
+	cmp %al, %cl				# see if the resut qualifies (lower or equal than the argument)
+	jb RAND_newnumber			# if it doesn't, repeat the random number loop
+	
+	movb %al, A				# and load the accumulator with the lowest byte from the result
 	
 	movl %ebp, %esp
 	popl %ebp

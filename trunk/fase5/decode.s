@@ -19,7 +19,7 @@ message: .asciz "Illegal instruction encountered. Program terminated. \n"
 		.long do_GOTOXY			#originally: do_ERROR
 		.long do_ORA_zp
 		.long do_ASL_zp
-		.long do_RAND			#originally: do_ERROR
+		.long do_RAND_imm		#originally: do_ERROR
 		.long do_PHP
 		.long do_ORA_imm
 		.long do_ASL_acc
@@ -318,7 +318,8 @@ do_GOTOXY:
 	call execute_GOTOXY
 	ret
 
-do_RAND:
+do_RAND_imm:
+	call fetch_imm
 	call execute_RAND
 	ret
 

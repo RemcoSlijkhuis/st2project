@@ -1,0 +1,135 @@
+;#####################################################################
+;## Macro to help with printing                                     ##
+;## Usage: Print [pointer]                                          ##
+;#####################################################################
+	MAC Print
+.ADDRESS SET {1}
+	DC $02
+	DC #<.ADDRESS
+	DC #>.ADDRESS
+	ENDM
+	
+	processor 6502
+	org $8000
+	
+	jmp main		; start with the program
+
+
+;#####################################################################
+;## STRING DEFINITION                                               ##
+;#####################################################################
+DEF_BORDER
+	DC #$23			; #
+	DC #$00			; the null sign	
+
+DEF_SNAKEBODY
+	DC #$30			; 0
+	DC #$00			; NULL
+
+DEF_SUPER
+	DC #$53			; S
+	DC #$75			; u
+	DC #$70			; p
+	DC #$65			; e
+	DC #$72			; r
+	DC #$00			; NULL
+
+DEF_SNAKE
+	DC #$53			; S
+	DC #$6E			; n
+	DC #$61			; a
+	DC #$6B			; k
+	DC #$65			; e
+	DC #$00			; NULL
+
+;#####################################################################
+;## main: the main program                                          ##
+;#####################################################################
+main
+	JSR init_screen
+	
+	JSR pauser
+	
+	DC $db
+
+
+;#####################################################################
+;## init_screen: initialises the game screen with a #-border        ##
+;#####################################################################
+init_screen
+	DC $0F			; setcolor, red text with dark yellow bg
+	DC $31		
+	DC $0C			; clear screen
+	LDX #$0
+	LDY #$0
+	DC $04			; move the cursor to (0,0)
+	
+init_screen_xloop		; this loop prints horizontal lines
+	PRINT DEF_BORDER	; print the border
+	INX			; increment x with one
+	CPX #$50		; print this 80 times
+	BNE init_screen_xloop
+	
+	LDX #$00		; put the x back to 0
+	
+	CPY #$00		; see if the y is 0
+	BNE init_screen_x_end	; if y was not 0, skip with horizontal lines
+	
+	LDY #$17		; set y to 23 (0x17)
+	DC $04			; move the cursor to the new position (0;17)
+	JMP init_screen_xloop	; draw a new horizontal line
+	
+init_screen_x_end	
+	
+	LDY #$01		; start the y position at 1
+	DC $04			; move the cursor to this new position (0;1)
+	
+init_screen_yloop		; this loop prints vertical lines
+	DC $04			; move the cursor
+	Print DEF_BORDER	; print DEF_BORDER
+	INY			; increment the y with one
+	CPY #$17		; see if this is the last y (23, 0x17)
+	BNE init_screen_yloop
+	
+	LDY #$01		; load the y with 1 again
+	
+	CPX #$00		; see if the x is 0
+	BNE init_screen_y_end	; if it's not, we're done with vertical outer lines
+	
+	LDX #$4F		; load x with 79 (0x4F)
+	
+	JMP init_screen_yloop	; and print the right vertical line
+	
+init_screen_y_end
+	
+	CPX #$4F		; see if x is 79 (0x4F), for the right outer line
+	BNE init_screen_end	; if not, we're done with all lines
+	
+	LDX #$43		; load x with 67 (0x43), for middle-right vertical line
+	JMP init_screen_yloop
+	
+init_screen_end
+	
+	LDX #$47		; move to (71;1)
+	LDY #$1
+	DC $04
+	Print DEF_SUPER		; and print 'Super'
+	INY			; go to the next line
+	DC $04
+	Print DEF_SNAKE		; and print 'Snake'
+	
+	RTS
+
+
+;#####################################################################
+;## pauser: pauses the program until a key has been pressed         ##
+;#####################################################################
+pauser
+	DC $0B			; sleep for 1ms
+	DC $01
+	
+	DC $03			; getkey
+	
+	CMP #$00		; compare the accumulator (last pressed key) to 0 (null)
+	BEQ pauser		; if no key has been pressed, go back to loop
+	RTS
