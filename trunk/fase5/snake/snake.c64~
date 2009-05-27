@@ -204,8 +204,6 @@ game_end
 	DC $04
 	
 	;Print DEF_TIE
-	CLC
-	ADC #$30
 	STA $7000
 	LDA #$00
 	STA $7001
