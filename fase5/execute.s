@@ -1,3 +1,45 @@
+#################################################################
+## set_overflow_0: sets overflow flag to 0                     ##
+#################################################################
+.macro set_overflow_0
+	andb $0xBF, P				# set overflow flag
+.endm
+
+#################################################################
+## set_overflow_1: sets overflow flag to 1                     ##
+#################################################################	
+.macro set_overflow_1
+	orb $0x40, P				# clear overflow flag
+.endm
+
+#################################################################
+## set_carry_0: sets carry flag to 0                           ##
+#################################################################
+.macro set_carry_0
+	andb $0xFE, P				# set overflow flag
+.endm
+
+#################################################################
+## set_carry_1: sets carry flag to 1                           ##
+#################################################################	
+.macro set_carry_1
+	orb $0x1, P				# clear overflow flag
+.endm
+
+#################################################################
+## set_sign_0: sets sign (negative) flag to 0                  ##
+#################################################################
+.macro set_sign_0
+	andb $0x7F, P				# clear sign flag
+.endm
+
+#################################################################
+## set_sign_1: sets sign (negative) flag to 1                  ##
+#################################################################
+.macro set_sign_1
+	orb $0x80, P				# set sign flag
+.endm
+
 .global execute_ADC
 .global execute_AND
 .global execute_ASL
@@ -127,10 +169,10 @@ ADC_end2:
 	adc %bx, %ax				# add the argument to the (second instance of the) accumulator
 	cmpw %cx, %ax				# if the result is too high for the current mode (BCD or non-BCD)
 	ja ADC_carry				# then, jump to ADC_carry to set the carry flag
-	call set_carry_0			# otherwise, set the carry flag to 0
+	set_carry_0				# otherwise, set the carry flag to 0
 	jmp ADC_carry_end		
 ADC_carry:			
-	call set_carry_1			# set the carry flag
+	set_carry_1				# set the carry flag
 ADC_carry_end:
 	
 	call check_O				# store the x86 overflow flag into the P register, using the processor status on the stack
@@ -194,10 +236,10 @@ ASL_checks:
 	popl %eax				# remove the result from the stack again
 	popf					# retreive processor status
 	jc ASL_setC				# check if carry is set
-	call set_carry_0			# if not, carry flag is reset
+	set_carry_0				# if not, carry flag is reset
 	jmp ASL_end
 ASL_setC:
-	call set_carry_1			# otherwise, set the carry flag
+	set_carry_1				# otherwise, set the carry flag
 ASL_end:
 	movl %ebp, %esp				# restore values and return
 	popl %ebp
@@ -301,10 +343,10 @@ BIT_negative:
 	orb $0x80, P				#value is negative, set negative flag
 
 BIT_OVtest:
-	call set_overflow_0			# always clear overflow flag
+	set_overflow_0				# always clear overflow flag
 	testb $0x40, %bl			# test if the 6th bit is set
 	jz BIT_end				# if not, skip setting the overflow flag
-	call set_overflow_1			# else, set the overflow flag
+	set_overflow_1				# else, set the overflow flag
 BIT_end:
 	
 	movl %ebp, %esp				#no return or changed values
@@ -537,13 +579,13 @@ execute_CMP:
 	pushl %ebx
 	movl %esp, %ebp	
 	
-	call set_carry_0			# always clear the carry flag
+	set_carry_0				# always clear the carry flag
 	movzbl A, %ebx				# Clear ebx and move the accumulator in it
 	
 	movzbl MEM(%ecx), %edx			# temporarily store the memory value at the specified address in edx
 	cmp %edx, %ebx				# Compare ebx with zero
 	jb CMP_end				# if the memory value was bigger than the accumulator, skip setting the carry flag
-	call set_carry_1			# else, set the carry flag
+	set_carry_1				# else, set the carry flag
 
 CMP_end:
 	
@@ -565,13 +607,13 @@ execute_CPX:
 	pushl %ebx
 	movl %esp, %ebp	
 	
-	call set_carry_0			# always clear the carry flag
+	set_carry_0				# always clear the carry flag
 	movzbl X, %ebx				# Clear ebx and move the x register in it
 	
 	movzbl MEM(%ecx), %edx			# temporarily store the memory value at the specified address in edx
 	cmp %edx, %ebx				# Compare ebx with zero
 	jb CPX_end				# if the memory value was bigger than the x register, skip setting the carry flag
-	call set_carry_1			# else, set the carry flag
+	set_carry_1				# else, set the carry flag
 
 CPX_end:
 	
@@ -592,13 +634,13 @@ execute_CPY:
 	pushl %ebx
 	movl %esp, %ebp	
 	
-	call set_carry_0			# always clear the carry flag
+	set_carry_0				# always clear the carry flag
 	movzbl Y, %ebx				# Clear ebx and move the y register in it
 	
 	movzbl MEM(%ecx), %edx			# temporarily store the memory value at the specified address in edx
 	cmp %edx, %ebx				# Compare ebx with zero
 	jb CPY_end				# if the memory value was bigger than the y register, skip setting the carry flag
-	call set_carry_1			# else, set the carry flag
+	set_carry_1				# else, set the carry flag
 
 CPY_end:
 	
@@ -944,10 +986,10 @@ LSR_checks:
 	popl %eax				# clear the result from the stack again
 	popf					# load the x86 processor status from right after the shift operation
 	jc LSR_setC				# if the x86 carry flag is set, set the carry flag
-	call set_carry_0			# otherwise, clear the carry flag
+	set_carry_0				# otherwise, clear the carry flag
 	jmp LSR_end
 LSR_setC:
-	call set_carry_1			# if the x86 carry flag	was set, set the 6052 carry flag as well
+	set_carry_1				# if the x86 carry flag	was set, set the 6052 carry flag as well
 LSR_end:
 	movl %ebp, %esp				# restore values and return
 	popl %eax				# get the old value from the eax register
@@ -1160,14 +1202,14 @@ execute_ROL:
 	
 	cmp $0x1, %ah				# if carry has to be set,
 	jge ROL_setC				# then jump to ROL_setC
-	call set_carry_0			# otherwise, set carry to 0
+	set_carry_0				# otherwise, set carry to 0
 ROL_checks:
 	movzbl %dl, %eax			# store the original result back in al
 	pushl %eax				# push the original result on the stack
 	call check_ZS				# and check for the zero and sign flags
 	jmp ROL_end
 ROL_setC:
-	call set_carry_1			# set the carry flag to 1
+	set_carry_1				# set the carry flag to 1
 	jmp ROL_checks				# and continue setting the other flags
 ROL_end:
 	movl %ebp, %esp				# restore values and return
@@ -1184,7 +1226,7 @@ ROL_acc:					# accumulator mode
 	
 	cmp $0x1, %ah				# if carry has to be set
 	jge ROL_setC				# then set the carry flag
-	call set_carry_0			# otherwise, set carry to 0
+	set_carry_0				# otherwise, set carry to 0
 	jmp ROL_checks				# and continue with the other checks
 	
 #################################################################
@@ -1215,9 +1257,9 @@ ROR_checks:
 	popl %eax				# pop eax
 	popf					# pop the processor status
 
-	call set_carry_0			# set the carry flag to 0
+	set_carry_0				# set the carry flag to 0
 	jnc ROR_end				# if the carry flag must be set
-	call set_carry_1			# set the carry flag
+	set_carry_1				# set the carry flag
 
 ROR_end:
 	
@@ -1338,13 +1380,13 @@ SBC_continue:
 	testb $0x08, P				# check if the decimal mode flag is set
 	jz SBC_end				# if not, continue at SBC_end, skipping the hex to BCD conversion
 	
-	call set_carry_1			# set carry flag to 1 -borrow is 0- when in BCD mode to begin with
-	call set_sign_0				# set sign flag to 0 in BCD mode
+	set_carry_1				# set carry flag to 1 -borrow is 0- when in BCD mode to begin with
+	set_sign_0				# set sign flag to 0 in BCD mode
 	movl $100, %ecx				# maximum value for decimal before borrow occurs
 	cmp %ecx, %edx				# if the accumulator is below this maximum value
 	jb SBC_BCD_no_carry			# then, skip borrow handling
 	subl $0x9C, %edx			# subtract 0x9C from the result to compensate for byte overflow vs decimal overflow
-	call set_carry_0			# and set carry flag to 0, because a borrow occurred
+	set_carry_0				# and set carry flag to 0, because a borrow occurred
 SBC_BCD_no_carry:
 	
 	pushl %edx				# push the new accumulator on the stack
@@ -1671,16 +1713,16 @@ check_CO:
 	pushl %eax				# push the value			
 	popf					# and pop it into the x86 processor status
 
-	call set_overflow_0			# resets the overflow
-	call set_carry_0			# resets the carry
+	set_overflow_0				# resets the overflow
+	set_carry_0				# resets the carry
 	
 	jno CO_no_overflow			# if there's no overflow, jump to carry test
-	call set_overflow_1			# else set the overflow
+	set_overflow_1				# else set the overflow
 
 CO_no_overflow:	
 
 	jnc CO_no_carry				# if there's no carry, jump to the end
-	call set_carry_1			# else set the carry
+	set_carry_1				# else set the carry
 
 CO_no_carry:
 	
@@ -1702,10 +1744,10 @@ check_O:
 	push %eax				# push the status
 	popf					# and pop it into the x86 processor status
 		
-	call set_overflow_0			# resets the overflow flag
+	set_overflow_0				# resets the overflow flag
 
 	jno check_O_end				# if there's no overflow, jump to the end
-	call set_overflow_1			# else set the overflow flag
+	set_overflow_1				# else set the overflow flag
 
 check_O_end:
 	
@@ -1733,48 +1775,6 @@ load_C:
 	movl %ebp, %esp
 	popl %eax
 	popl %ebp
-	ret
-
-#################################################################
-## set_overflow_0: sets overflow flag to 0                     ##
-#################################################################
-set_overflow_0:
-	andb $0xBF, P				# set overflow flag
-	ret
-
-#################################################################
-## set_overflow_1: sets overflow flag to 1                     ##
-#################################################################	
-set_overflow_1:
-	orb $0x40, P				# clear overflow flag
-	ret
-
-#################################################################
-## set_carry_0: sets carry flag to 0                           ##
-#################################################################
-set_carry_0:
-	andb $0xFE, P				# set overflow flag
-	ret
-
-#################################################################
-## set_carry_1: sets carry flag to 1                           ##
-#################################################################	
-set_carry_1:
-	orb $0x1, P				# clear overflow flag
-	ret
-
-#################################################################
-## set_sign_0: sets sign (negative) flag to 0                  ##
-#################################################################
-set_sign_0:
-	andb $0x7F, P				# clear sign flag
-	ret
-
-#################################################################
-## set_sign_1: sets sign (negative) flag to 1                  ##
-#################################################################
-set_sign_1:
-	orb $0x80, P				# set sign flag
 	ret
 
 #################################################################
