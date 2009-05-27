@@ -45,21 +45,7 @@ DEF_PAUSE			; p: pause
 	DC #$73			; s
 	DC #$65			; e
 	DC #$00			; NULL
-
-DEF_PLAYER
-	DC #$50			; P
-	DC #$6C			; l
-	DC #$61			; a
-	DC #$79			; y
-	DC #$65			; e
-	DC #$72			; r
-	DC #$00			; NULL
-
-DEF_TIE
-	DC #$54			; T
-	DC #$69			; i
-	DC #$65			; e
-	DC #$00			; NULL
+	
 
 FRAMETICK
 	DC #$00
