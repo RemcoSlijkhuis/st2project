@@ -1,0 +1,40 @@
+ ;#####################################################################
+;## STRING DEFINITION                                               ##
+;#####################################################################
+
+DEF_BORDER
+	DC #$23			; #
+	DC #$00			; the null sign	
+
+DEF_POSITION_STRING
+	DC #$5E			; ^
+	DC #$00
+
+POSITION_X
+	DC #$06
+
+POSITION_Y
+	DC #$04
+	
+FRAMETICK
+	DC #$00
+
+CUR_PLAYER
+	DC #$01
+
+PLAYER1_STRING
+	DC #$58			; X
+	DC #$00
+
+PLAYER2_STRING
+	DC #$4F			; O
+	DC #$00
+
+FIELD1
+	DC #$00
+
+FIELD2
+	DC #$00
+
+FIELD3
+	DC #$00

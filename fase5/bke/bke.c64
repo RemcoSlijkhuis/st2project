@@ -1,0 +1,224 @@
+;#####################################################################
+;## Macro to help with printing                                     ##
+;## Usage: Print [pointer]                                          ##
+;#####################################################################
+	MAC Print
+.ADDRESS SET {1}
+	DC $02
+	DC #<.ADDRESS
+	DC #>.ADDRESS
+	ENDM
+
+
+
+;######################################################################
+;## Start of the program 					     ##
+;######################################################################
+	processor 6502
+	org $8000
+	
+	jmp main			; start with the program
+
+	INCLUDE "vars.c64"		; load string definition
+
+
+;#####################################################################
+;## main: the main program                                          ##
+;#####################################################################
+main
+	JSR init_screen 
+
+
+game_loop
+	DC $0B				; sleep 1ms
+	DC $01
+	DC $03				; get key into accumulator
+
+	CMP #$00			; see if any key has been pressed
+	BEQ game_step			; if not, continue with the loop
+
+	CMP #$62			; check if the enter key is pressed
+	BEQ do_zet
+	
+	
+	JSR handle_keys			; update position
+	
+
+game_step
+	INC FRAMETICK			; increase the frame ticker with one
+	LDA FRAMETICK			; load the frame ticker into the accumulator
+	CMP #$10			; check if more than 100 (0x64) ms have passed since last game step
+	BNE game_loop			; if not, continue with the loop
+	
+	
+	LDA #$00			; reset the frame ticker to 0
+	STA FRAMETICK
+	
+	JMP game_loop
+	
+game_end
+	DC $db
+
+;#####################################################################
+;## do_zet:							    ##
+;#####################################################################
+do_zet
+	
+	DC #$04
+	DEY
+	DC #$04
+	LDA CUR_PLAYER
+	CMP #$01
+	BNE player2
+player1
+	PRINT PLAYER1_STRING	
+	LDA #$02
+	STA CUR_PLAYER	
+	JMP do_zet_end
+
+player2
+	PRINT PLAYER2_STRING	
+	LDA #$01
+	STA CUR_PLAYER	
+
+do_zet_end
+	INY
+	DC #$04
+	JMP game_step
+
+
+
+;#####################################################################
+;## handle_keys:						    ##
+;## updates the position on pressed key                  	    ##
+;## keys: w,a,s,d, ie 0x77, 0x61, 0x73, 0x64               	    ##
+;#####################################################################
+handle_keys
+
+	DC #$04					; set the cursor to the new position
+	CMP #$77				; check if the w button is pressed
+	BNE handle_keys_continue61		; if not, continue with checking the rest of the keys
+	CPY #02					; check if the movement is legal	
+	BEQ handle_keys_end			; if not, go to the end
+	PRINT DEF_BORDER			; else, remove the cursor
+	DEY					; and decrease the y position by 2
+	DEY
+	DC #$04					; move the cursor
+	PRINT DEF_POSITION_STRING		; print the cursor
+	JMP handle_keys_end
+
+handle_keys_continue61
+
+	CMP #$61				; check if the a button is pressed
+	BNE handle_keys_continue73		; if not, continue with checking the rest of the keys
+	CPX #02					; check if the movement is legal
+	BEQ handle_keys_end			; if not, go to the end
+	PRINT DEF_BORDER			; else, remove the cursor
+	DEX					; and decrease the x position by 4
+	DEX
+	DEX
+	DEX
+	DC #$04					; move the cursor
+	PRINT DEF_POSITION_STRING		; print the cursor
+	JMP handle_keys_end
+		
+handle_keys_continue73
+	
+	CMP #$73				; check if the s button is pressed
+	BNE handle_keys_continue64		; if not, continue with checking the rest of the keys
+	CPY #06					; check if the movement is legal
+	BEQ handle_keys_end			; if not, go to the end
+	PRINT DEF_BORDER			; else, remove the cursor
+	INY					; and increase the y position by 2
+	INY
+	DC #$04
+	PRINT DEF_POSITION_STRING		; move the cursor
+	JMP handle_keys_end			; print the cursor
+
+handle_keys_continue64
+
+	CMP #$64				; check if the s button is pressed
+	BNE handle_keys_end			; if not, go to the end
+	CPX #$0A				; check if the movement is legal
+	BEQ handle_keys_end			; if not, go to the end
+	PRINT DEF_BORDER			; else, remove the cursor
+	INX					; and increase the x position by 4
+	INX
+	INX
+	INX
+	DC #$04					; move the cursor
+	PRINT DEF_POSITION_STRING		; print the cursor
+
+handle_keys_end	
+
+	RTS
+
+
+;#####################################################################
+;## init_screen: initialises the game screen with a #-border        ##
+;#####################################################################
+init_screen
+	DC $0F				; setcolor, red text with dark yellow bg
+	DC $27
+	DC $0C				; clear screen
+	LDX #$0
+	LDY #$0
+	DC $04				; move the cursor to (0,0)
+	
+init_screen_global
+
+init_screen_loop1			
+	PRINT DEF_BORDER		; print the border
+	INX				; increment x with one
+	CPX #$0D			; print this 14 times
+	BNE init_screen_loop1
+	
+	LDX #$00			; put the x back to 0
+	INY				; increase the y
+	DC $04				; move the cursor to the new position
+
+init_screen_loop2			
+	PRINT DEF_BORDER		; print the border
+	INX
+	INX
+	INX
+	INX				; increment x with four
+	DC $04				; move the cursor to the new position
+	CPX #$10			; print this 4 times
+	BNE init_screen_loop2
+	
+	LDX #$00			; put the x back to 0
+	INY				; increase the y
+	DC $04				; move the cursor to the new position
+	CPY #$06			
+	BNE init_screen_global
+
+init_screen_loop3
+			
+	PRINT DEF_BORDER		; print the border
+	INX				; increment x with one
+	CPX #$0D			; print this 14 times
+	BNE init_screen_loop3
+	
+	LDX #$00			; put the x back to 0
+
+	LDX POSITION_X			; load the x and y position
+	LDY POSITION_Y
+	DC $04				; move the cursor
+	
+	PRINT DEF_POSITION_STRING	; print the position string
+
+	RTS
+
+;#####################################################################
+;## pauser: pauses the program until any key has been pressed       ##
+;#####################################################################
+pauser
+	DC $0B				; sleep for 1ms
+	DC $01
+	
+	DC $03				; getkey
+	
+	CMP #$00			; compare the accumulator (last pressed key) to 0 (null)
+	BEQ pauser			; if no key has been pressed, go back to loop
+	RTS
