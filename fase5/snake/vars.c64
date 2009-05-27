@@ -70,6 +70,14 @@ DEF_TIE
 	DC #$65			; e
 	DC #$00			; NULL
 
+DEF_ERROR
+	dc #$65			; e
+	dc #$72			; r
+	dc #$72			; r
+	dc #$6F			; 0
+	dc #$72			; r
+	dc #$00			; NULL
+	
 FRAMETICK
 	DC #$00
 
