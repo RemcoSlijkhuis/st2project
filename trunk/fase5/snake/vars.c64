@@ -74,7 +74,7 @@ PLAYER2_X
 PLAYER2_Y
 	DC #$01
 
-PLAYER2_DIR			; 0=top, clockwise
+PLAYER2_DIR			; 0=top, counter-clockwise
 	DC #$01			; to the left
 
 PLAYER2_SCORE
