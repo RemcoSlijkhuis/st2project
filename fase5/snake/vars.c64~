@@ -45,7 +45,22 @@ DEF_PAUSE			; p: pause
 	DC #$73			; s
 	DC #$65			; e
 	DC #$00			; NULL
-	
+
+DEF_PLAYER
+	DC #$50			; P
+	DC #$6C			; l
+	DC #$61			; a
+	DC #$79			; y
+	DC #$65			; e
+	DC #$72			; r
+	DC #$20			;  
+	DC #$00			; NULL
+
+DEF_TIE
+	DC #$54			; T
+	DC #$69			; i
+	DC #$65			; e
+	DC #$00			; NULL
 
 FRAMETICK
 	DC #$00
@@ -64,8 +79,8 @@ PLAYER1_Y
 PLAYER1_DIR			; 0=top, counter-clockwise
 	DC #$03			; to the right
 
-PLAYER1_SCORE
-	DC #$00
+PLAYER1_DIR2
+	DC #$03			; previous direction
 
 PLAYER2
 PLAYER2_X
@@ -77,6 +92,6 @@ PLAYER2_Y
 PLAYER2_DIR			; 0=top, counter-clockwise
 	DC #$01			; to the left
 
-PLAYER2_SCORE
-	DC #$00
-
+PLAYER2_DIR2
+	DC #$01			; previous direction
+	
