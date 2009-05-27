@@ -1,0 +1,38 @@
+Notulen 15-05-2009
+
+Voorzitter:	Sebastian	
+Notulist:	Christopher
+
+Vergadering geopend om 09:15
+
+Afwezigen: Geen
+
+Huidig status project:
+
+Fase 3 succesvol afgerond. Commentaar in execute nog beneden de maat.
+Fase 4 alle executes af. Nog redelijk wat bugs in deze.
+Fase 5 zit nog in de bedenkfase.
+
+Taakverdeling voor vandaag:
+Debuggen van fase 4							- Sebastiaan & Leendert
+Input en Output deel fase 5 bestuderen en eventueel aan beginnen	- Jelle & Casper
+Begin Rapport	     	    	       	  	    			- Christopher
+
+Extra opmerkingen:
+-Op CPM staan nog de oude fase3a en fase3b files waarin nog enkele fouten staan. Nieuwe versie moet nog geupload worden. Sebas neemt dit voor zijn rekening.
+-Fase 4 debuggen moet goed worden gelet op signed en unsigned jump commando's.
+-Op SVN staan bij fase4 nog de oude files van fase 3b. Moet even gekopieerd en opnieuw geupload worden.
+
+Afspraken met betrekking tot de code:
+-Commentaar moet beter
+-Commando "testB" kan worden gebruikt als compare/end (scheelt coden en maakt overzichtelijker)
+-Commando "movzbl" kan worden gebruikt daar waar we eerst elke keer de registers resetten (scheelt code, maakt overzichtelijker)
+
+Volgende vergadering: 
+	 Datum: 27-05-2009
+	 Voorzitter: Christopher
+	 Notulist: Jelle
+
+Vergadering gesloten om: 9:27
+	 
+	 
