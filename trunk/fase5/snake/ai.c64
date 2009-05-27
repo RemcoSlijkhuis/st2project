@@ -1,0 +1,49 @@
+;#####################################################################
+;## Artificial Intelligence subroutine	1.0                         ##
+;#####################################################################
+snake_AI
+			LDA PLAYER2_DIR 	; get direction player 2
+			CMP #$02			; check if direction is smaller than 2
+			BMI AIdir_ul		; if so jump to check for up/left
+			
+AIdir_dr	CMP #$02			; check if direction is down
+			BEQ AIdir_down	
+			
+AIdir_right	INC PLAYER2_X		; move player to the right
+			Check_collison		; check if this situation gives a collison
+			DEC PLAYER2_X		; undo movement
+			CMP #$0				
+			BEQ AI_end			; if next position is clear, move on.
+			LDA #$0				; if not, change direction and check again
+			STA PLAYER2_DIR
+			JMP snake_AI
+			
+AIdir_down	DEC PLAYER2_Y		; move player down
+			Check_collison		; check if this situation gives a collison 
+			INC PLAYER2_Y		; undo movement
+			CMP #$0				
+			BEQ AI_end			; if next position is clear, move on.
+			INC PLAYER2_DIR		; if not, change direction and check again			
+			JMP snake_AI
+
+AIdir_ul	CMP #$00 			; check if direction is up
+			BEQ AIdir_up 
+
+AIdir_left	DEC PLAYER2_X		; move player to the left
+			Check_collison		; check if this situation gives a collison 
+			INC PLAYER2_X		; undo movement
+			CMP #$0				
+			BEQ AI_end			; if next position is clear, move on.
+			INC PLAYER2_DIR		; if not, change direction and check again			
+			JMP snake_AI
+			
+AIdir_up	INC PLAYER2_Y		; move player up
+			Check_collison		; check if this situation gives a collison 
+			DEC PLAYER2_Y		; undo movement
+			CMP #$0				
+			BEQ AI_end			; if next position is clear, move on.
+			INC PLAYER2_DIR		; if not, change direction and check again			
+			JMP snake_AI
+
+AI_end		RTS
+
