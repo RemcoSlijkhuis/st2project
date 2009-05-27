@@ -82,8 +82,8 @@ main
 	JSR init_screen
 	
 game_loop
-	DC $0B				; sleep 1ms
-	DC $01
+	DC $0B				; sleep 5ms
+	DC $05
 	DC $03				; get key into accumulator
 
 	CMP #$00			; see if any key has been pressed
@@ -102,7 +102,7 @@ nopause
 game_step
 	INC FRAMETICK			; increase the frame ticker with one
 	LDA FRAMETICK			; load the frame ticker into the accumulator
-	CMP #$64			; check if more than 100 (0x64) ms have passed since last game step
+	CMP #$14			; check if more than 20 (0x14) ms have passed since last game step
 	BNE game_loop			; if not, continue with the loop
 	
 	
