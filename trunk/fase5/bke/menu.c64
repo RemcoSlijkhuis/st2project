@@ -1,0 +1,141 @@
+;#################################################
+;## main_menu					##
+;## shows the main menu of the game		##
+;#################################################
+
+main_menu
+	DC $0F				; setcolor, red text with dark yellow bg
+	DC $27
+	DC $0C				; clear screen
+	LDX #$00
+	LDY #$00
+	DC  $04
+
+menu_loop1
+	PRINT DEF_BORDER		; print the upper border
+	INX				; 32 times
+	CPX #$20
+	BNE menu_loop1
+	
+	INY				; reset x and move y 1 down
+	LDX #$00
+	
+
+menu_loop2
+	DC  $04				; print the left border
+	PRINT DEF_BORDER
+	LDX #$1F
+	DC  $04
+	PRINT DEF_BORDER		; prinf the right border
+	INY
+	LDX #$00
+	CPY #$0E
+	BNE menu_loop2
+
+	DC  $04		
+
+menu_loop3
+	PRINT DEF_BORDER		; print the lower border
+	INX
+	CPX #$20
+	BNE menu_loop3
+	
+
+menu_options
+	LDX #$07			; move the cursor to place the menu options
+	LDY #$04
+	DC  #$04
+	
+	PRINT DEF_MENU_1		; print the first menu option and select it
+	
+	DEX
+	LDY #$07
+	DC  #$04
+	PRINT DEF_MENU_2		; print the 2nd option
+
+	LDX #$0D
+	LDY #$0A
+	DC #$04
+	PRINT DEF_MENU_3		; print the 3rd option
+
+	LDA DEF_MENU_POS		; load the position of the menu
+	CMP #$01			; compare with 1
+	BNE menu_options_continue_1	; if not continue to compare with 2
+	LDX #$07			; else load the X
+	LDY #$04			; and Y values
+	DC  #$04			; and move the cursor
+	PRINT DEF_MENU_POS_LEFT		; print the left string for it
+	LDX #$18			; move the X coordinate
+	DC  #$04			; and move the cursor
+	PRINT DEF_MENU_POS_RIGHT	; and print the right string
+	JMP menu_key_loop		; return to the key loop
+
+menu_options_continue_1
+	CMP #$02			; check if the position is 2
+	BNE menu_options_continue_2	; if not, continue checking the rest
+	LDX #$06			; else load in the coordinates
+	LDY #$07
+	DC #$04				; and move the cursor
+	PRINT DEF_MENU_POS_LEFT		; print the left string
+	LDX #$19			; move the cursor
+	DC #$04
+	PRINT DEF_MENU_POS_RIGHT	; print the right string
+	JMP menu_key_loop
+
+menu_options_continue_2
+	LDX #$0D			; 3rd option is selected
+	LDY #$0A			; laod the coordinates
+	DC  #$04			; and move the cursor
+	PRINT DEF_MENU_POS_LEFT		; print the left string
+	LDX #$12			; move the cursor
+	DC  #$04
+	PRINT DEF_MENU_POS_RIGHT	; print the right string
+
+menu_key_loop
+
+	DC $0B				; sleep 1ms
+	DC $01
+	DC $03				; get key into accumulator
+
+	CMP #$00			; see if any key has been pressed
+	BEQ menu_key_loop		; if not, continue with the loop
+	
+	CMP #$77			; check if the w button is pressed
+	BNE key_loop_continue		; if not, continue checking the other keys
+	LDA DEF_MENU_POS		; else process the input
+	CMP #$01			; check if its possible to go up
+	BEQ menu_key_loop		; if not, return to key loop
+	SBC #$01			; else move the position up
+	STA DEF_MENU_POS		; and store it
+	JMP menu_options		; reprint the menu
+
+key_loop_continue
+	CMP #$73			; check is the s butting is pressed
+	BNE key_loop_continue2		; if not, continue checking the other keys
+	LDA DEF_MENU_POS		; else process the input
+	CMP #$03			; check if its possible to go down
+	BEQ menu_key_loop		; if not, return to key loop
+	ADC #$01			; else move the position down
+	STA DEF_MENU_POS		; and store it
+	JMP menu_options		; reprint the menu
+
+key_loop_continue2
+	CMP #$20			; check if the space button is pressed
+	BNE menu_key_loop		; if not, return to the key loop
+	LDA DEF_MENU_POS		; else process the input
+	CMP #$01			; check if the position is 1
+	BNE key_loop_continue3		; if not continue checking
+	RTS				; else start the game
+
+key_loop_continue3		
+	CMP #$02			; check if the position is 2
+	BNE key_loop_continue4		; if not continue checking
+	JMP menu_key_loop		; 
+
+key_loop_continue4				
+	DC #$DB				; if the position is 3, end the game
+	
+	
+
+
+	RTS
