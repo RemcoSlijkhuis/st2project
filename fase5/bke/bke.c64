@@ -9,8 +9,33 @@
 	DC #>.ADDRESS
 	ENDM
 
+;######################################################################
+;## Macro to help checking if a position is free or not		     ##
+;## Usage: CheckPos [Row Pointer] [Compare value]		     ##
+;######################################################################
+	MAC CheckPos
+ROWADDRESS SET {1}
+COMPAREVALUE SET {2}
+	LDA ROWADDRESS		; load in the row	
+	AND #COMPAREVALUE	; and it with the compare value
+	CMP #$00		; compare with 0
+	BEQ checkpos_true	; if equal, position is free
+	LDA #00			; else the position is used
+	RTS	
+	ENDM
 
-
+;######################################################################
+;## Macro to help setting a position to be used			     ##
+;## Usage: SetPos [Row Pointer] [Compare value]		     ##
+;######################################################################
+	MAC SetPos
+ROWADDRESS SET {1}
+COMPAREVALUE SET {2}
+	LDA ROWADDRESS			; load in the row
+	ORA COMPAREVALUE		; and it with the compare value
+	STA ROWADDRESS
+	RTS
+	ENDM
 ;######################################################################
 ;## Start of the program 					     ##
 ;######################################################################
@@ -35,25 +60,14 @@ game_loop
 	DC $03				; get key into accumulator
 
 	CMP #$00			; see if any key has been pressed
-	BEQ game_step			; if not, continue with the loop
+	BEQ game_loop			; if not, continue with the loop
 
 	CMP #$62			; check if the enter key is pressed
 	BEQ do_zet
 	
 	
 	JSR handle_keys			; update position
-	
-
-game_step
-	INC FRAMETICK			; increase the frame ticker with one
-	LDA FRAMETICK			; load the frame ticker into the accumulator
-	CMP #$10			; check if more than 100 (0x64) ms have passed since last game step
-	BNE game_loop			; if not, continue with the loop
-	
-	
-	LDA #$00			; reset the frame ticker to 0
-	STA FRAMETICK
-	
+		
 	JMP game_loop
 	
 game_end
@@ -63,31 +77,377 @@ game_end
 ;## do_zet:							    ##
 ;#####################################################################
 do_zet
-	
-	DC #$04
-	DEY
-	DC #$04
-	LDA CUR_PLAYER
-	CMP #$01
-	BNE player2
+	JSR check_position 		; check the current position
+	CMP #$00			; and load a boolean into A
+	BEQ do_zet_end			; and branch if the position is used
+
+do_zet_continue
+	DC #$04				; set the cursor to the current X and Y
+	DEY				; decrease the y to get the position of the right spot
+	DC #$04				; move the cursor
+	LDA CUR_PLAYER			; load the current player
+	CMP #$01			; compare the player with 1
+	BNE player2			; jump to player2 if the cur_player isnt 1
 player1
-	PRINT PLAYER1_STRING	
-	LDA #$02
-	STA CUR_PLAYER	
+	PRINT PLAYER1_STRING		; else print the player1 string
+	JSR set_position		; set the position in the ROW
+	JSR check_end_game		; checks if a player has won
+	LDA #$02			; load the new player into A
+	STA CUR_PLAYER			; store the new player
+
+	INY				; move Y back to its original place
+	DC #$04				; as well as the cursor
 	JMP do_zet_end
 
 player2
-	PRINT PLAYER2_STRING	
-	LDA #$01
-	STA CUR_PLAYER	
+	PRINT PLAYER2_STRING		; print the player2 string
+	JSR set_position		; set the position in the ROW
+	JSR check_end_game		; checks if a player has won
+	LDA #$01			; load the new player into A
+	STA CUR_PLAYER			; store the new player
+
+	INY				; move Y back to its original place
+	DC #$04				; as well as the cursor
 
 do_zet_end
-	INY
-	DC #$04
-	JMP game_step
+	
+	
+	JMP game_loop			; return to the game
 
 
+;#####################################################################
+;## check_end_game						    ##
+;## checks if a player has won					    ##
+;#####################################################################
 
+check_end_game
+
+	JSR set_comparevalues
+	
+	LDA ROW1			; first combination is the upper row
+	AND COMPAREVALUE_COL1		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination2
+	LDA ROW1
+	AND COMPAREVALUE_COL2	
+	CMP #$00
+	BEQ combination2
+	LDA ROW1
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination2					
+	JSR player_won			; the player has won
+	
+combination2
+	LDA ROW2			; second combination is the middle row
+	AND COMPAREVALUE_COL1		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination3
+	LDA ROW2
+	AND COMPAREVALUE_COL2	
+	CMP #$00
+	BEQ combination3
+	LDA ROW2
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination3
+	JSR player_won			; the player has won
+
+combination3
+	LDA ROW3			; third combination is the lowest row
+	AND COMPAREVALUE_COL1		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination4
+	LDA ROW3
+	AND COMPAREVALUE_COL2	
+	CMP #$00
+	BEQ combination4
+	LDA ROW3
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination4
+	JSR player_won			; the player has won
+
+combination4
+	LDA ROW1			; fourth combination is the left column
+	AND COMPAREVALUE_COL1		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination5
+	LDA ROW2
+	AND COMPAREVALUE_COL1	
+	CMP #$00
+	BEQ combination5
+	LDA ROW3
+	AND COMPAREVALUE_COL1
+	CMP #$00
+	BEQ combination5
+	JSR player_won			; the player has won
+
+combination5
+	LDA ROW1			; fifth combination is the middle column
+	AND COMPAREVALUE_COL2		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination6
+	LDA ROW2
+	AND COMPAREVALUE_COL2
+	CMP #$00
+	BEQ combination6
+	LDA ROW3
+	AND COMPAREVALUE_COL2
+	CMP #$00
+	BEQ combination6
+	JSR player_won			; the player has won
+
+combination6
+	LDA ROW1			; sixth combination is the right column
+	AND COMPAREVALUE_COL3		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination7
+	LDA ROW2
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination7
+	LDA ROW3
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination7
+	JSR player_won			; the player has won
+
+combination7
+	LDA ROW1			; seventh combination is a diagonal
+	AND COMPAREVALUE_COL1		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination8
+	LDA ROW2
+	AND COMPAREVALUE_COL2
+	CMP #$00
+	BEQ combination8
+	LDA ROW3
+	AND COMPAREVALUE_COL3
+	CMP #$00
+	BEQ combination8
+	JSR player_won			; the player has won
+
+combination8
+	LDA ROW1			; last combination is als a diagonal
+	AND COMPAREVALUE_COL3		; continue with other combinations as soon as we see the combination fails
+	CMP #$00
+	BEQ combination_end
+	LDA ROW2
+	AND COMPAREVALUE_COL2	
+	CMP #$00
+	BEQ combination_end
+	LDA ROW3
+	AND COMPAREVALUE_COL1
+	CMP #$00
+	BEQ combination_end
+
+combination_end				; nobody won!
+	RTS
+
+;#####################################################################
+;## player_won							    ##
+;## a player has won so we end the game				    ##
+;#####################################################################
+
+player_won
+	LDX #$12
+	LDY #$05
+	DC  #$04
+
+	LDA CUR_PLAYER
+	CMP #$01
+	BNE player2_won
+	PRINT DEF_PLAYER1_WON
+	JSR pauser
+	DC #$DB
+
+player2_won
+	PRINT DEF_PLAYER2_WON
+	JSR pauser
+	DC #$DB
+
+;#####################################################################
+;## check_position						    ##
+;## check the current position, return true if its available        ##
+;#####################################################################
+
+
+check_position
+	LDA CUR_POSITION			; load in the current position
+
+	CMP #$01				; if the position isnt 1
+	BNE check_position_2			; branch to check for 2
+	CheckPos ROW1, #$30			; else check the position for 1
+
+check_position_2				
+
+	CMP #$02				; same as for position 1
+	BNE check_position_3
+	CheckPos ROW1, #$0C
+
+check_position_3	
+	CMP #$03				; again same as for position 1
+	BNE check_position_4	
+	CheckPos ROW1, #$03	
+
+check_position_4
+
+	CMP #$04				; and again
+	BNE check_position_5
+	CheckPos ROW2, #$30
+
+check_position_5
+		
+	CMP #$05				; its getting boring now
+	BNE check_position_6
+	CheckPos ROW2, #$0C
+
+check_position_6
+
+	CMP #$06				; and again
+	BNE check_position_7
+	CheckPos ROW2, #$03
+
+check_position_7
+
+	CMP #$07				; and again
+	BNE check_position_8
+	CheckPos ROW3, #$30
+
+check_position_8
+
+	CMP #$08				; and again
+	BNE check_position_9
+	CheckPos ROW3, #$0C
+
+check_position_9
+	CheckPos ROW3, #$03			; and the last one!
+
+checkpos_true		
+	LDA #$01				; return 1 if the position is free
+	RTS				
+
+
+;#####################################################################
+;## set_position						    ##
+;## sets the current position into one of the ROWs		    ##
+;#####################################################################
+
+set_position
+
+	JSR set_setvalues
+
+	LDA CUR_POSITION			; load in the current position
+	CMP #$01				; if the position isnt 1
+	BNE set_position_2			; branch to check for 2
+	SetPos ROW1, SETVALUE_COL1		; else set position 1
+
+set_position_2				
+
+	CMP #$02				; same as for position 1
+	BNE set_position_3
+	SetPos ROW1, SETVALUE_COL2
+
+set_position_3	
+	CMP #$03				; again same as for position 1
+	BNE set_position_4	
+	SetPos ROW1, SETVALUE_COL3	
+
+set_position_4
+
+	CMP #$04				; and again
+	BNE set_position_5
+	SetPos ROW2, SETVALUE_COL1
+
+set_position_5
+		
+	CMP #$05				; its getting boring now
+	BNE set_position_6
+	SetPos ROW2, SETVALUE_COL2
+
+set_position_6
+
+	CMP #$06				; and again
+	BNE set_position_7
+	SetPos ROW2, SETVALUE_COL3
+
+set_position_7
+
+	CMP #$07				; and again
+	BNE set_position_8
+	SetPos ROW3, SETVALUE_COL1
+
+set_position_8
+
+	CMP #$08				; and again
+	BNE set_position_9
+	SetPos ROW3, SETVALUE_COL2
+
+set_position_9
+	SetPos ROW3, SETVALUE_COL3		; and the last one!
+	
+set_position_end	
+
+	RTS
+
+;#####################################################################
+;## set_setvalues						    ##
+;## sets the setvalue by looking to the CUR_PLAYER		    ##
+;#####################################################################
+
+set_setvalues
+	LDA CUR_PLAYER				; load in the current plauer
+	CMP #$02				; branch to player 2 label if the player is 2
+	BEQ set_values_player2
+	
+	LDA #$20				; load in the setvalue for col 1
+	STA SETVALUE_COL1			; and store it
+	LDA #$08				; load in the setvalue for col 2
+	STA SETVALUE_COL2			; and store it
+	LDA #$02				; load in the setvalue for col 3
+	STA SETVALUE_COL3			; and stote it
+	RTS
+
+set_values_player2
+
+	LDA #$10				; laod in the setvalue for col 1
+	STA SETVALUE_COL1			; and store it
+	LDA #$04				; load in the setvalue for col 2
+	STA SETVALUE_COL2			; and store it
+	LDA #$01				; load in the setvalue for col 3
+	STA SETVALUE_COL3			; and store it
+
+	RTS
+
+;#####################################################################
+;## set_comparevalues						    ##
+;## sets the setvalue by looking to the CUR_PLAYER		    ##
+;#####################################################################
+
+set_comparevalues
+	LDA CUR_PLAYER				; load in the current plauer
+	CMP #$02				; branch to player 2 label if the player is 2
+	BEQ set_compare_player2
+	
+	LDA #$20				; load in the setvalue for col 1
+	STA COMPAREVALUE_COL1			; and store it
+	LDA #$08				; load in the setvalue for col 2
+	STA COMPAREVALUE_COL2			; and store it
+	LDA #$02				; load in the setvalue for col 3
+	STA COMPAREVALUE_COL3			; and stote it
+	RTS
+
+set_compare_player2
+
+	LDA #$10				; laod in the setvalue for col 1
+	STA COMPAREVALUE_COL1			; and store it
+	LDA #$04				; load in the setvalue for col 2
+	STA COMPAREVALUE_COL2			; and store it
+	LDA #$01				; load in the setvalue for col 3
+	STA COMPAREVALUE_COL3			; and store it
+
+	RTS
 ;#####################################################################
 ;## handle_keys:						    ##
 ;## updates the position on pressed key                  	    ##
@@ -103,6 +463,9 @@ handle_keys
 	PRINT DEF_BORDER			; else, remove the cursor
 	DEY					; and decrease the y position by 2
 	DEY
+	LDA CUR_POSITION
+	SBC #$03				; update the current position
+	STA CUR_POSITION
 	DC #$04					; move the cursor
 	PRINT DEF_POSITION_STRING		; print the cursor
 	JMP handle_keys_end
@@ -118,6 +481,9 @@ handle_keys_continue61
 	DEX
 	DEX
 	DEX
+	LDA CUR_POSITION
+	SBC #$01				; update the current position
+	STA CUR_POSITION
 	DC #$04					; move the cursor
 	PRINT DEF_POSITION_STRING		; print the cursor
 	JMP handle_keys_end
@@ -131,6 +497,9 @@ handle_keys_continue73
 	PRINT DEF_BORDER			; else, remove the cursor
 	INY					; and increase the y position by 2
 	INY
+	LDA CUR_POSITION
+	ADC #$03				; update the current position
+	STA CUR_POSITION
 	DC #$04
 	PRINT DEF_POSITION_STRING		; move the cursor
 	JMP handle_keys_end			; print the cursor
@@ -146,6 +515,9 @@ handle_keys_continue64
 	INX
 	INX
 	INX
+	LDA CUR_POSITION
+	ADC #$01				; update the current position
+	STA CUR_POSITION
 	DC #$04					; move the cursor
 	PRINT DEF_POSITION_STRING		; print the cursor
 

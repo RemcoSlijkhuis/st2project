@@ -10,17 +10,74 @@ DEF_POSITION_STRING
 	DC #$5E			; ^
 	DC #$00
 
-POSITION_X
-	DC #$06
-
-POSITION_Y
-	DC #$04
-	
-FRAMETICK
+DEF_PLAYER1_WON
+	DC #$50
+	DC #$6C
+	DC #$61	
+	DC #$79
+	DC #$65
+	DC #$72
+	DC #$20
+	DC #$31
+	DC #$20
+	DC #$57
+	DC #$69
+	DC #$6E
+	DC #$73
+	DC #$21
 	DC #$00
 
-CUR_PLAYER
+DEF_PLAYER2_WON
+	DC #$50
+	DC #$6C
+	DC #$61	
+	DC #$79
+	DC #$65
+	DC #$72
+	DC #$20
+	DC #$32
+	DC #$20
+	DC #$57
+	DC #$69
+	DC #$6E
+	DC #$73
+	DC #$21
+	DC #$00
+
+ROW1
+	DC #$00			; Row of the game
+ROW2
+	DC #$00
+ROW3
+	DC #$00
+
+COMPAREVALUE_COL1
+	DC #$00
+COMPAREVALUE_COL2
+	DC #$00
+COMPAREVALUE_COL3
+	DC #$00
+
+SETVALUE_COL1
+	DC #$00
+SETVALUE_COL2
+	DC #$00
+SETVALUE_COL3
+	DC #$00
+
+POSITION_X			; X position of the cursor
+	DC #$06
+
+POSITION_Y			; Y position of the cursor
+	DC #$04
+	
+CUR_POSITION 			; Currunt position on the board
+	DC #$05
+
+CUR_PLAYER			; The current player
 	DC #$01
+
+
 
 PLAYER1_STRING
 	DC #$58			; X
@@ -30,11 +87,6 @@ PLAYER2_STRING
 	DC #$4F			; O
 	DC #$00
 
-FIELD1
-	DC #$00
 
-FIELD2
-	DC #$00
 
-FIELD3
-	DC #$00
+
