@@ -1,0 +1,34 @@
+;#####################################################################
+;## Macro to check if the game is at an end                         ##
+;## Usage: Check_collision                                          ##
+;## Load the accumulator with:                                      ##
+;## 0: game continues                                               ##
+;## 1: player 1 wins                                                ##
+;## 2: player 2 wins                                                ##
+;## 3: tie (both died)        		                                ##
+;## 4: tie (head-on collision)                                      ##
+;#####################################################################
+	MAC Check_collision
+	LDX #$00							; load result in X
+	LDA PLAYER1_X						; load the player 1 X into the accumulator
+	CMP PLAYER2_X						; and compare it to player 2's X
+	BNE C_notie							; if not equal, it's definitely not a tie
+	LDA PLAYER1_Y						; load the player 1 Y into the accumulator
+	CMP PLAYER2_Y						; and compare it to player 2's Y
+	BNE C_notie							; if not equal, it's definitely not a tie
+	LDX #$04							; otherwise, it's a tie
+	JMP C_end							; and stop processing
+C_notie
+	Field_check PLAYER1_X, PLAYER1_Y	; check if player 1 is at an illegal position
+	BEQ C_check2						; if player 1 is at a valid position, check for player 2 
+	INX									; if not, add 1 to result
+C_check2
+	Field_check PLAYER2_X, PLAYER2_Y	; check if player 2 is at an illegal position
+	BEQ C_end							; if player 2 is at a valid position too, jump to end. Accumulator is still 0
+	INX									; if not add 2 to result, result now contains return value
+	INX									
+C_end
+	TXA									; transfer result to accumulator
+	ENDM
+	
+	

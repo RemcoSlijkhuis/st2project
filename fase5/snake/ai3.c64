@@ -17,16 +17,23 @@ AI_option
 			dc #$00			; init option at 0
 
 ;#######################################################################
-;##	AI_fase		divides strategy, amount differs per option
+;##	AI_case		divides strategy, amount differs per option
 ;##			
 			
 AI_case	
-			dc #$00			; init fase at 0
+			dc #$00			; init case at 0
 ;#####################################################################	
 ;## AI_turn 	keeps track at which turn te game is.
 ;##	
 AI_turn
 			dc #$00			; init turn at 0
+			
+;#####################################################################	
+;## AI_moveMem	stores the previous direction of player1
+;##	
+
+AI_moveMem
+			dc #$00			; init moveMem at 0
 
 ;##########################################################################
 ;##	main subroutine
@@ -42,10 +49,12 @@ notfirst
 			LDA AI_option		; load option in accumulator
 			CMP #$05			; if option is 5, go to decideOpt5
 			BEQ AI_decideOpt5	
-			LDA #$01			; if no legal option, give error 1
+			LDA #$01			; if no legal option, give error code 1
 			JSR AI_error		
 			JMP AI_basicDir		; and perform basic direction choice
-AI_end			RTS					; return after choice is made
+AI_end		LDA PLAYER1_DIR		; get direction of player 1
+			STA AI_moveMem		; store direction for next turn
+			RTS					; return after choice is made
 		
 ;################################################################################
 ;## AI_chooseOpt	decides wich strategy to use
@@ -82,24 +91,77 @@ setOp5		LDA #$05			; set option 5
 
 AI_decideOpt5
 			LDA AI_case			; get current case
-			CMP #$00			; check if case is 0
-			BEQ Opt5_0			; if so go to Opt5_0
-			CMP #$01			; check if case is 1
-			BEQ Opt5_1			; if so go to Opt5_1
-			CMP #$02			; check if case is 2
-			BEQ Opt5_2			; if so go to Opt5_2
+			CLC		
+			ADC Opt5Table		; ADD Opt5Table to case for right offset
+			STA $7100			; store resulting adress
+			JMP $7100			; jump to resulting adress
+Opt5Table	
+			;## case 0: players are heading right in to eachother
+			JMP Opt5_0	
+			
+			;## case 1: players chose new direction, lines are connected
+			JMP Opt5_1	
+			
+			;## case 2: players chose new direction, lines are not connected
+			JMP Opt5_2
+			
 			
 Opt5_0		LDX PLAYER2_X		; load player 2 x coordinate
 			CLC
 			SBC PLAYER1_X 		; check how far players are appart
 			CMP #$03			
-			BPL Opt5_0_cont		; If distance >= 03 continue case 0		
+			BPL Opt5_Action3		; If distance >= 03 continue case 0		
 			CMP #$01			
-			BEQ Opt5_0_				; If distance == 1, change to fase 1 
+			BEQ Opt5_Action2	; If distance == 1, go to action 2
+Opt5_Action1					; else do action 1
+			LDA PLAYER1_DIR		; peek what player 1 does
+			CMP #$03
+			BNE AI_end			; If player 1 doesn't go right, stay on course
 			
+			
+
+
+UpDown	
+			LDY PLAYER2_Y		; load y coordinate
+			CPY #$0B			; check at which half player 2 is at.
+			BMI	goUp			; if player 2 is at lower half, go up
+			BEQ doSame			; if players are at center do same as opponent
+goDown		LDA #$02			; else go down
+			STA PLAYER2_DIR		; 
+			JMP setCase1		; and jump to set case 1
+goUp		LDA #$00			; set direction to up
+			STA PLAYER2_DIR
+			JMP setCase1		;and jump to set case 1
+doSame		LDA PLAYER1_DIR	
+			STA PLAYER2_DIR
+setCase1	LDA #$01			; set case to 1	 
+			STA AI_case			
+			JMP AI_end			; and jump to end
+	
+Opt5_Action2
+			LDA AI_moveMem		; get previous direction of player 1
+			CMP #$03			; check if player1 was moving right
+			BEQ UpDown			; if so, go check for going up or down
+			LDY PLAYER2_Y		; load y coordinate
+			CPY #$0B			; check at which half player 2 is at.
+			BMI	goUp			; if player 2 is at lower half, go up
+			BEQ doOpp			; if at center do opposite of player 1
+			JMP goDown			; else go down
+doOpp		LDA AI_moveMEM		; load previous movement 
+			CLC 				;
+			ADC #$02			; add 2 to direction
+			CMP #$04			; check if direction exceeds 4, if direction was down
+			BMI doOpp_end		; if not, go set new direction
+			SBC #$04			; else substract 4 to get new direction
+doOpp_end	STA PLAYER2_DIR		; set new direction
+			JMP setCase1		; go set new case
+			
+Opt5_Action3	
 			LDA PLAYER1_DIR		; peek what player 1 does
 			CMP #$03			; if player 1 goes right, do nothing
-			BEQ AI_end		 
+			BEQ AI_end
+			
+			
 			
 			
 
