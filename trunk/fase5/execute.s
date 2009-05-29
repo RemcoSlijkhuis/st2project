@@ -259,17 +259,11 @@ ASL_acc:
 ## else execution resumes normally.                            ##
 #################################################################
 execute_BCC:
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x01, P				# check if carry is set
 	jnz BCC_end				# jump to end if carry is set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC 				# decrease program counter with 1
-	
 BCC_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 
 #################################################################
@@ -278,17 +272,11 @@ BCC_end:
 ## else execution resumes normally.                            ##
 #################################################################
 execute_BCS:
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x01, P				# check if carry is set
 	jz BCS_end				# jump to end if carry is not set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC 				# decrease program counter with 1
-	
 BCS_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 	
 #################################################################
@@ -297,16 +285,11 @@ BCS_end:
 ## else execution resumes normally.                            ##
 #################################################################
 execute_BEQ:
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x02, P				# check if carry is set
 	jz BCS_end				# jump to end if zero is not set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC 				# decrease program counter with 1
 BEQ_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 	
 ########################################################################################
@@ -362,16 +345,11 @@ BIT_end:
 ## else execution resumes normally.                            ##
 #################################################################
 execute_BMI:
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x80, P				# check if negative flag is set
 	jz BMI_end				# jump to end if negative flag is not set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC					# decrease PC to account for fetch
 BMI_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 
 
@@ -381,17 +359,11 @@ BMI_end:
 ## else execution resumes normally.                            ##
 #################################################################	
 execute_BNE:	
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x02, P				# check if the zero flag is set
 	jnz BNE_end				# jump to end if zero is set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC					# decrease PC to compensate for fetch
-	
 BNE_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 
 
@@ -403,17 +375,11 @@ BNE_end:
 ## else execution resumes normally.                            ##
 #################################################################
 execute_BPL:
-	pushl %ebp
-	movl %esp, %ebp
-	
 	testb $0x80, P				# check if negative flag is set
 	jnz BPL_end				# jump to end if negative flag is set
 	movw %cx, PC				# change PC to simulate jump
 	decw PC					# decrease PC to compensate for fetch
-
 BPL_end:
-	movl %ebp, %esp
-	popl %ebp
 	ret
 
 
@@ -759,7 +725,7 @@ GETKEY_end:					# continue here if no key has been pressed
 	
 	pushl A
 	call check_ZS
-	
+
 	movl %ebp, %esp
 	popl %ebp
 	ret
@@ -1654,7 +1620,7 @@ execute_TYA:
 ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
 
 #################################################################
-## check_Z: Updates the negative and zero flag                 ##
+## check_ZS: Updates the negative and zero flag                 ##
 ## requires value on stack for the checks                      ##
 #################################################################
 check_ZS:

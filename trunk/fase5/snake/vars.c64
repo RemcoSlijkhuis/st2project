@@ -84,6 +84,10 @@ FRAMETICK
 IS_ARROW
 	DC #$00
 
+AI_LEVEL
+	;DC #$00			; no AI
+	DC #<snake_AI_1		; ai 1
+	DC #>snake_AI_1		; ai 1
 
 PLAYER1
 PLAYER1_X

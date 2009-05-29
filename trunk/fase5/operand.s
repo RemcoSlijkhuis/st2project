@@ -25,23 +25,19 @@ fetch:
 	
 #primary loop
 fetchloop:	
-	movl $0, %eax		#Reset eax
-	mov PC, %ax		#load addres of current instruction
+	movzwl PC, %eax		#load addres of current instruction
 
-	movl $0, %ebx		#reset ebx	
-	movb MEM(%eax), %bl	#Load from memory to lower part of ebx
+	movzbl MEM(%eax), %ebx	#Load from memory to lower part of ebx
 	movb %bl, IR		#load instruction from bl in IR	
 	
 	#call showi		#Print out IR and PC registers 					
 	call decode		#decode instruction
 	#call showr		#Print out the rest of registers 	
 	
-	movb error,%al 		#move error to al
-	cmp $1,%al		#compare error with illigal instruction value
-	je endloop		#If illigal instruction, then jump to endloop
+	testb $1, error		#see if an illegal instruction was encountered
+	jnz endloop		#If illigal instruction, then jump to endloop
 
-	movl $0, %ebx		#reset ebx	
-	movb IR, %bl		#move Instruction register to bl
+	movzbl IR, %ebx		#move Instruction register to bl
 	cmp $0xdb, %bl		#compare with stop instruction value
 	je endloop		#If stop value, then exit loop	and go to endloop	
 	
