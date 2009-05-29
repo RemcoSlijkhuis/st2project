@@ -1,0 +1,54 @@
+;#####################################################################
+;## Macro to help with printing                                     ##
+;## Usage: Print [pointer]                                          ##
+;#####################################################################
+	MAC Print
+.ADDRESS SET {1}
+	DC $02
+	DC #<.ADDRESS
+	DC #>.ADDRESS
+	ENDM
+
+;######################################################################
+;## Macro to help checking if a position is free or not		     ##
+;## Usage: CheckPos [Row Pointer] [Compare value]		     ##
+;######################################################################
+
+	MAC CheckPos
+ROWADDRESS SET {1}
+COMPAREVALUE SET {2}
+	LDA ROWADDRESS			; load in the row	
+	AND #COMPAREVALUE		; and it with the compare value
+	CMP #$00			; compare with 0
+	BEQ checkpos_true		; if equal, position is free
+	LDA #00				; else the position is used
+	RTS	
+	ENDM
+
+;######################################################################
+;## Macro to help setting a position to be used			     ##
+;## Usage: SetPos [Row Pointer] [Compare value]		     	     ##
+;######################################################################
+
+	MAC SetPos
+ROWADDRESS SET {1}
+COMPAREVALUE SET {2}
+	LDA ROWADDRESS			; load in the row
+	ORA COMPAREVALUE		; and it with the compare value
+	STA ROWADDRESS
+	RTS
+	ENDM
+
+;######################################################################
+;## Macro to help checking a position for the tie checking	     ##
+;## Usage: CheckPosTie [Row Pointer] [Compare value]		     ##
+;######################################################################
+
+	MAC CheckPosTie
+ROWADDRESS SET {1}
+COMPAREVALUE SET {2}
+	LDA ROWADDRESS
+	AND #COMPAREVALUE
+	CMP #$00
+	BEQ combination_end
+	ENDM
