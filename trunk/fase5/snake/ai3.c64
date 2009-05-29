@@ -142,7 +142,6 @@ Opt5Table
 			;## case 0: players are heading right in to each other
 			DC #<Opt5_0	
 			DC #>Opt5_0
-			DC $00
 			
 			;## case 1: players chose new direction, lines are connected
 			DC #<Opt5_1	
