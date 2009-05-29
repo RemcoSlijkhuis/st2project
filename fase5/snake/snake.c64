@@ -10,6 +10,17 @@
 	ENDM
 
 ;#####################################################################
+;## Macro to help with printing                                     ##
+;## Usage: Print [pointer]                                          ##
+;#####################################################################
+	MAC PrintIND
+.ADDRESS SET {1}
+	DC $1B
+	DC #<.ADDRESS
+	DC #>.ADDRESS
+	ENDM
+
+;#####################################################################
 ;## Macro to show player block                                      ##
 ;## Usage: Show_player [pointer]                                    ##
 ;#####################################################################	
@@ -167,11 +178,13 @@
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
 	INCLUDE "ai3.c64"		; load AI 3.0
+	INCLUDE "menu.c64"		; load main menu
 	
 ;#####################################################################
 ;## main: the main program                                          ##
 ;#####################################################################
 main
+	JSR main_menu
 	JSR randomize_game
 	JSR clear_field
 	JSR init_screen

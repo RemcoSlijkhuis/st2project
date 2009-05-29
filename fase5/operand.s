@@ -153,7 +153,7 @@ fetch_ind:
 	movzbl MEM(%eax), %ebx 	#store low byte of indirect adress in ebx	
 	incl %eax
 	movb MEM(%eax), %bh	#store high byte of indirect adress in ebx
-
+	
 	movzbl MEM(%ebx), %ecx	#store low byte of effective adress in ecx	
 	incl %ebx					
 	movb MEM(%ebx), %ch	#store high byte of effective adress in ecx	

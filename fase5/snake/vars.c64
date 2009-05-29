@@ -85,9 +85,12 @@ IS_ARROW
 	DC #$00
 
 AI_LEVEL
-	;DC #$00			; no AI
-	DC #<snake_AI_3		; ai 1
-	DC #>snake_AI_3		; ai 1
+	DC #$00			; no AI
+	DC #$00
+
+NO_AI
+	DC #$00
+	DC #$00
 
 PLAYER1
 PLAYER1_X
