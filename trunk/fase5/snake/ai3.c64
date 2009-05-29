@@ -126,6 +126,10 @@ AI_decideOpt4
 ;##
 
 AI_decideOpt5
+			LDX #$48			; move to (72;5)
+			LDY #$05
+			DC $04				
+			Print DEF_ERROR		; print error message
 			LDA AI_case			; get current case
 			ASL					; multiply by 2 to get table offset
 			CLC		
