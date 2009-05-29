@@ -1,0 +1,42 @@
+;#######################################################
+;## ai						      ##
+;## handles the ai of tic tac toe		      ##
+;#######################################################
+
+
+ai
+	JSR check_for_lose		; check for win, accumulator is filled with result 
+	CMP #$00
+	BEQ ai_continue			; 1 = computer prevented a lose, 0 computer didnt do anyting
+	RTS
+
+ai_continue
+	
+	JSR check_for_win		; check for lose, accumulator is filled with result
+
+	CMP #$00
+	BEQ ai_continue_2		; 1 = computer won, 0 computer didnt do anyting
+	RTS	
+			
+ai_continue_2
+
+
+	RTS
+
+;#######################################################
+;## check_for_lose				      ##
+;## prevents the player from winning on his next turn ##
+;#######################################################
+
+check_for_lose
+
+
+	RTS
+
+;#######################################################
+;## check_for_win			              ##
+;## computer wins if possible			      ##
+;#######################################################
+check_for_win
+
+	RTS
