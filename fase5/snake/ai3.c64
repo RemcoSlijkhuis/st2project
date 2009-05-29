@@ -171,7 +171,9 @@ Opt5_0		LDX #$48			; move to (72;5)
 Opt5_Action1					; else do action 1
 			LDA PLAYER1_DIR		; peek what player 1 does
 			CMP #$03
-			BNE AI3_end			; If player 1 doesn't go right, stay on course
+			BEQ UpDown			; If player 1 doesn't go right, stay on course
+			JMP AI3_end
+			
 UpDown	
 			LDY PLAYER2_Y		; load y coordinate
 			CPY #$0B			; check at which half player 2 is at.
