@@ -130,7 +130,9 @@ key_loop_continue2
 key_loop_continue3		
 	CMP #$02			; check if the position is 2
 	BNE key_loop_continue4		; if not continue checking
-	JMP menu_key_loop		; 
+	LDA #$03
+	STA CUR_PLAYER
+	RTS				; computer starts
 
 key_loop_continue4				
 	DC #$DB				; if the position is 3, end the game

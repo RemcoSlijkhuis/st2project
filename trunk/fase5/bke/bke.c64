@@ -1,57 +1,4 @@
-;#####################################################################
-;## Macro to help with printing                                     ##
-;## Usage: Print [pointer]                                          ##
-;#####################################################################
-	MAC Print
-.ADDRESS SET {1}
-	DC $02
-	DC #<.ADDRESS
-	DC #>.ADDRESS
-	ENDM
 
-;######################################################################
-;## Macro to help checking if a position is free or not		     ##
-;## Usage: CheckPos [Row Pointer] [Compare value]		     ##
-;######################################################################
-
-	MAC CheckPos
-ROWADDRESS SET {1}
-COMPAREVALUE SET {2}
-	LDA ROWADDRESS			; load in the row	
-	AND #COMPAREVALUE		; and it with the compare value
-	CMP #$00			; compare with 0
-	BEQ checkpos_true		; if equal, position is free
-	LDA #00				; else the position is used
-	RTS	
-	ENDM
-
-;######################################################################
-;## Macro to help setting a position to be used			     ##
-;## Usage: SetPos [Row Pointer] [Compare value]		     	     ##
-;######################################################################
-
-	MAC SetPos
-ROWADDRESS SET {1}
-COMPAREVALUE SET {2}
-	LDA ROWADDRESS			; load in the row
-	ORA COMPAREVALUE		; and it with the compare value
-	STA ROWADDRESS
-	RTS
-	ENDM
-
-;######################################################################
-;## Macro to help checking a position for the tie checking	     ##
-;## Usage: CheckPosTie [Row Pointer] [Compare value]		     ##
-;######################################################################
-
-	MAC CheckPosTie
-ROWADDRESS SET {1}
-COMPAREVALUE SET {2}
-	LDA ROWADDRESS
-	AND #COMPAREVALUE
-	CMP #$00
-	BEQ combination_end
-	ENDM
 
 ;######################################################################
 ;## Start of the program 					     ##
@@ -59,10 +6,11 @@ COMPAREVALUE SET {2}
 	processor 6502
 	org $8000
 	
-	jmp main			; start with the program
-
+	JMP main			; start with the program
+	INCLUDE "macro.c64"		; load the macro's
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "menu.c64"		; load the main menu module
+	INCLUDE "ai.c64"		; load the ai
 
 
 ;#####################################################################
@@ -70,13 +18,21 @@ COMPAREVALUE SET {2}
 ;#####################################################################
 main
 
-	JSR main_menu
-	JSR init_screen 
-
+	JSR main_menu			; init the main mmenu
+	JSR init_screen 		; init the sceen for the game
 
 game_loop
 	DC $0B				; sleep 1ms
 	DC $01
+
+	LDA CUR_PLAYER
+	CMP #$04			; check if the current player is the computer
+	BNE game_loop_continue		; if not, continue
+	JSR ai				; else handle the ai
+	JMP game_loop			; return to the game loop
+
+game_loop_continue
+	LDA #$00
 	DC $03				; get key into accumulator
 
 	CMP #$00			; see if any key has been pressed
@@ -99,7 +55,8 @@ game_end
 do_zet
 	JSR check_position 		; check the current position
 	CMP #$00			; and load a boolean into A
-	BEQ do_zet_end			; and branch if the position is used
+	BNE do_zet_continue		; and branch if the position isnt used
+	JMP game_loop			; else return to the game loop
 
 do_zet_continue
 	DC #$04				; set the cursor to the current X and Y
@@ -112,6 +69,20 @@ player1
 	PRINT PLAYER1_STRING		; else print the player1 string
 	JSR set_position		; set the position in the ROW
 	JSR check_end_game		; checks if a player has won
+
+	STX POSITION_X			; store the X and Y position
+	STY POSITION_Y			; to save them
+
+	LDX #$09
+	LDY #$02
+	DC  #$04
+
+	PRINT DEF_TURN			; player changed
+	PRINT DEF_PLAYER2		; so change the turn string
+
+	LDX POSITION_X			; restore the X and Y position
+	LDY POSITION_Y
+
 	LDA #$02			; load the new player into A
 	STA CUR_PLAYER			; store the new player
 
@@ -120,15 +91,77 @@ player1
 	JMP do_zet_end
 
 player2
+	CMP #$02			; if the player isnt 2
+	BNE player3			; branch to player 3
 	PRINT PLAYER2_STRING		; print the player2 string
 	JSR set_position		; set the position in the ROW
 	JSR check_end_game		; checks if a player has won
 	LDA #$01			; load the new player into A
 	STA CUR_PLAYER			; store the new player
 
+	STX POSITION_X			; store the X and Y position
+	STY POSITION_Y			; to save them
+
+	LDX #$09
+	LDY #$02
+	DC  #$04
+	PRINT DEF_TURN			; player changed
+	PRINT DEF_PLAYER1		; so change the turn string
+
+	LDX POSITION_X			; restore the X and Y position
+	LDY POSITION_Y
+
 	INY				; move Y back to its original place
 	DC #$04				; as well as the cursor
+	JMP do_zet_end
 
+player3
+	CMP #$03			; if the player isnt 2
+	BNE computer			; branch to player 3
+	PRINT PLAYER1_STRING		; print the player2 string
+	JSR set_position		; set the position in the ROW
+	JSR check_end_game		; checks if a player has won
+	LDA #$04			; load the new player into A
+	STA CUR_PLAYER			; store the new player
+
+	STX POSITION_X			; store the X and Y position
+	STY POSITION_Y			; to save them
+
+	LDX #$09
+	LDY #$02
+	DC  #$04
+	PRINT DEF_TURN			; player changed
+	PRINT DEF_COMPUTER		; so change the turn string
+
+	LDX POSITION_X			; restore the X and Y position
+	LDY POSITION_Y
+
+	INY				; move Y back to its original place
+	DC #$04				; as well as the cursor
+	JMP do_zet_end
+
+computer
+	PRINT PLAYER2_STRING		; print the player2 string
+	JSR set_position		; set the position in the ROW
+	JSR check_end_game		; checks if a player has won
+	LDA #$03			; load the new player into A
+	STA CUR_PLAYER			; store the new player
+
+	STX POSITION_X			; store the X and Y position
+	STY POSITION_Y			; to save them
+
+	LDX #$09
+	LDY #$02
+	DC  #$04
+	PRINT DEF_TURN			; player changed
+	PRINT DEF_PLAYER1		; so change the turn string
+
+	LDX POSITION_X			; restore the X and Y position
+	LDY POSITION_Y
+
+	INY				; move Y back to its original place
+	DC #$04				; as well as the cursor
+	JMP do_zet_end
 do_zet_end
 	
 	
@@ -281,7 +314,7 @@ combination_tie				; nobody won!
 	PRINT DEF_TIE			; prints the Tie! string
 	JSR pauser			
 	JSR reset			; reset the game
-	DC $DB 				; end the game
+	JMP main 			; end the game
 
 combination_end
 
@@ -298,20 +331,29 @@ player_won
 	DC  #$04			; move the cursor
 
 	LDA CUR_PLAYER			; load the current player
-	CMP #$01			; check if the player is 1
-	BNE player2_won			; if not player 2 has won	
+	CMP #$02			; check if the player is 1
+	BEQ player2_won			; if not player 2 has won
+	CMP #$04			; if the current plauer is 4
+	BEQ computer_won		; the computer has won!
 	PRINT DEF_PLAYER1
 	PRINT DEF_WINS
 	JSR reset			; resets the game
 	JSR pauser			; pause the game	
-	DC $DB				; end the game
+	JMP main			; end the game
 	
 player2_won
 	PRINT DEF_PLAYER2		; player 2 won
 	PRINT DEF_WINS	
 	JSR reset			; resets the game		
 	JSR pauser			
-	DC #$DB				; end the game
+	JMP main			; end the game
+
+computer_won
+	PRINT DEF_COMPUTER		; computer won
+	PRINT DEF_WINS
+	JSR reset			; reset the game
+	JSR pauser
+	JMP main			; end the game
 
 ;#####################################################################
 ;## reset							    ##
@@ -320,16 +362,20 @@ player2_won
 
 reset
 	LDA #$00
-	STA ROW3
+	
 	STA ROW1			; resets the first row
 	STA ROW2			; resets the second row
-				; resets the third row
+	STA ROW3			; resets the third row
+
 	LDA #$0F
 	STA POSITION_X			; resets the X position
 	LDA #$08
 	STA POSITION_Y			; resets the Y position
 	LDA #$01
 	STA CUR_PLAYER			; resets the current player
+
+	LDA #$05
+	STA CUR_POSITION		; resets the current position
 
 	RTS
 
@@ -467,6 +513,8 @@ set_setvalues
 	LDA CUR_PLAYER				; load in the current plauer
 	CMP #$02				; branch to player 2 label if the player is 2
 	BEQ set_values_player2
+	CMP #$04				; if the player is 4 (computer) also load in the values for player 2
+	BEQ set_values_player2
 	
 	LDA #$20				; load in the setvalue for col 1
 	STA SETVALUE_COL1			; and store it
@@ -495,6 +543,8 @@ set_values_player2
 set_comparevalues
 	LDA CUR_PLAYER				; load in the current plauer
 	CMP #$02				; branch to player 2 label if the player is 2
+	BEQ set_compare_player2
+	CMP #$04				; if the player is 4 (computer) also load in the values for player 2
 	BEQ set_compare_player2
 	
 	LDA #$20				; load in the setvalue for col 1
@@ -618,7 +668,7 @@ init_screen_clear_menu_2
 	
 	PRINT DEF_EMPTY				; overwrite the second menu options
 	INX					; by putting space on those spots
-	CPX #$19
+	CPX #$1A
 	BNE init_screen_clear_menu_2
 
 	LDX #$0D				; put the x and y
@@ -629,8 +679,15 @@ init_screen_clear_menu_2
 	LDY #$02
 	DC  #$04
 	PRINT DEF_TURN
-	PRINT DEF_PLAYER1
 
+	LDA CUR_PLAYER				; load in the current plauer
+	CMP #$04				; if the player is 4
+	BNE player1_start			; computer starts
+	PRINT DEF_COMPUTER			; else player 1 starts
+	JMP computer_started
+player1_start
+	PRINT DEF_PLAYER1
+computer_started
 
 	LDX #$09
 	LDY #$04
@@ -683,10 +740,10 @@ init_screen_loop3
 ;## pauser: pauses the program until any key has been pressed       ##
 ;#####################################################################
 pauser
-	DC $0B				; sleep for 1ms
+	DC $0B					; sleep for 1ms
 	DC $01
 	
-	DC $03				; getkey
+	DC $03					; getkey
 	
 	CMP #$00			; compare the accumulator (last pressed key) to 0 (null)
 	BEQ pauser			; if no key has been pressed, go back to loop

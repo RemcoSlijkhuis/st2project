@@ -138,6 +138,16 @@ DEF_PLAYER2			; Player 2
 	DC #$32
 	DC #$00
 
+DEF_COMPUTER			; Computer
+	DC #$43
+	DC #$6F
+	DC #$6D
+	DC #$70
+	DC #$75
+	DC #$74
+	DC #$65
+	DC #$72
+	DC #$00
 
 
 COMPAREVALUE_COL1
