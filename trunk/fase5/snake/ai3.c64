@@ -45,13 +45,14 @@ AI_tablePoint
 ;##########################################################################
 ;##	main subroutine
 ;##
-			
+
+snake_AI_3			
 AI_main
 			LDA AI_turn 		; load previous turn
 			CMP #$00			; check for first turn
 			BNE notFirst		; if not, skip choosOpt
 			JSR	AI_chooseOpt	; else call chooseOpt
-notfirst
+notFirst
 			INC AI_turn			; increment to current turn
 			LDA AI_option		; load option in accumulator
 			CMP #$05			; if option is 5, go to decideOpt5
@@ -59,9 +60,9 @@ notfirst
 			LDA #$01			; if no legal option, give error code 1
 			JSR AI_error		
 			JMP snake_AI_1		; and perform basic direction choice
-AI_end		LDA PLAYER1_DIR		; get direction of player 1
+AI3_end		LDA PLAYER1_DIR		; get direction of player 1
 			STA AI_moveMem		; store direction for next turn
-			RTS					; return after choice is made
+			JMP skip_AI					; return after choice is made
 		
 ;################################################################################
 ;## AI_chooseOpt	decides wich strategy to use
@@ -128,7 +129,7 @@ AI_decideOpt5
 			LDA AI_case			; get current case
 			ASL					; multiply by 2 to get table offset
 			CLC		
-			ADC Opt5Table		; ADD Opt5Table to case for right adress
+			ADC #Opt5Table		; ADD Opt5Table to case for right adress
 			STA AI_tablePoint	; store resulting adress
 			JMP AI_tablePoint	; jump to resulting adress
 Opt5Table
@@ -159,7 +160,7 @@ Opt5_0		LDX PLAYER2_X		; load player 2 x coordinate
 Opt5_Action1					; else do action 1
 			LDA PLAYER1_DIR		; peek what player 1 does
 			CMP #$03
-			BNE AI_end			; If player 1 doesn't go right, stay on course
+			BNE AI3_end			; If player 1 doesn't go right, stay on course
 UpDown	
 			LDY PLAYER2_Y		; load y coordinate
 			CPY #$0B			; check at which half player 2 is at.
@@ -172,7 +173,7 @@ goUp		LDA #$00			; set direction to up
 			JMP setCase1		;and jump to set case 1
 setCase1	LDA #$01			; set case to 1	 
 			STA AI_case			
-			JMP AI_end			; and jump to end
+			JMP AI3_end			; and jump to end
 	
 Opt5_Action2
 			LDA AI_moveMem		; get previous direction of player 1
@@ -195,7 +196,9 @@ Opt5_Action2
 Opt5_Action3	
 			LDA PLAYER1_DIR		; peek what player 1 does
 			CMP #$03			; if player 1 goes right, do nothing
-			BEQ AI_end
+			BNE Opt5_Action3_noend
+			JMP AI3_end
+Opt5_Action3_noend
 			LDY PLAYER2_Y		; Else check position
 			CPY #$0B			; 
 			BMI	checkOpp		; if on lower half check if opponent goes up
@@ -211,10 +214,10 @@ checkOpp	CMP #$00			; check if opponent goes up
 			JMP setCase3		; and set case 3
 setCase2	LDA #$02			; set case to 2	 
 			STA AI_case			
-			JMP AI_end			; and jump to end
-setCase2	LDA #$03			; set case to 3	 
+			JMP AI3_end			; and jump to end
+setCase3	LDA #$03			; set case to 3	 
 			STA AI_case			
-			JMP AI_end			; and jump to end
+			JMP AI3_end			; and jump to end
 
 Opt5_1
 ;			LDA PLAYER2_DIR		; load previous direction of player 2

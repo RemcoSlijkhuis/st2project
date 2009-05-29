@@ -166,6 +166,7 @@
 
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
+	INCLUDE "ai3.c64"		; load AI 3.0
 	
 ;#####################################################################
 ;## main: the main program                                          ##
@@ -206,7 +207,7 @@ game_step
 	LDA AI_LEVEL			; load the AI level into the accumulator
 	BEQ skip_AI			; if the AI level is 0, there is no AI
 	
-	JSR game_end			; otherwise, perform the snake AI_1
+	JMP (AI_LEVEL)			; otherwise, perform the snake AI_1
 	
 skip_AI
 	
@@ -316,10 +317,12 @@ handle_key_not_followup
 randomize_game:
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
+		LDA #$10
 	STA PLAYER1_Y			; store it as player1 y
 	INC PLAYER1_Y			; and increment it with 1 to start at y=1 at the highest
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
+		LDA #$10
 	STA PLAYER2_Y			; store it as player2 y
 	INC PLAYER2_Y			; and increment it with 1 to start at y=1 at the highest
 	RTS
