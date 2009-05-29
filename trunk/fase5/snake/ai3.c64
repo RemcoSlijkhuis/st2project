@@ -133,11 +133,11 @@ AI_decideOpt5
 			LDA AI_case			; get current case
 			ASL					; multiply by 2 to get table offset
 			CLC		
-			ADC #>Opt5Table		; ADD to low adress of option 5 table
-			STA >AI_tablePoint	; store resulting adress
-			LDA #<Opt5Table		; load high part of option 5 table
+			ADC #<Opt5Table		; ADD to low adress of option 5 table
+			STA <AI_tablePoint	; store resulting adress
+			LDA #>Opt5Table		; load high part of option 5 table
 			ADC #$00			; add 0 (for possible carry from low adress)
-			STA <AI_tablePoint	; store high part of adress
+			STA >AI_tablePoint	; store high part of adress
 			JMP AI_tablePoint	; jump to resulting adress
 Opt5Table
 			;## case 0: players are heading right in to each other
