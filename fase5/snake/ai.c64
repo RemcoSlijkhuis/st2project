@@ -50,7 +50,7 @@ AIdir_up	DEC PLAYER2_Y		; move player up
 		INC PLAYER2_DIR		; if not, change direction and check again			
 		JMP AI_loop
 
-AI_end		RTS
+AI_end		JMP skip_AI
 
 AI_check_collision
 	Field_check PLAYER2_X, PLAYER2_Y

@@ -158,7 +158,7 @@
 	LDA #$04			; both player made are at an illegal position, but not the same
 .C_end
 	ENDM
-	
+
 	processor 6502
 	org $8000
 	
@@ -166,6 +166,7 @@
 
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
+	INCLUDE "ai3.c64"		; load AI 3.0
 	
 ;#####################################################################
 ;## main: the main program                                          ##
@@ -205,7 +206,9 @@ game_step
 	
 	LDA AI_LEVEL			; load the AI level into the accumulator
 	BEQ skip_AI			; if the AI level is 0, there is no AI
-	JSR snake_AI_1			; otherwise, perform the snake AI_1
+	
+	JMP (AI_LEVEL)			; otherwise, perform the snake AI_1
+	
 skip_AI
 	
 	Move_player PLAYER1		; move the players
