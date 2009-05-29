@@ -27,7 +27,7 @@
 
 .text
 	test: .asciz "Exitcode: %d\n"
-	test2: .asciz "Value: %x\n"
+	test2: .asciz "Value: %x."
 	cursor_hide:			# also resets color
 		.byte 0x1B
 		.ascii "[?25l"

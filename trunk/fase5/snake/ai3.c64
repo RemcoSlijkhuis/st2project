@@ -126,23 +126,23 @@ AI_decideOpt4
 ;##
 
 AI_decideOpt5
-			LDX #$48			; move to (72;5)
-			LDY #$05
-			DC $04				
-			Print DEF_ERROR		; print error message
 			LDA AI_case			; get current case
-			ASL					; multiply by 2 to get table offset
-			CLC		
-			ADC #<Opt5Table		; ADD to low adress of option 5 table
-			STA <AI_tablePoint	; store resulting adress
-			LDA #>Opt5Table		; load high part of option 5 table
-			ADC #$00			; add 0 (for possible carry from low adress)
-			STA >AI_tablePoint	; store high part of adress
-			JMP AI_tablePoint	; jump to resulting adress
+			ASL 	
+			TAX
+			
+			LDA Opt5Table,X
+			STA $7000
+			LDA Opt5Table+1,X
+			STA $7001
+			
+			JMP ($7000)
+			DC $00
+			
 Opt5Table
 			;## case 0: players are heading right in to each other
 			DC #<Opt5_0	
 			DC #>Opt5_0
+			DC $00
 			
 			;## case 1: players chose new direction, lines are connected
 			DC #<Opt5_1	
@@ -157,11 +157,7 @@ Opt5Table
 			DC #>Opt5_3
 			
 			
-Opt5_0		LDX #$48			; move to (72;5)
-			LDY #$05
-			DC $04				
-			Print DEF_ERROR		; print error message
-			LDX PLAYER2_X		; load player 2 x coordinate
+Opt5_0			LDA PLAYER2_X		; load player 2 x coordinate
 			CLC
 			SBC PLAYER1_X 		; check how far players are appart
 			CMP #$03			
@@ -177,7 +173,7 @@ Opt5_Action1					; else do action 1
 UpDown	
 			LDY PLAYER2_Y		; load y coordinate
 			CPY #$0B			; check at which half player 2 is at.
-			BMI	goUp			; if player 2 is at lower half, go up
+			BPL	goUp			; if player 2 is at lower half, go up
 goDown		LDA #$02			; else go down
 			STA PLAYER2_DIR		; 
 			JMP setCase1		; and jump to set case 1
@@ -194,7 +190,7 @@ Opt5_Action2
 			BEQ UpDown			; if so, go check for going up or down
 			LDY PLAYER2_Y		; load y coordinate
 			CPY #$0B			; check at which half player 2 is at.
-			BMI	goUp			; if player 2 is at lower half, go up
+			BPL	goUp			; if player 2 is at lower half, go up
 			;BEQ doOpp			; if at center do opposite of player 1
 			JMP goDown			; else go down
 ;doOpp		LDA AI_moveMEM		; load previous movement 
@@ -214,7 +210,7 @@ Opt5_Action3
 Opt5_Action3_noend
 			LDY PLAYER2_Y		; Else check position
 			CPY #$0B			; 
-			BMI	checkOpp		; if on lower half check if opponent goes up
+			BPL	checkOpp		; if on lower half check if opponent goes up
 			CMP #$02			; else check if opponent goes down
 			BNE setCase2		; if not don't change direction, and set case 2
 			LDA #$02			; else change direction 
@@ -242,9 +238,9 @@ Opt5_1
 			
 			
 			JMP snake_AI_1    ; under construction
-Opt5_2
+Opt5_2			Print DEF_ERROR
 			JMP snake_AI_1		; under construction
-Opt5_3
+Opt5_3			
 			JMP snake_AI_1		; under construction
 
 
