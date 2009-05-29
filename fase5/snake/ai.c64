@@ -1,49 +1,57 @@
 ;#####################################################################
 ;## Artificial Intelligence subroutine	1.0                         ##
 ;#####################################################################
-snake_AI
-			LDA PLAYER2_DIR 	; get direction player 2
-			CMP #$02			; check if direction is smaller than 2
-			BMI AIdir_ul		; if so jump to check for up/left
+snake_AI_1
+		LDX #$0			; step-counter, starts at 0
+AI_loop
+		INX			; one more try
+		CPX #$05		; if this is the fifth try it's not possible to go anywhere
+		BEQ AI_end		; so stop processing
+		LDA PLAYER2_DIR 	; get direction player 2
+		CMP #$02		; check if direction is smaller than 2
+		BMI AIdir_ul		; if so jump to check for up/left
 			
-AIdir_dr	CMP #$02			; check if direction is down
-			BEQ AIdir_down	
+AIdir_dr	CMP #$02		; check if direction is down
+		BEQ AIdir_down	
 			
 AIdir_right	INC PLAYER2_X		; move player to the right
-			Check_collison		; check if this situation gives a collison
-			DEC PLAYER2_X		; undo movement
-			CMP #$0				
-			BEQ AI_end			; if next position is clear, move on.
-			LDA #$0				; if not, change direction and check again
-			STA PLAYER2_DIR
-			JMP snake_AI
+		JSR AI_check_collision	; check if this situation gives a collison
+		DEC PLAYER2_X		; undo movement
+		CMP #$0				
+		BEQ AI_end		; if next position is clear, move on.
+		LDA #$0			; if not, change direction and check again
+		STA PLAYER2_DIR
+		JMP AI_loop
 			
-AIdir_down	DEC PLAYER2_Y		; move player down
-			Check_collison		; check if this situation gives a collison 
-			INC PLAYER2_Y		; undo movement
-			CMP #$0				
-			BEQ AI_end			; if next position is clear, move on.
-			INC PLAYER2_DIR		; if not, change direction and check again			
-			JMP snake_AI
+AIdir_down	INC PLAYER2_Y		; move player down
+		JSR AI_check_collision	; check if this situation gives a collison 
+		DEC PLAYER2_Y		; undo movement
+		CMP #$0				
+		BEQ AI_end		; if next position is clear, move on.
+		INC PLAYER2_DIR		; if not, change direction and check again			
+		JMP AI_loop
 
-AIdir_ul	CMP #$00 			; check if direction is up
-			BEQ AIdir_up 
+AIdir_ul	CMP #$00 		; check if direction is up
+		BEQ AIdir_up 
 
 AIdir_left	DEC PLAYER2_X		; move player to the left
-			Check_collison		; check if this situation gives a collison 
-			INC PLAYER2_X		; undo movement
-			CMP #$0				
-			BEQ AI_end			; if next position is clear, move on.
-			INC PLAYER2_DIR		; if not, change direction and check again			
-			JMP snake_AI
+		JSR AI_check_collision	; check if this situation gives a collison 
+		INC PLAYER2_X		; undo movement
+		CMP #$0				
+		BEQ AI_end		; if next position is clear, move on.
+		INC PLAYER2_DIR		; if not, change direction and check again			
+		JMP AI_loop
 			
-AIdir_up	INC PLAYER2_Y		; move player up
-			Check_collison		; check if this situation gives a collison 
-			DEC PLAYER2_Y		; undo movement
-			CMP #$0				
-			BEQ AI_end			; if next position is clear, move on.
-			INC PLAYER2_DIR		; if not, change direction and check again			
-			JMP snake_AI
+AIdir_up	DEC PLAYER2_Y		; move player up
+		JSR AI_check_collision	; check if this situation gives a collison 
+		INC PLAYER2_Y		; undo movement
+		CMP #$0				
+		BEQ AI_end		; if next position is clear, move on.
+		INC PLAYER2_DIR		; if not, change direction and check again			
+		JMP AI_loop
 
 AI_end		RTS
 
+AI_check_collision
+	Field_check PLAYER2_X, PLAYER2_Y
+	RTS

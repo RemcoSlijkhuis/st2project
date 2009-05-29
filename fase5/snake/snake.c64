@@ -136,36 +136,37 @@
 	MAC Check_collision
 	LDA PLAYER1_X			; load the player 1 X into the accumulator
 	CMP PLAYER2_X			; and compare it to player 2's X
-	BNE C_notie			; if not equal, it's definitely not a tie
+	BNE .C_notie			; if not equal, it's definitely not a tie
 	LDA PLAYER1_Y			; load the player 1 Y into the accumulator
 	CMP PLAYER2_Y			; and compare it to player 2's Y
-	BNE C_notie			; if not equal, it's definitely not a tie
+	BNE .C_notie			; if not equal, it's definitely not a tie
 	LDA #$03			; otherwise, it's a tie
-	JMP C_end			; and stop processing
-C_notie
+	JMP .C_end			; and stop processing
+.C_notie
 	Field_check PLAYER1_X, PLAYER1_Y	; check if player 1 is at an illegal position
-	BEQ C_check2			; if player 1 is at a valid position, check for player 2
+	BEQ .C_check2			; if player 1 is at a valid position, check for player 2
 	Field_check PLAYER2_X, PLAYER2_Y	; check if player 2 is at an illegal position
-	BNE C_tie			; if player 2 is at an invalid position too, jump to tie #4.
+	BNE .C_tie			; if player 2 is at an invalid position too, jump to tie #4.
 	LDA #$02			; otherwise, only player 1 is at an invalid position, so player 2 wins
-	JMP C_end
-C_check2
+	JMP .C_end
+.C_check2
 	Field_check PLAYER2_X, PLAYER2_Y	; check if player 2 is at an illegal position
-	BEQ C_end			; if player 2 is at a valid position too, jump to end. Accumulator is still 0
+	BEQ .C_end			; if player 2 is at a valid position too, jump to end. Accumulator is still 0
 	LDA #$01			; otherwise, player 1 wins
-	JMP C_end
-C_tie
+	JMP .C_end
+.C_tie
 	LDA #$04			; both player made are at an illegal position, but not the same
-C_end
+.C_end
 	ENDM
-	
+
 	processor 6502
 	org $8000
 	
 	jmp main			; start with the program
 
 	INCLUDE "vars.c64"		; load string definition
-
+	INCLUDE "ai.c64"		; load AI 1.0
+	
 ;#####################################################################
 ;## main: the main program                                          ##
 ;#####################################################################
@@ -199,9 +200,15 @@ nopause
 game_step
 	INC FRAMETICK			; increase the frame ticker with one
 	LDA FRAMETICK			; load the frame ticker into the accumulator
-	CMP #$14			; check if more than 20 (0x14) ticks have passed since last game step
+	CMP #$10			; check if more than 16 (0x10) ticks have passed since last game step
 	BNE game_loop			; if not, continue with the loop
 	
+	LDA AI_LEVEL			; load the AI level into the accumulator
+	BEQ skip_AI			; if the AI level is 0, there is no AI
+	
+	JSR game_end			; otherwise, perform the snake AI_1
+	
+skip_AI
 	
 	Move_player PLAYER1		; move the players
 	Move_player PLAYER2
@@ -425,6 +432,8 @@ init_screen_end
 	Show_player PLAYER1, #$31	; print new player positions
 	Show_player PLAYER2, #$34
 	
+	Field_set PLAYER1_X, PLAYER1_Y	; flag the new position of player 1
+	Field_set PLAYER2_X, PLAYER2_Y	; flag the new position of player 2
 	
 	RTS
 
