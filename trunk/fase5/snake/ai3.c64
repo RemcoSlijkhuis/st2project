@@ -153,7 +153,11 @@ Opt5Table
 			DC #>Opt5_3
 			
 			
-Opt5_0		LDX PLAYER2_X		; load player 2 x coordinate
+Opt5_0		LDX #$48			; move to (72;5)
+			LDY #$05
+			DC $04				
+			Print DEF_ERROR		; print error message
+			LDX PLAYER2_X		; load player 2 x coordinate
 			CLC
 			SBC PLAYER1_X 		; check how far players are appart
 			CMP #$03			
