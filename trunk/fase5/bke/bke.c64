@@ -29,6 +29,7 @@ game_loop
 	CMP #$04			; check if the current player is the computer
 	BNE game_loop_continue		; if not, continue
 	JSR ai				; else handle the ai
+		
 	JMP game_loop			; return to the game loop
 
 game_loop_continue
@@ -42,7 +43,7 @@ game_loop_continue
 	BEQ do_zet
 	
 	
-	JSR handle_keys			; update position
+	JSR handle_keys			; update posaition
 		
 	JMP game_loop
 	
@@ -63,8 +64,12 @@ do_zet_continue
 	DEY				; decrease the y to get the position of the right spot
 	DC #$04				; move the cursor
 	LDA CUR_PLAYER			; load the current player
-	CMP #$01			; compare the player with 1
-	BNE player2			; jump to player2 if the cur_player isnt 1
+	CMP #$02			; compare the player with 1
+	BEQ player2			; jump to player2 if the cur_player isnt 1
+	CMP #$03
+	BEQ player3
+	CMP #$04
+	BEQ computer
 player1
 	PRINT PLAYER1_STRING		; else print the player1 string
 	JSR set_position		; set the position in the ROW
@@ -91,8 +96,7 @@ player1
 	JMP do_zet_end
 
 player2
-	CMP #$02			; if the player isnt 2
-	BNE player3			; branch to player 3
+
 	PRINT PLAYER2_STRING		; print the player2 string
 	JSR set_position		; set the position in the ROW
 	JSR check_end_game		; checks if a player has won
@@ -116,8 +120,7 @@ player2
 	JMP do_zet_end
 
 player3
-	CMP #$03			; if the player isnt 2
-	BNE computer			; branch to player 3
+
 	PRINT PLAYER1_STRING		; print the player2 string
 	JSR set_position		; set the position in the ROW
 	JSR check_end_game		; checks if a player has won
@@ -141,15 +144,48 @@ player3
 	JMP do_zet_end
 
 computer
+	STX POSITION_X
+	STY POSITION_Y
+
+	LDA CUR_POSITION
+	LDX #$0B
+	LDY #$05
+	CMP #$01
+	BEQ computer_continue
+	LDX #$0F
+	CMP #$02
+	BEQ computer_continue
+	LDX #$13
+	CMP #$03
+	BEQ computer_continue
+	LDX #$0B
+	LDY #$07
+	CMP #$04
+	BEQ computer_continue
+	LDX #$0F
+	CMP #$05
+	BEQ computer_continue
+	LDX #$13
+	CMP #$06
+	BEQ computer_continue
+	LDX #$0B
+	LDY #$09
+	CMP #$07
+	BEQ computer_continue
+	LDX #$0F
+	CMP #$08
+	BEQ computer_continue
+	LDX #$13
+
+computer_continue
+	
+	DC #$04	
 	PRINT PLAYER2_STRING		; print the player2 string
 	JSR set_position		; set the position in the ROW
 	JSR check_end_game		; checks if a player has won
 	LDA #$03			; load the new player into A
 	STA CUR_PLAYER			; store the new player
-
-	STX POSITION_X			; store the X and Y position
-	STY POSITION_Y			; to save them
-
+	
 	LDX #$09
 	LDY #$02
 	DC  #$04
@@ -161,14 +197,16 @@ computer
 
 	INY				; move Y back to its original place
 	DC #$04				; as well as the cursor
-	JMP do_zet_end
+	
+	RTS
+
 do_zet_end
 	
 	
 	JMP game_loop			; return to the game
 
 
-;#####################################################################
+;#################################z####################################
 ;## check_end_game						    ##
 ;## checks if a player has won					    ##
 ;#####################################################################
@@ -568,9 +606,15 @@ set_compare_player2
 ;#####################################################################
 ;## handle_keys:						    ##
 ;## updates the position on pressed key                  	    ##
-;## keys: w,a,s,d, ie 0x77, 0x61, 0x73, 0x64               	    ##
+;## keys: w,a,s,d,Q ie 0x77, 0x61, 0x73, 0x64 , 0x51           	    ##
 ;#####################################################################
 handle_keys
+	CMP #$51
+	BNE handle_keys_continue_77
+	JSR reset
+	JMP main
+
+handle_keys_continue_77
 
 	DC #$04					; set the cursor to the new position
 	CMP #$77				; check if the w button is pressed
@@ -581,8 +625,9 @@ handle_keys
 	DEY					; and decrease the y position by 2
 	DEY
 	LDA CUR_POSITION
-	SBC #$03				; update the current position
-	STA CUR_POSITION
+	SBC #$03
+	STA CUR_POSITION				; update the current position
+	
 	DC #$04					; move the cursor
 	PRINT DEF_POSITION_STRING		; print the cursor
 	JMP handle_keys_end
@@ -591,7 +636,7 @@ handle_keys_continue61
 
 	CMP #$61				; check if the a button is pressed
 	BNE handle_keys_continue73		; if not, continue with checking the rest of the keys
-	CPX #$0B					; check if the movement is legal
+	CPX #$0B				; check if the movement is legal
 	BEQ handle_keys_end			; if not, go to the end
 	PRINT DEF_BORDER			; else, remove the cursor
 	DEX					; and decrease the x position by 4
@@ -639,6 +684,8 @@ handle_keys_continue64
 	PRINT DEF_POSITION_STRING		; print the cursor
 
 handle_keys_end	
+
+	
 
 	RTS
 

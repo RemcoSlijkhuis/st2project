@@ -8,6 +8,13 @@ ROW3
 ROW2
 	DC #$00
 
+DEF_DEBUG1
+	DC #$00
+	DC #$00
+DEF_DEBUG2
+	DC #$00
+	DC #$00
+
 DEF_BORDER
 	DC #$23			; #
 	DC #$00			; the null sign	
@@ -169,7 +176,18 @@ POSITION_X			; X position of the cursor
 
 POSITION_Y			; Y position of the cursor
 	DC #$08
-	
+
+CUR_POS2
+	DC #$00
+
+
+
+POSITION_X2			; X position of the cursor
+	DC #$0F
+
+POSITION_Y2			; Y position of the cursor
+	DC #$08	
+
 CUR_POSITION 			; Currunt position on the board
 	DC #$05
 
