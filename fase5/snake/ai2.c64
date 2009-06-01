@@ -20,8 +20,10 @@ AI2dir_right	INC PLAYER2_X				; move player to the right
 				DEC PLAYER2_X				; undo movement
 				CMP #$0				
 				BEQ AI2_end					; if next position is clear, move on.
-				LDA #$0						; if not, change direction and check again
+				LDA #$0						; if not, change direction, set Lastcoll and check again				
 				STA PLAYER2_DIR
+				LDA #$03
+				STA AI2_lastColl
 				JMP AI2_loop
 			
 AI2dir_down		INC PLAYER2_Y				; move player down
@@ -29,7 +31,9 @@ AI2dir_down		INC PLAYER2_Y				; move player down
 				DEC PLAYER2_Y				; undo movement
 				CMP #$0				
 				BEQ AI2_end					; if next position is clear, move on.
-				INC PLAYER2_DIR				; if not, change direction and check again			
+				INC PLAYER2_DIR				; if not, change direction, set Lastcoll and check again
+				LDA #$02
+				STA AI2_lastColl
 				JMP AI2_loop
 
 AI2dir_ul		CMP #$00 					; check if direction is up
@@ -40,7 +44,9 @@ AI2dir_left		DEC PLAYER2_X				; move player to the left
 				INC PLAYER2_X				; undo movement
 				CMP #$0				
 				BEQ AI2_end					; if next position is clear, move on.
-				INC PLAYER2_DIR				; if not, change direction and check again			
+				INC PLAYER2_DIR				; if not, change direction, set Lastcoll and check again
+				LDA #$01
+				STA AI2_lastColl
 				JMP AI2_loop
 			
 AI2dir_up		DEC PLAYER2_Y				; move player up
@@ -48,7 +54,9 @@ AI2dir_up		DEC PLAYER2_Y				; move player up
 				INC PLAYER2_Y				; undo movement
 				CMP #$0				
 				BEQ AI2_end					; if next position is clear, move on.
-				INC PLAYER2_DIR				; if not, change direction and check again			
+				INC PLAYER2_DIR				; if not, change direction, set Lastcoll and check again
+				LDA #$00
+				STA AI2_lastColl
 				JMP AI2_loop
 
 AI2_end		JMP skip_AI
