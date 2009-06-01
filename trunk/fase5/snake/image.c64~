@@ -1,0 +1,731 @@
+DEF_SNAKE_0
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $5e			; ^
+	DC $5c			; \
+	DC $2f			; /
+	DC $5e			; ^
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_1
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $7c			; |
+	DC $5f			; _
+	DC $5f			; _
+	DC $7c			; |
+	DC $20			;  
+	DC $20			;  
+	DC $4f			; O
+	DC $7c			; |
+	DC $0			; NULL
+DEF_SNAKE_2
+	DC $5c			; \
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $5f			; _
+	DC $2f			; /
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_3
+	DC $20			;  
+	DC $5c			; \
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $7c			; |
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_4
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_5
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $60			; `
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_6
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7c			; |
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7c			; |
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_7
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_8
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_9
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_10
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_11
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $2d			; -
+	DC $2d			; -
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $0			; NULL
+DEF_SNAKE_12
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7c			; |
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7c			; |
+	DC $0			; NULL
+DEF_SNAKE_13
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2f			; /
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7c			; |
+	DC $0			; NULL
+DEF_SNAKE_14
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $0			; NULL
+DEF_SNAKE_15
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $0			; NULL
+DEF_SNAKE_16
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $2d			; -
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $7e			; ~
+	DC $2d			; -
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $2d			; -
+	DC $7e			; ~
+	DC $0			; NULL
+
