@@ -1,0 +1,120 @@
+;#####################################################################
+;## Artificial Intelligence subroutine	2.0                         ##
+;#####################################################################
+snake_AI_2
+				LDX #$0						; step-counter, starts at 0
+				JMP AI2_follow  			; go check optimal direction
+AI2_loop
+				INX							; one more try
+				CPX #$05					; if this is the fifth try it's not possible to go anywhere
+				BEQ AI2_end					; so stop processing
+				LDA PLAYER2_DIR 			; get direction player 2
+				CMP #$02					; check if direction is smaller than 2
+				BMI AI2dir_ul				; if so jump to check for up/left
+			
+AI2dir_dr		CMP #$02					; check if direction is down
+				BEQ AI2dir_down	
+			
+AI2dir_right	INC PLAYER2_X				; move player to the right
+				JSR AI2_check_collision		; check if this situation gives a collison
+				DEC PLAYER2_X				; undo movement
+				CMP #$0				
+				BEQ AI2_end					; if next position is clear, move on.
+				LDA #$0						; if not, change direction and check again
+				STA PLAYER2_DIR
+				JMP AI2_loop
+			
+AI2dir_down		INC PLAYER2_Y				; move player down
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				DEC PLAYER2_Y				; undo movement
+				CMP #$0				
+				BEQ AI2_end					; if next position is clear, move on.
+				INC PLAYER2_DIR				; if not, change direction and check again			
+				JMP AI2_loop
+
+AI2dir_ul		CMP #$00 					; check if direction is up
+				BEQ AI2dir_up 
+
+AI2dir_left		DEC PLAYER2_X				; move player to the left
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				INC PLAYER2_X				; undo movement
+				CMP #$0				
+				BEQ AI2_end					; if next position is clear, move on.
+				INC PLAYER2_DIR				; if not, change direction and check again			
+				JMP AI2_loop
+			
+AI2dir_up		DEC PLAYER2_Y				; move player up
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				INC PLAYER2_Y				; undo movement
+				CMP #$0				
+				BEQ AI2_end					; if next position is clear, move on.
+				INC PLAYER2_DIR				; if not, change direction and check again			
+				JMP AI2_loop
+
+AI2_end		JMP skip_AI
+
+AI2_check_collision
+				Field_check PLAYER2_X, PLAYER2_Y
+				RTS
+	
+	
+AI2_follow
+				LDA AI2_lastColl			; go check what whas the last direction of collision
+				CMP #$04					; if no collision branch to normal loop
+				BEQ	AI2_loop				; 
+				CMP #$02					; check if direction of coll was smaller than 2 
+				BMI AI2_fol_ul
+AI2_fol_dr
+				CMP #$02					; check if lastColl was down
+				BEQ AI2_fol_down
+AI2_fol_right
+				INC PLAYER2_X				; move player to the right
+				JSR AI2_check_collision		; check if this situation gives a collison
+				DEC PLAYER2_X				; undo movement
+				CMP #$0				
+				BNE AI2_loop				; if next position is not clear, go follow normal procedure.
+				LDA #$03					; else load right direction
+				STA PLAYER2_DIR		
+				JMP AI2_end					; and jump to end
+				
+AI2_fol_down	INC PLAYER2_Y				; move player down
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				DEC PLAYER2_Y				; undo movement
+				CMP #$0				
+				BNE AI_end					; if next position is not clear, go follow normal procedure.
+				LDA #$02					; else load down direction
+				STA PLAYER2_DIR		
+				JMP AI2_end					; and jump to end
+AI2_fol_ul
+				CMP #$00					; check if lastColl was up
+				BEQ AI2_fol_up
+				
+AI2_fol_left	DEC PLAYER2_X				; move player to the left
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				INC PLAYER2_X				; undo movement
+				CMP #$0				
+				BNE AI_end					; if next position is not clear, go follow normal procedure.
+				LDA #$01					; else load left direction
+				STA PLAYER2_DIR		
+				JMP AI2_end					;and jump to end
+				
+AI2_fol_up		DEC PLAYER2_Y				; move player up
+				JSR AI2_check_collision		; check if this situation gives a collison 
+				INC PLAYER2_Y				; undo movement
+				CMP #$0				
+				BNE AI_end					; if next position is not clear, go follow normal procedure.
+				LDA #$00					; else load up direction
+				STA PLAYER2_DIR		
+				JMP AI2_end					; and jump to end
+		
+		
+
+;###################################################################################################
+;## AI2_lastColl		reminds the last direction of collision, so that line can be followed	  ##
+;##						4 = no last collision, else collison at corresponding direction			  ##
+;###################################################################################################
+
+AI2_lastColl	
+			
+		dc #$00				; init last collision at 4
+		
