@@ -9,21 +9,26 @@ DEF_SNAKEBODY
 	DC #$6F			; o
 	DC #$00			; NULL
 
-DEF_SUPER
-	DC #$53			; S
-	DC #$75			; u
-	DC #$70			; p
-	DC #$65			; e
-	DC #$72			; r
-	DC #$00			; NULL
-
 DEF_SNAKE
 	DC #$53			; S
 	DC #$6E			; n
 	DC #$61			; a
 	DC #$6B			; k
 	DC #$65			; e
+	DC #$20			;  
 	DC #$00			; NULL
+
+DEF_SHOWDOWN
+	DC $53			; S
+	DC $68			; h
+	DC $6f			; o
+	DC $77			; w
+	DC $64			; d
+	DC $6f			; o
+	DC $77			; w
+	DC $6e			; n
+	DC $0			; NULL
+
 
 DEF_QUIT			; Q: quit
 	DC #$51			; Q
@@ -55,6 +60,30 @@ DEF_PLAYER
 	DC #$72			; r
 	DC #$20			;  
 	DC #$00			; NULL
+
+DEF_COMPUTER
+	DC $43			; C
+	DC $6f			; o
+	DC $6d			; m
+	DC $70			; p
+	DC $75			; u
+	DC $74			; t
+	DC $65			; e
+	DC $72			; r
+	DC $0			; NULL
+
+DEF_YOUWIN
+	DC $59			; Y
+	DC $6f			; o
+	DC $75			; u
+	DC $20			;  
+	DC $57			; W
+	DC $69			; i
+	DC $6e			; n
+	DC $21			; !
+	DC $0			; NULL
+
+
 
 DEF_WINS
 	DC #$57			; W
@@ -88,6 +117,10 @@ AI_LEVEL
 	DC #$00			; no AI
 	DC #$00
 
+NO_AI
+	DC #$00
+	DC #$00
+
 PLAYER1
 PLAYER1_X
 	DC #$01			; start at x=1
@@ -113,4 +146,41 @@ PLAYER2_DIR			; 0=top, counter-clockwise
 
 PLAYER2_DIR2
 	DC #$01			; previous direction
-	
+
+DEF_SINGLEPLAYER
+	DC $31			; 1
+	DC $2e			; .
+	DC $20			;  
+	DC $53			; S
+	DC $69			; i
+	DC $6e			; n
+	DC $67			; g
+	DC $6c			; l
+	DC $65			; e
+	DC $20			;  
+	DC $50			; P
+	DC $6c			; l
+	DC $61			; a
+	DC $79			; y
+	DC $65			; e
+	DC $72			; r
+	DC $0			; NULL
+
+DEF_MULTIPLAYER
+	DC $32			; 2
+	DC $2e			; .
+	DC $20			;  
+	DC $4d			; M
+	DC $75			; u
+	DC $6c			; l
+	DC $74			; t
+	DC $69			; i
+	DC $20			;  
+	DC $50			; P
+	DC $6c			; l
+	DC $61			; a
+	DC $79			; y
+	DC $65			; e
+	DC $72			; r
+	DC $0			; NULL
+

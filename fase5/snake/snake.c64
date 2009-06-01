@@ -1,184 +1,16 @@
-;#####################################################################
-;## Macro to help with printing                                     ##
-;## Usage: Print [pointer]                                          ##
-;#####################################################################
-	MAC Print
-.ADDRESS SET {1}
-	DC $02
-	DC #<.ADDRESS
-	DC #>.ADDRESS
-	ENDM
 
-;#####################################################################
-;## Macro to help with printing                                     ##
-;## Usage: Print [pointer]                                          ##
-;#####################################################################
-	MAC PrintIND
-.ADDRESS SET {1}
-	DC $1B
-	DC #<.ADDRESS
-	DC #>.ADDRESS
-	ENDM
-
-;#####################################################################
-;## Macro to show player block                                      ##
-;## Usage: Show_player [pointer]                                    ##
-;#####################################################################	
-	MAC Show_player
-.OFFSET SET {1}
-.COLOR SET {2}
-	LDX .OFFSET
-	LDY .OFFSET+1
-	DC $04
-	DC $0F				; change color to the current player color
-	DC #.COLOR
-	Print DEF_SNAKEBODY
-	ENDM
-
-;#####################################################################
-;## Macro to handle keyboard                                        ##
-;## Usage: Handle_IO_player [dir pointer] [required acc] [dir]      ##
-;## Requires last pressed key in the accumulator                    ##
-;#####################################################################	
-	MAC Handle_IO_player
-.OFFSET SET {1}
-.REQKEY SET {2}
-.NEWDIR SET {3}
-	CMP #.REQKEY			; see if the required key was pressed
-	BNE .IO_noaction		; if not, skip further processing
-	LDX .OFFSET+1			; load the old direction into the x register
-	IF .NEWDIR > 1
-	  CPX #.NEWDIR-2		; if the current direction is the opposite
-	  BEQ .IO_noaction		; then don't change the direction
-	ELSE
-	  CPX #.NEWDIR+2		; if the current direction is the opposite
-	  BEQ .IO_noaction		; then don't change the direction
-	ENDIF
-	LDX #.NEWDIR			; load the new direction into the x register
-	STX .OFFSET			; and store it at the location of the direction variable
-.IO_noaction
-	ENDM
-
-;#####################################################################
-;## Macro to move player                                            ##
-;## Usage: Move_player [pointer]                                    ##
-;#####################################################################	
-	MAC Move_player
-.OFFSET SET {1}
-	LDA #$1
-	CMP .OFFSET+2			; check if the direction is smaller than 2
-	BPL .MV_topleft			; if so, go to MV_topleft
-	
-	LDA #$2
-	CMP .OFFSET+2			; check if the direction is 2
-	BEQ .MV_down
-	INC .OFFSET			; increase the X
-	JMP .MV_end
-.MV_down
-	INC .OFFSET+1			; increase the Y
-	JMP .MV_end
-.MV_topleft
-	BEQ .MV_left			; if direction is 1, it's left
-	DEC .OFFSET+1			; decrease the Y
-	JMP .MV_end
-.MV_left
-	DEC .OFFSET			; decrease the X
-.MV_end
-	LDA .OFFSET+2			; load the direction var into the accumulator
-	STA .OFFSET+3			; and store it in the old direction variable
-	ENDM	
-
-;#####################################################################
-;## Macro to load field value at given position into accumulator    ##
-;## Usage: Field_check [x] [y]                                      ##
-;## X = 0..65, Y = 0..21                                            ##
-;#####################################################################	
-	MAC Field_check
-.FX SET {1}
-.FY SET {2}
-	LDA .FX				; load the x value into the accumulator
-	BEQ .F_error			; if X is too small, error
-	CMP #$43			; if X is too big, error
-	BEQ .F_error			
-	LDA .FY				; load the y value into the accumulator
-	BEQ .F_error			; if Y is too small, error
-	CMP #$17			; if Y is too big, error
-	BEQ .F_error
-	CLC				; make sure the carry flag is cleared
-	ADC #$50			; offset in memory for the field-row
-	STA $0001			; place the y value with the offset into the high byte of the indirect address
-	LDY .FX				; place the x into the low byte of the indirect address (because of inY)
-	DC $B1				; LDA with indirectY addressing mode
-	DC $00				; and look at 00:00 and 00:01 for the real address
-	JMP .F_end
-.F_error
-	LDA #$01			; indicate that this field is invalid (1)
-.F_end
-	ENDM
-
-;#####################################################################
-;## Macro to store 1 into field value at given position             ##
-;## Usage: Field_load [x] [y]                                       ##
-;## X = 1..66, Y = 1..22                                            ##
-;#####################################################################	
-	MAC Field_set
-.FX SET {1}
-.FY SET {2}
-	LDA .FY				; load the y value into the accumulator
-	CLC				; make sure the carry flag is cleared
-	ADC #$50			; offset in memory for the field-row
-	STA $0001			; place the y value with the offset into the high byte of the indirect address
-	LDY .FX				; place the x into the low byte of the indirect address (because of inY)
-	LDA #$01			; set the field value to 1
-	DC $91				; LDA with indirectY addressing mode
-	DC $00				; and look at 00:00 and 00:01 for the real address
-	ENDM
-	
-;#####################################################################
-;## Macro to check if the game is at an end                         ##
-;## Usage: Check_collision                                          ##
-;## Load the accumulator with:                                      ##
-;## 0: game continues                                               ##
-;## 1: player 1 wins                                                ##
-;## 2: player 2 wins                                                ##
-;## 3: tie (head-on collision)                                      ##
-;## 4: tie (both died)                                              ##
-;#####################################################################
-	MAC Check_collision
-	LDA PLAYER1_X			; load the player 1 X into the accumulator
-	CMP PLAYER2_X			; and compare it to player 2's X
-	BNE .C_notie			; if not equal, it's definitely not a tie
-	LDA PLAYER1_Y			; load the player 1 Y into the accumulator
-	CMP PLAYER2_Y			; and compare it to player 2's Y
-	BNE .C_notie			; if not equal, it's definitely not a tie
-	LDA #$03			; otherwise, it's a tie
-	JMP .C_end			; and stop processing
-.C_notie
-	Field_check PLAYER1_X, PLAYER1_Y	; check if player 1 is at an illegal position
-	BEQ .C_check2			; if player 1 is at a valid position, check for player 2
-	Field_check PLAYER2_X, PLAYER2_Y	; check if player 2 is at an illegal position
-	BNE .C_tie			; if player 2 is at an invalid position too, jump to tie #4.
-	LDA #$02			; otherwise, only player 1 is at an invalid position, so player 2 wins
-	JMP .C_end
-.C_check2
-	Field_check PLAYER2_X, PLAYER2_Y	; check if player 2 is at an illegal position
-	BEQ .C_end			; if player 2 is at a valid position too, jump to end. Accumulator is still 0
-	LDA #$01			; otherwise, player 1 wins
-	JMP .C_end
-.C_tie
-	LDA #$04			; both player made are at an illegal position, but not the same
-.C_end
-	ENDM
 
 	processor 6502
 	org $8000
 	
 	jmp main			; start with the program
 
+	INCLUDE "macro.c64"		; loa the macros
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
 	INCLUDE "ai3.c64"		; load AI 3.0
 	INCLUDE "menu.c64"		; load main menu
+	INCLUDE "image.c64"		; load snake image
 	
 ;#####################################################################
 ;## main: the main program                                          ##
@@ -227,32 +59,25 @@ skip_AI
 	Move_player PLAYER1		; move the players
 	Move_player PLAYER2
 	
+	Show_player PLAYER1, #$31	; print new player positions
+	Show_player PLAYER2, #$34
+	
 	Check_collision			; see if the game is at an end
 	BEQ game_no_end2		; if not, don't stop
 	JMP game_end			; otherwise, stop
 game_no_end2	
-	
 	Field_set PLAYER1_X, PLAYER1_Y	; flag the new position of player 1
 	Field_set PLAYER2_X, PLAYER2_Y	; flag the new position of player 2
-	
-	Show_player PLAYER1, #$31	; print new player positions
-	Show_player PLAYER2, #$34
-	
-	
 	
 	LDA #$00			; reset the frame ticker to 0
 	STA FRAMETICK
 	
-	JMP game_loop
+	JMP game_loop			; end of the game loop, so take it from the top
 	
 game_end
 	
-	LDX #$46			; move to (70;4)
-	LDY #$04
-	DC $04
-	
-	DC $0F				; set color to green text
-	DC $32
+	DC $0F				; set color to red text
+	DC $31
 	
 	CMP #$03			; see if it was a tie
 	BMI game_end_win		; if not, display winner
@@ -264,6 +89,26 @@ game_end
 	JMP game_end_wait		; now wait for the Q key to be pressed
 
 game_end_win
+	LDY AI_LEVEL			; load the AI_LEVEL into the y register
+	BEQ game_end_player_wins	; and if the AI level is 0 (human vs human), the winner is always a human
+	CMP #$2				; see if the winner is player 2 (AI)
+	BEQ game_end_AI_wins		; if so, print the right message
+game_end_you_win
+	LDX #$46			; move to (70;4)
+	LDY #$04
+	DC $04
+	Print DEF_YOUWIN		; print you win
+	JMP game_end_wait		; continue with waiting for Q
+game_end_AI_wins
+	LDX #$46			; move to (70;4)
+	LDY #$04
+	DC $04
+	Print DEF_COMPUTER		; print computer (computer wins)
+	JMP game_end_win_text		; continue with printing 'WINS'
+game_end_player_wins
+	LDX #$46			; move to (70;4)
+	LDY #$04
+	DC $04
 	Print DEF_PLAYER		; print Player
 	CLC				; clear carry flag for the addition
 	ADC #$30			; convert the number to an ascii digit
@@ -271,7 +116,8 @@ game_end_win
 	LDA #$00			; and store a null
 	STA $7001			; at 70:01
 	Print $7000			; then print this digit
-	
+
+game_end_win_text
 	LDX #$48			; move to (72;5)
 	LDY #$05
 	DC $04
@@ -298,6 +144,10 @@ handle_keys
 	Handle_IO_player PLAYER1_DIR, #$73, #$02		; if s is pressed, move player 1 down
 	Handle_IO_player PLAYER1_DIR, #$64, #$03		; if d is pressed, move player 1 right
 	
+	LDY AI_LEVEL			; load the AI_LEVEL into the y register
+	BNE handle_key_end		; and if the AI level is not 0 (human vs human), don't handle player 2 keys
+	
+	
 	LDX IS_ARROW			; load the arrow start sign flag into x
 	CPX #$2				; see if the arrow flag is ready (2)
 	BNE handle_keys_no_arrows	; if no arrow key has been pressed, don't process for player 2
@@ -321,6 +171,7 @@ handle_key_not_arrowst
 	LDX #$02			; otherwise, if the previous sign was the arrow start sign and this is the 
 handle_key_not_followup
 	STX IS_ARROW			; and store the flag
+handle_key_end
 	
 	RTS
 
@@ -375,12 +226,7 @@ clear_end
 ;## init_screen: initialises the game screen with a #-border        ##
 ;#####################################################################
 init_screen
-	DC $0F				; setcolor, red text with dark yellow bg
-	DC $31		
-	DC $0C				; clear screen
-	LDX #$0
-	LDY #$0
-	DC $04				; move the cursor to (0,0)
+	Clear_screen
 	
 init_screen_xloop			; this loop prints horizontal lines
 	PRINT DEF_BORDER		; print the border
@@ -431,10 +277,11 @@ init_screen_end
 	LDX #$47			; move to (71;1)
 	LDY #$1
 	DC $04
-	Print DEF_SUPER			; and print 'Super'
-	INY				; go to the next line
-	DC $04
 	Print DEF_SNAKE			; and print 'Snake'
+	INY				; move to (70;2)
+	LDX #$46			 
+	DC $04
+	Print DEF_SHOWDOWN		; and print 'Showdown'
 	
 	LDX #$46			; move to (70;21)
 	LDY #$15

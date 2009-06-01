@@ -1,0 +1,36 @@
+;#####################################################################
+;## STRING DEFINITION                                               ##
+;#####################################################################
+DEF_BORDER
+	DC #$23			; #
+	DC #$00			; the null sign	
+
+DEF_SNAKEBODY
+	DC #$30			; 0
+	DC #$00			; NULL
+
+DEF_SUPER
+	DC #$53			; S
+	DC #$75			; u
+	DC #$70			; p
+	DC #$65			; e
+	DC #$72			; r
+	DC #$00			; NULL
+
+DEF_SNAKE
+	DC #$53			; S
+	DC #$6E			; n
+	DC #$61			; a
+	DC #$6B			; k
+	DC #$65			; e
+	DC #$00			; NULL
+
+DEF_QUIT			;Q: quit
+	DC #$51			; Q
+	DC #$3A			; :
+	DC #$20			;  
+	DC #$71			; q
+	DC #$75			; u
+	DC #$69			; i
+	DC #$74			; t
+	DC #$00
