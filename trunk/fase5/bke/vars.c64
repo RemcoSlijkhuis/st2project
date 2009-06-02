@@ -157,18 +157,11 @@ DEF_COMPUTER			; Computer
 	DC #$00
 
 
-COMPAREVALUE_COL1
+COMPAREVALUE_COL1		; compare value for setting and checking positions in the rows
 	DC #$00
 COMPAREVALUE_COL2
 	DC #$00
 COMPAREVALUE_COL3
-	DC #$00
-
-SETVALUE_COL1
-	DC #$00
-SETVALUE_COL2
-	DC #$00
-SETVALUE_COL3
 	DC #$00
 
 POSITION_X			; X position of the cursor

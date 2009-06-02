@@ -487,95 +487,65 @@ checkpos_true
 
 set_position
 
-	JSR set_setvalues
+	JSR set_comparevalues
 
 	LDA CUR_POSITION		; load in the current position
 	CMP #$01			; if the position isnt 1
 	BNE set_position_2		; branch to check for 2
-	SetPos ROW1, SETVALUE_COL1	; else set position 1
+	SetPos ROW1, COMPAREVALUE_COL1	; else set position 1
 
 set_position_2				
 
 	CMP #$02			; same as for position 1
 	BNE set_position_3
-	SetPos ROW1, SETVALUE_COL2
+	SetPos ROW1, COMPAREVALUE_COL2
 
 set_position_3	
 	CMP #$03			; again same as for position 1
 	BNE set_position_4	
-	SetPos ROW1, SETVALUE_COL3	
+	SetPos ROW1, COMPAREVALUE_COL3	
 
 set_position_4
 
 	CMP #$04			; and again
 	BNE set_position_5
-	SetPos ROW2, SETVALUE_COL1
+	SetPos ROW2, COMPAREVALUE_COL1
 
 set_position_5
 		
 	CMP #$05			; its getting boring now
 	BNE set_position_6
-	SetPos ROW2, SETVALUE_COL2
+	SetPos ROW2, COMPAREVALUE_COL2
 
 set_position_6
 
 	CMP #$06			; and again
 	BNE set_position_7
-	SetPos ROW2, SETVALUE_COL3
+	SetPos ROW2, COMPAREVALUE_COL3
 
 set_position_7
 
 	CMP #$07			; and again
 	BNE set_position_8
-	SetPos ROW3, SETVALUE_COL1
+	SetPos ROW3, COMPAREVALUE_COL1
 
 set_position_8
 
 	CMP #$08			; and again
 	BNE set_position_9
-	SetPos ROW3, SETVALUE_COL2
+	SetPos ROW3, COMPAREVALUE_COL2
 
 set_position_9
-	SetPos ROW3, SETVALUE_COL3	; and the last one!
+	SetPos ROW3, COMPAREVALUE_COL3	; and the last one!
 	
 set_position_end	
 
 	RTS
 
-;#####################################################################
-;## set_setvalues						    ##
-;## sets the setvalue by looking to the CUR_PLAYER		    ##
-;#####################################################################
-
-set_setvalues
-	LDA CUR_PLAYER				; load in the current plauer
-	CMP #$02				; branch to player 2 label if the player is 2
-	BEQ set_values_player2
-	CMP #$04				; if the player is 4 (computer) also load in the values for player 2
-	BEQ set_values_player2
-	
-	LDA #$20				; load in the setvalue for col 1
-	STA SETVALUE_COL1			; and store it
-	LDA #$08				; load in the setvalue for col 2
-	STA SETVALUE_COL2			; and store it
-	LDA #$02				; load in the setvalue for col 3
-	STA SETVALUE_COL3			; and stote it
-	RTS
-
-set_values_player2
-
-	LDA #$10				; laod in the setvalue for col 1
-	STA SETVALUE_COL1			; and store it
-	LDA #$04				; load in the setvalue for col 2
-	STA SETVALUE_COL2			; and store it
-	LDA #$01				; load in the setvalue for col 3
-	STA SETVALUE_COL3			; and store it
-
-	RTS
 
 ;#####################################################################
 ;## set_comparevalues						    ##
-;## sets the setvalue by looking to the CUR_PLAYER		    ##
+;## sets the COMPAREVALUE by looking to the CUR_PLAYER		    ##
 ;#####################################################################
 
 set_comparevalues
@@ -585,21 +555,21 @@ set_comparevalues
 	CMP #$04				; if the player is 4 (computer) also load in the values for player 2
 	BEQ set_compare_player2
 	
-	LDA #$20				; load in the setvalue for col 1
+	LDA #$20				; load in the COMPAREVALUE for col 1
 	STA COMPAREVALUE_COL1			; and store it
-	LDA #$08				; load in the setvalue for col 2
+	LDA #$08				; load in the COMPAREVALUE for col 2
 	STA COMPAREVALUE_COL2			; and store it
-	LDA #$02				; load in the setvalue for col 3
+	LDA #$02				; load in the COMPAREVALUE for col 3
 	STA COMPAREVALUE_COL3			; and stote it
 	RTS
 
 set_compare_player2
 
-	LDA #$10				; laod in the setvalue for col 1
+	LDA #$10				; laod in the COMPAREVALUE for col 1
 	STA COMPAREVALUE_COL1			; and store it
-	LDA #$04				; load in the setvalue for col 2
+	LDA #$04				; load in the COMPAREVALUE for col 2
 	STA COMPAREVALUE_COL2			; and store it
-	LDA #$01				; load in the setvalue for col 3
+	LDA #$01				; load in the COMPAREVALUE for col 3
 	STA COMPAREVALUE_COL3			; and store it
 
 	RTS
