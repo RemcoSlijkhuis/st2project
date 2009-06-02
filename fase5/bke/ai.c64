@@ -5,15 +5,14 @@
 
 
 ai
-	LDA CUR_POSITION
-	STA CUR_POS2
+	LDA CUR_POSITION		; load the current position
+	PHA				; and store it on the stack
+
 	JSR check_for_win		; check for win, accumulator is filled with result 
 	
 	CMP #$00
-	BEQ ai_continue			; 1 = computer prevented a lose, 0 computer didnt do anyting
-	LDA CUR_POS2
-	STA CUR_POSITION
-	RTS
+	BEQ ai_continue			; 1 = computer prevented the player to win the next round, 0 computer didnt do anyting
+	JMP ai_end
 
 ai_continue
 	
@@ -21,28 +20,25 @@ ai_continue
 	
 	CMP #$00
 	BEQ ai_continue_2		; 1 = computer won, 0 computer didnt do anyting
-	LDA CUR_POS2
-	STA CUR_POSITION
-	RTS	
+	JMP ai_end
 			
 ai_continue_2
 
 
 
 ai_continue_2_loop
-	DC $07				; get a random number that's not bigger than 9
+	DC $07				; get a random number that's not bigger than 8
 	DC $08	
-	ADC #01
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ ai_continue_2_loop
+	ADC #01				; add 1 to it to create a number between 1 and 9
+	STA CUR_POSITION		; save it as the current position
+	JSR check_position		; check the position
+	CMP #$00			; check if the position is legal		
+	BEQ ai_continue_2_loop		; if not, recreate a random number
+	JSR do_zet			; else make the move
 	
-	
-	JSR do_zet
-	
-	LDA CUR_POS2
-	STA CUR_POSITION
+ai_end
+	PLA				; pull the accummulator back from the stack	
+	STA CUR_POSITION		; and restore the current position
 
 	RTS
 
@@ -61,7 +57,7 @@ check_for_lose
 	LDA #$02				; load in the comparevalue for col 3
 	STA COMPAREVALUE_COL3			; and store it
 
-	JSR check_combinations_ai
+	JSR check_combinations_ai		; check for any posible losing situations
 
 
 
@@ -74,8 +70,8 @@ check_for_lose
 check_for_win
 
 
-	JSR set_comparevalues
-	JSR check_combinations_ai
+	JSR set_comparevalues				; set the compare values
+	JSR check_combinations_ai			; and check for any posible win situations
 
 	RTS
 
@@ -95,12 +91,12 @@ check_combination_ai_1_continue
 	LDA ROW1
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_1_continue_1
-	LDA #$03
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_1_continue_1
+	BEQ check_combination_ai_1_continue_1		; check for combination:
+	LDA #$03					; O # O # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_1_continue_1		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -110,12 +106,12 @@ check_combination_ai_1_continue_1
 	LDA ROW1
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_1_continue_2
-	LDA #$02
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_1_continue_2
+	BEQ check_combination_ai_1_continue_2		; check for combination:
+	LDA #$02					; O #   # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_1_continue_2		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -125,12 +121,12 @@ check_combination_ai_1_continue_2
 	LDA ROW2
 	AND COMPAREVALUE_COL1
 	CMP #$00
-	BEQ check_combination_ai_1_continue_3
-	LDA #$07
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_1_continue_3
+	BEQ check_combination_ai_1_continue_3		; check for combination:
+	LDA #$07					; O #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				; O #   #  
+	CMP #$00					; #########
+	BEQ check_combination_ai_1_continue_3		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -140,12 +136,12 @@ check_combination_ai_1_continue_3
 	LDA ROW3
 	AND COMPAREVALUE_COL1
 	CMP #$00
-	BEQ check_combination_ai_1_continue_4
-	LDA #$04
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_1_continue_4
+	BEQ check_combination_ai_1_continue_4		; check for combination:
+	LDA #$04					; O #  # 
+	STA CUR_POSITION				; ########
+	JSR check_position				;   #  #
+	CMP #$00					; ########
+	BEQ check_combination_ai_1_continue_4		; O #  #
 	JSR do_zet
 	LDA #$01
 	
@@ -155,12 +151,12 @@ check_combination_ai_1_continue_4
 	LDA ROW2
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_1_continue_5
-	LDA #$09
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_1_continue_5
+	BEQ check_combination_ai_1_continue_5		; check for combination:
+	LDA #$09					; O #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O #
+	CMP #$00					; #########
+	BEQ check_combination_ai_1_continue_5		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -171,12 +167,12 @@ check_combination_ai_1_continue_5
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_2
-	LDA #$05
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_2
+	BEQ check_combination_ai_2			; check for combination:
+	LDA #$05					; O #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   #
+	CMP #$00					; #########
+	BEQ check_combination_ai_2			;   #   # O
 	JSR do_zet
 	LDA #$01
 	
@@ -191,12 +187,12 @@ check_combination_ai_2
 	LDA ROW1
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_2_continue_1
-	LDA #$01
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_2_continue_1
+	BEQ check_combination_ai_2_continue_1		; check for combination:
+	LDA #$01					;   # O # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   #
+	CMP #$00					; #########
+	BEQ check_combination_ai_2_continue_1		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -207,12 +203,12 @@ check_combination_ai_2_continue_1
 	LDA ROW2
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_2_continue_2
-	LDA #$08
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_2_continue_2
+	BEQ check_combination_ai_2_continue_2		; check for combination:
+	LDA #$08					;   # O # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O #
+	CMP #$00					; #########
+	BEQ check_combination_ai_2_continue_2		;   #   #
 	JSR do_zet
 	LDA #$01
 	
@@ -223,12 +219,12 @@ check_combination_ai_2_continue_2
 	LDA ROW3
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_3
-	LDA #$05
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_3
+	BEQ check_combination_ai_3			; check for combination:
+	LDA #$05					;   # O # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   #
+	CMP #$00					; #########
+	BEQ check_combination_ai_3			;   # O #
 	JSR do_zet
 	LDA #$01
 	
@@ -239,46 +235,32 @@ check_combination_ai_3
 	LDA ROW1
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BNE check_combination_ai_3_1
+	BNE check_combination_ai_3_continue_1
 	JMP check_combination_ai_4
-check_combination_ai_3_1
-	LDA ROW1
-	AND COMPAREVALUE_COL2
-	CMP #$00
-	BEQ check_combination_ai_3_continue_1
-	LDA #$01
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_3_continue_1
-	JSR do_zet
-	LDA #$01
-	
-	RTS
-
 check_combination_ai_3_continue_1
 	LDA ROW2
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_3_continue_2
-	LDA #$09
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_3_continue_2
+	BEQ check_combination_ai_3_continue_2		; check for combination:
+	LDA #$09					;   #   # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # O
+	CMP #$00					; #########
+	BEQ check_combination_ai_3_continue_2		;   #   #
 	JSR do_zet
 	LDA #$01	
 	RTS
+
 check_combination_ai_3_continue_2
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_3_continue_3
-	LDA #$06
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_3_continue_3
+	BEQ check_combination_ai_3_continue_3		; check for combination:
+	LDA #$06					;   #   # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_3_continue_3		;   #   # O
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -286,12 +268,12 @@ check_combination_ai_3_continue_3
 	LDA ROW2
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_3_continue_4
-	LDA #$07
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_3_continue_4
+	BEQ check_combination_ai_3_continue_4		; check for combination:
+	LDA #$07  					;   #   # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_3_continue_4		;   #   #
 	JSR do_zet
 	LDA #$01
 	RTS	
@@ -300,12 +282,12 @@ check_combination_ai_3_continue_4
 	LDA ROW3
 	AND COMPAREVALUE_COL1
 	CMP #$00
-	BEQ check_combination_ai_4
-	LDA #$05
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_4
+	BEQ check_combination_ai_4			; check for combination:
+	LDA #$05					;   #   # O
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_4			; O #   #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -317,12 +299,12 @@ check_combination_ai_4
 	BEQ check_combination_ai_5
 	LDA ROW3
 	AND COMPAREVALUE_COL1
-	BEQ check_combination_ai_4_continue_1
-	LDA #$01
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_4_continue_1
+	BEQ check_combination_ai_4_continue_1 		; check for combination:
+	LDA #$01					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				; O #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_4_continue_1		; O #   #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -331,12 +313,12 @@ check_combination_ai_4_continue_1
 	LDA ROW2
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_4_continue_2
-	LDA #$06
-	STA CUR_POSITION
-	JSR check_position	
-	CMP #$00
-	BEQ check_combination_ai_4_continue_2
+	BEQ check_combination_ai_4_continue_2 		; check for combination:
+	LDA #$06					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				; O # O # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_4_continue_2		;   #   #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -345,12 +327,12 @@ check_combination_ai_4_continue_2
 	LDA ROW2
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_5
-	LDA #$05
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_5
+	BEQ check_combination_ai_5			; check for combination:
+	LDA #$05					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				; O #   # O
+	CMP #$00					; #########
+	BEQ check_combination_ai_5			;   #   #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -363,12 +345,12 @@ check_combination_ai_5
 	LDA ROW2
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_5_continue_1
-	LDA #$04
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_5_continue_1
+	BEQ check_combination_ai_5_continue_1		; check for combination:
+	LDA #$04					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O # O
+	CMP #$00					; #########
+	BEQ check_combination_ai_5_continue_1		;   #   #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -377,12 +359,12 @@ check_combination_ai_5_continue_1
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_5_continue_2
-	LDA #$01
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_5_continue_2
+	BEQ check_combination_ai_5_continue_2		; check for combination:
+	LDA #$01					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_5_continue_2		;   #   # O
 	JSR do_zet	
 	LDA #$01
 	RTS
@@ -391,12 +373,12 @@ check_combination_ai_5_continue_2
 	LDA ROW3
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_5_continue_3
-	LDA #$02
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_5_continue_3
+	BEQ check_combination_ai_5_continue_3		; check for combination:
+	LDA #$02					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_5_continue_3		;   # O #
 	JSR do_zet	
 	LDA #$01
 	RTS
@@ -405,12 +387,12 @@ check_combination_ai_5_continue_3
 	LDA ROW3
 	AND COMPAREVALUE_COL1
 	CMP #$00
-	BEQ check_combination_ai_6
-	LDA #$03
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_6
+	BEQ check_combination_ai_6			; check for combination:
+	LDA #$03					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   # O # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_6			; O #   #
 	JSR do_zet	
 	LDA #$01
 	RTS
@@ -424,12 +406,12 @@ check_combination_ai_6
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_7
-	LDA #$03
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_7
+	BEQ check_combination_ai_7			; check for combination:
+	LDA #$03					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # O
+	CMP #$00					; #########
+	BEQ check_combination_ai_7			;   #   # O
 	JSR do_zet
 	LDA #$01
 	RTS	
@@ -443,12 +425,12 @@ check_combination_ai_7
 	LDA ROW3
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_7_continue_1
-	LDA #$09
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_7_continue_1
+	BEQ check_combination_ai_7_continue_1		; check for combination:
+	LDA #$09					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_7_continue_1		; O # O #
 	JSR do_zet
 	LDA #$01
 	RTS
@@ -457,12 +439,12 @@ check_combination_ai_7_continue_1
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_8
-	LDA #$08
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_8
+	BEQ check_combination_ai_8			; check for combination:
+	LDA #$08					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_8			; O #   # O
 	JSR do_zet	
 	LDA #$01
 	RTS
@@ -472,16 +454,16 @@ check_combination_ai_8
 	LDA ROW3
 	AND COMPAREVALUE_COL3
 	CMP #$00
-	BEQ check_combination_ai_end
+	BEQ check_combination_ai_end		
 	LDA ROW3
 	AND COMPAREVALUE_COL2
 	CMP #$00
-	BEQ check_combination_ai_end
-	LDA #$07
-	STA CUR_POSITION
-	JSR check_position
-	CMP #$00
-	BEQ check_combination_ai_end
+	BEQ check_combination_ai_end			; check for combination:
+	LDA #$07					;   #   # 
+	STA CUR_POSITION				; #########
+	JSR check_position				;   #   # 
+	CMP #$00					; #########
+	BEQ check_combination_ai_end			;   # O # O
 	JSR do_zet
 	LDA #$01
 	RTS	
