@@ -38,9 +38,49 @@ menu_loop
 	JMP menu_loop			; if none of the active keys have been pressed, continue with processing
 	
 menu_1player
+	JSR menu_basics
+	
+	LDX #$1E		; jump to (33;20)
+	LDY #$14
+	DC $04
+	Print DEF_EASY
+	
+	INY			; jump to (33;21)
+	DC $04
+	Print DEF_MODERATE
+	
+	INY			; jump to (33;22)
+	DC $04
+	Print DEF_DIFFICULT
+
+menu_1player_loop
+	DC $0B				; sleep for 1ms
+	DC $01
+	
+	DC $03				; getkey
+	
+	CMP #$31			; see if the last pressed key was 1
+	BEQ menu_1player_easy		; if that key has been pressed, continue with easy
+	CMP #$32			; see if the last pressed key was 2
+	BEQ menu_1player_moderate	; if that key has been pressed, continue with moderate
+	CMP #$33			; see if the last pressed key was 3
+	BEQ menu_1player_difficult	; if that key has been pressed, continue with difficult
+	JMP menu_1player_loop		; if none of the active keys have been pressed, continue with processing
+	
+	RTS
+
+menu_1player_easy
 	Load_AI snake_AI_1		; load the easy AI
 	RTS
-	
+
+menu_1player_moderate
+	Load_AI snake_AI_2		; load the moderately difficult AI
+	RTS
+
+menu_1player_difficulteasy
+	Load_AI snake_AI_3		; load the difficult AI
+	RTS
+
 menu_2player
 	Load_AI $0000			; set AI to 0 for no AI
 	RTS
