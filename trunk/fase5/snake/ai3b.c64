@@ -1,0 +1,325 @@
+;#########################################################
+;##		AI version 3.0
+;########################
+
+;########################################################################
+;## AI_option	variable wich holds the strategy 
+;##
+;##	option 1 : player 2 starts on upper half, opponent starts lower
+;##	option 2 : player 2 starts on lower half, opponent starts lower 
+;## option 3 : player 2 starts on upper half, opponent starts higher 
+;## option 4 : player 2 starts on lower half, opponent starts higher
+;## option 5 : opponent starts at exact opposite position
+;##
+
+AI_option
+	
+			dc #$00			; init option at 0
+
+;#######################################################################
+;##	AI_case		divides strategy, amount differs per option
+;##			
+			
+AI_case	
+			dc #$00			; init case at 0
+;#####################################################################	
+;## AI_turn 	keeps track at which turn te game is.
+;##	
+AI_turn
+			dc #$00			; init turn at 0
+			
+;#####################################################################	
+;## AI_moveMem	stores the previous direction of player1
+;##	
+
+AI_moveMem
+			dc #$00			; init moveMem at 0
+
+;###########################################################################
+;##	AI_tablePoint
+;##
+
+AI_tablePoint
+			dc #$00			; init tablePoint at 0
+			dc #$00
+;##########################################################################
+;##	main subroutine
+;##
+
+snake_AI_3			
+AI_main
+			LDA AI_turn 		; load previous turn
+			CMP #$00			; check for first turn
+			BNE notFirst		; if not, skip choosOpt
+			JSR	AI_chooseOpt	; else call chooseOpt
+notFirst
+			INC AI_turn			; increment to current turn
+			LDA AI_option		; load option in accumulator
+			CMP #$05			; if option is 5, go to decideOpt5
+			BEQ AI_decideOpt5	
+			LDA #$01			; if no legal option, give error code 1
+			JSR AI_error		
+			JMP snake_AI_1		; and perform basic direction choice
+AI3_end		LDA PLAYER1_DIR		; get direction of player 1
+			STA AI_moveMem		; store direction for next turn
+			JMP skip_AI					; return after choice is made
+		
+;################################################################################
+;## AI_chooseOpt	decides wich strategy to use
+;##
+
+AI_chooseOpt
+			LDX PLAYER2_Y		; get starting position player 2
+			CPX PLAYER1_Y		; compare to starting position player 1
+			BEQ setOp5			; if exact opposite, go set option 1
+			BMI lowOp			; if opponent is higher go to highOp, else proceed to lowOp
+lowOp		CPX #$0B			; check on which half player 2 starts
+			BMI setOp2			; go to setOp2if player 2 is on lower half
+setOp1		LDA #$01			; else set option 3
+			STA AI_option	
+			RTS
+setOp2		LDA #$02			; set option 2
+			STA AI_option
+			RTS
+highOp		CPX #$0B			; check on wich half player 2 starts
+			BMI setOp4			; go to set option 4 if player 2 is on lower half
+setOp3		LDA #$03			; set Option 3
+			STA AI_option	
+			RTS
+setOp4		LDA #$04			; set option 4
+			STA AI_option	
+			RTS
+setOp5		LDA #$05			; set option 5
+			STA AI_option
+			RTS
+
+;#######################################################################################
+;## AI_decideOpt1	decide where to go if option = 1
+;##
+
+AI_decideOpt1
+			JMP snake_AI_1    	; under construction
+
+;#######################################################################################
+;## AI_decideOpt2	decide where to go if option = 2
+;##
+
+AI_decideOpt2
+			JMP snake_AI_1    	; under construction
+			
+;#######################################################################################
+;## AI_decideOpt3	decide where to go if option = 3
+;##
+
+AI_decideOpt3
+			JMP snake_AI_1    	; under construction
+			
+;#######################################################################################
+;## AI_decideOpt4	decide where to go if option = 4
+;##
+
+AI_decideOpt4
+			JMP snake_AI_1    	; under construction
+			
+;#######################################################################################
+;## AI_decideOpt5	decide where to go if option = 5
+;##
+
+AI_decideOpt5
+			LDA AI_case			; get current case
+			ASL 	
+			TAX
+			
+			LDA Opt5Table,X
+			STA $7000
+			LDA Opt5Table+1,X
+			STA $7001
+			
+			JMP ($7000)
+			DC $00
+			
+Opt5Table
+			;## case 0: players are heading right in to each other
+			DC #<Opt5_0	
+			DC #>Opt5_0
+			
+			;## case 1: players chose new direction, lines are connected
+			DC #<Opt5_1	
+			DC #>Opt5_1	
+			
+			;## case 2: player1 chose new direction, lines are not connected, player 2 still going left
+			DC #<Opt5_2	
+			DC #>Opt5_2
+			
+			;## case 3: player1 chose new direction, lines are not connected, player 2 follows
+			DC #<Opt5_3
+			DC #>Opt5_3
+			
+			;## case 4: players are separated , so player 2 only needs to fill up his space.
+			dc #<Opt5_4
+			dc #>Opt5_4
+			
+Opt5_0			
+			LDA PLAYER2_X		; load player 2 x coordinate
+			CLC
+			SBC PLAYER1_X 		; check how far players are appart
+			CMP #$03			
+			BPL Opt5_Action3	; If distance >= 03 continue case 0		
+			CMP #$01			
+			BEQ Opt5_Action2	; If distance == 1, go to action 2
+Opt5_Action1					; else do action 1
+			LDA PLAYER1_DIR		; peek what player 1 does
+			CMP #$03
+			BEQ UpDown			; If player 1 doesn't go right, stay on course
+			JMP AI3_end
+			
+UpDown	
+			LDY PLAYER2_Y		; load y coordinate
+			CPY #$0B			; check at which half player 2 is at.
+			BPL	goUp			; if player 2 is at lower half, go up
+goDown		LDA #$02			; else go down
+			STA PLAYER2_DIR		; 
+			JMP setCase1		; and jump to set case 1
+goUp		LDA #$00			; set direction to up
+			STA PLAYER2_DIR
+			JMP setCase1		; and jump to set case 1
+setCase1	LDA #$01			; set case to 1	 
+			STA AI_case			
+			JMP AI3_end			; and jump to end
+	
+Opt5_Action2
+			LDA AI_moveMem		; get previous direction of player 1
+			CMP #$03			; check if player1 was moving right
+			BEQ UpDown			; if so, go check for going up or down
+			LDY PLAYER2_Y		; load y coordinate
+			CPY #$0B			; check at which half player 2 is at.
+			BPL	goUp			; if player 2 is at lower half, go up
+			;BEQ doOpp			; if at center do opposite of player 1
+			JMP goDown			; else go down
+;doOpp		LDA AI_moveMEM		; load previous movement 
+;			CLC 				;
+;			ADC #$02			; add 2 to direction
+;			CMP #$04			; check if direction exceeds 4, if direction was down
+;			BMI doOpp_end		; if not, go set new direction
+;			SBC #$04			; else substract 4 to get new direction
+;doOpp_end	STA PLAYER2_DIR		; set new direction
+;			JMP setCase1		; go set new case
+			
+Opt5_Action3	
+			LDA PLAYER1_DIR		; peek what player 1 does
+			CMP #$03			; if player 1 goes right, do nothing
+			BNE Opt5_Action3_noend
+			JMP AI3_end
+Opt5_Action3_noend
+			LDY PLAYER2_Y		; Else check position
+			CPY #$0B			; 
+			BPL	checkOpp		; if on lower half check if opponent goes up
+			CMP #$02			; else check if opponent goes down
+			BNE setCase2		; if not don't change direction, and set case 2
+			LDA #$02			; else change direction 
+			STA PLAYER2_DIR		
+			JMP setCase3		; and set case 3
+checkOpp	CMP #$00			; check if opponent goes up
+			BNE setCase2		; if not don't change direction, and set case 2
+			LDA #$00			; else change direction 
+			STA PLAYER2_DIR		
+			JMP setCase3		; and set case 3
+setCase2	
+			LDA #$02			; set case to 2	 
+			STA AI_case			
+			JMP AI3_end			; and jump to end
+setCase3	
+			LDA #$03			; set case to 3	 
+			STA AI_case			
+			JMP AI3_end			; and jump to end
+setCase4	
+			LDA #$04			; set case to 4
+			STA AI_case
+			JMP AI3_end			; and jumpt to end
+
+Opt5_1
+			LDA PLAYER2_DIR		; load previous direction of player 2
+			CMP #$02			; if direction was down 
+			BEQ below			; go to action for below, else for above
+			
+above		LDY PLAYER2_Y		; load player 2 y posiyion
+			CPY #$01			; check if at top
+			BEQ	right_fill		; if at top go set dir to right and fill up mode		
+			CPY PLAYER1_Y		; else compare with position of player 1
+			BPL goUp			; if player 2 is below or next to player 1, go up
+tryLeft		LDA #$01			; else set left direction
+			STA PLAYER2_DIR		;
+			jump setCase4		; and set case to 4 (players now end in a tie, or seperated)
+right_fill	LDA #$03			; load right direction
+			STA PLAYER2_DIR		;
+			LDA #$04			; load case 4
+			STA AI_case			;
+			jumpAI3_end			;
+below		LDY PLAYER2_Y		; load player 2 y posiyion
+			CPY #$22			; check if at bottom
+			BEQ	right_fill		; if at bottom go set dir to right and fill up mode	
+			LDY PLAYER1_Y		; else load position of player 1
+			CPY PLAYER2_Y		; and compare with position of player 2
+			BPL goDown			; if player 1 is below or next to player 2, go down
+			JMP tryLeft			; else try left
+
+
+Opt5_2		
+			LDY PLAYER1_Y		; load y position player 1
+			CPY PLAYER2_Y		; compare with player 2 y position
+			BEQ setCase0		; if on same height again, continue as if case 0 
+			JMP AI3_end			; else return without changing direction.
+			
+setCase0 	LDA #$00			; load case 0
+			STA AI_case
+			JMP AI3_end			; and return
+			
+Opt5_3	
+			LDA PLAYER1_DIR		; peek at player1 direction
+			CMP PLAYER2_DIR		; compare to player 2 last direction
+			BNE noEnd			; if not equal continue
+			LDY PLAYER2_Y		; else check if not running into top
+			CMP #$01
+			BNE jmp_end			; if not, return
+			LDA #$01			; else go left (player 1 will crash into wall)
+			STA PLAYER2_DIR
+jmp_end		JMP AI3_end			; else jump to end.
+noEnd 		LDX #$01			; player 2 goes left
+			STX PLAYER2_DIR
+			CMP #$03			; if player 1 goes right, set case 0
+			BEQ setCase0
+			LDX PLAYER1_X		; else store turning point and direction of player 1
+			STX AI_playerBound	;
+			LDY PLAYER2_DIR		;
+			STY AI_playerBound+1;
+setCase5	LDA #$05			; set case to 5
+			STA AI_case			;
+			JMP AI3_end			; and jump to end
+			
+			
+		
+	
+Opt5_4		
+			JMP snake_AI_2	    ; go to basic fill up routine 
+
+Opt5_5	
+			JMP snake_AI_2		; under contruction
+			
+			
+;######################################################################################
+;## AI_error
+;##		
+
+AI_error
+			LDX #$48			; move to (72;5)
+			LDY #$05
+			DC $04				
+			Print DEF_ERROR		; print error message
+			STA $7000			; store error code
+			LDA #$00
+			STA $7001
+			Print $7000			; print error code 
+			RTS
+			
+			
+			
