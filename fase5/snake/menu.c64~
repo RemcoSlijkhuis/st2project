@@ -45,11 +45,11 @@ menu_1player
 	DC $04
 	Print DEF_EASY
 	
-	INY
+	INY			; jump to (33;21)
 	DC $04
 	Print DEF_MODERATE
 	
-	INY
+	INY			; jump to (33;22)
 	DC $04
 	Print DEF_DIFFICULT
 

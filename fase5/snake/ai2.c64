@@ -89,7 +89,7 @@ AI2_fol_right
 	JSR AI2_check_collision		; check if this situation gives a collison
 	DEC PLAYER2_X			; undo movement
 	CMP #$0			
-	BNE AI2_fol_right_1		; if next position is not clear, go follow normal procedure.
+	BEQ AI2_fol_right_1		; if next position is not clear, go follow normal procedure.
 	JMP AI2_loop
 AI2_fol_right_1
 	LDA #$03			; else load right direction
@@ -145,5 +145,5 @@ AI2_fol_up_1
 
 AI2_lastColl	
 			
-	dc #$00				; init last collision at 4
+	dc #$04				; init last collision at 4
 		
