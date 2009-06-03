@@ -4,6 +4,7 @@
 ;#################################################
 
 main_menu
+	JSR start_screen
 	DC $0F				; setcolor, red text with dark yellow bg
 	DC $27
 	DC $0C				; clear screen
@@ -140,4 +141,53 @@ key_loop_continue4
 	
 
 
+	RTS
+
+;##########################################################3
+;## start_screen					 ##
+;## shows the ascii art					 ##
+;##########################################################
+start_screen
+
+	DC $0F				; setcolor, red text with dark yellow bg
+	DC $27
+	DC $0C				; clear screen
+	LDX #$00
+	LDY #$00
+	DC  $04
+
+start_screen_loop1
+	PRINT DEF_BORDER		; print the upper border
+	INX				; 32 times
+	CPX #$20
+	BNE start_screen_loop1
+	
+	INY				; reset x and move y 1 down
+	LDX #$00
+	
+
+start_screen_loop2
+	DC  $04				; print the left border
+	PRINT DEF_BORDER
+	LDX #$1F
+	DC  $04
+	PRINT DEF_BORDER		; prinf the right border
+	INY
+	LDX #$00
+	CPY #$0E
+	BNE start_screen_loop2
+
+	DC  $04		
+
+start_screen_loop3
+	PRINT DEF_BORDER		; print the lower border
+	INX
+	CPX #$20
+	BNE start_screen_loop3
+
+	LDX #$06
+	LDY #$01
+	DC #$04
+	JSR PRINT_tictactoe
+	JSR pauser
 	RTS

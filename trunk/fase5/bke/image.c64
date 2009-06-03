@@ -1,0 +1,286 @@
+PRINT_tictactoe
+	Print DEF_tictactoe_0
+	INY
+	DC $04
+	Print DEF_tictactoe_1
+	INY
+	DC $04
+	Print DEF_tictactoe_2
+	INY
+	DC $04
+	Print DEF_tictactoe_3
+	INY
+	DC $04
+	Print DEF_tictactoe_4
+	INY
+	DC $04
+	Print DEF_tictactoe_5
+	INY
+	DC $04
+	Print DEF_tictactoe_6
+	INY
+	DC $04
+	Print DEF_tictactoe_7
+	INY
+	DC $04
+	Print DEF_tictactoe_8
+	INY
+	DC $04
+	Print DEF_tictactoe_9
+	INY
+	DC $04
+	Print DEF_tictactoe_10
+	INY
+	DC $04
+	Print DEF_tictactoe_11
+	INY
+	DC $04
+	Print DEF_tictactoe_12
+	INY
+	DC $04
+	Print DEF_tictactoe_13
+	RTS
+DEF_tictactoe_0
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_1
+	DC $28			; (
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $29			; )
+	DC $2f			; /
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_2
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $28			; (
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_3
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $5c			; \
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_4
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_5
+	DC $28			; (
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $29			; )
+	DC $20			;  
+	DC $2f			; /
+	DC $5f			; _
+	DC $5f			; _
+	DC $5c			; \
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_6
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $2f			; /
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $5c			; \
+	DC $28			; (
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_7
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $5c			; \
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_8
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_9
+	DC $28			; (
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $5f			; _
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_10
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $20			;  
+	DC $20			;  
+	DC $29			; )
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $20			;  
+	DC $0			; NULL
+DEF_tictactoe_11
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $20			;  
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $28			; (
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $5f			; _
+	DC $29			; )
+	DC $0			; NULL
+DEF_tictactoe_12
+	DC $0			; NULL
+DEF_tictactoe_13
+	DC $0			; NULL
