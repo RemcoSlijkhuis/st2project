@@ -42,6 +42,17 @@ AI_moveMem
 AI_tablePoint
 			dc #$00			; init tablePoint at 0
 			dc #$00
+	
+;###########################################################################
+;##	AI_playerBound	 can be used if player 1 almost surrounds himself, and has only 1 exit direction 
+;##	
+
+AI_playerBound
+			dc #$00			;init at 0
+			dc #$00
+
+
+
 ;##########################################################################
 ;##	main subroutine
 ;##
@@ -249,20 +260,20 @@ above		LDY PLAYER2_Y		; load player 2 y posiyion
 			BPL goUp			; if player 2 is below or next to player 1, go up
 tryLeft		LDA #$01			; else set left direction
 			STA PLAYER2_DIR		;
-			jump setCase4		; and set case to 4 (players now end in a tie, or seperated)
+			JMP setCase4		; and set case to 4 (players now end in a tie, or seperated)
 right_fill	LDA #$03			; load right direction
 			STA PLAYER2_DIR		;
 			LDA #$04			; load case 4
 			STA AI_case			;
-			jumpAI3_end			;
+			JMP AI3_end			;
 below		LDY PLAYER2_Y		; load player 2 y posiyion
 			CPY #$22			; check if at bottom
 			BEQ	right_fill		; if at bottom go set dir to right and fill up mode	
 			LDY PLAYER1_Y		; else load position of player 1
 			CPY PLAYER2_Y		; and compare with position of player 2
-			BPL goDown			; if player 1 is below or next to player 2, go down
+			BPL goDown2			; if player 1 is below or next to player 2, go down
 			JMP tryLeft			; else try left
-
+godown2		JMP goDown			
 
 Opt5_2		
 			LDY PLAYER1_Y		; load y position player 1
