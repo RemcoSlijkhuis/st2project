@@ -73,7 +73,7 @@ notFirst
 			JMP snake_AI_1		; and perform basic direction choice
 AI3_end		LDA PLAYER1_DIR		; get direction of player 1
 			STA AI_moveMem		; store direction for next turn
-			JMP skip_AI					; return after choice is made
+			JMP skip_AI			; return after choice is made
 		
 ;################################################################################
 ;## AI_chooseOpt	decides wich strategy to use
@@ -273,7 +273,7 @@ below		LDY PLAYER2_Y		; load player 2 y posiyion
 			CPY PLAYER2_Y		; and compare with position of player 2
 			BPL goDown2			; if player 1 is below or next to player 2, go down
 			JMP tryLeft			; else try left
-godown2		JMP goDown			
+goDown2		JMP goDown			
 
 Opt5_2		
 			LDY PLAYER1_Y		; load y position player 1
