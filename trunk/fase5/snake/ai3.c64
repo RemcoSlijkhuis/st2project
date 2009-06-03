@@ -237,7 +237,7 @@ Opt5_1
 			
 			
 			JMP snake_AI_1    ; under construction
-Opt5_2			Print DEF_ERROR
+Opt5_2			
 			JMP snake_AI_1		; under construction
 Opt5_3			
 			JMP snake_AI_1		; under construction

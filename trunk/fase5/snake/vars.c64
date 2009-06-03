@@ -83,7 +83,44 @@ DEF_YOUWIN
 	DC $21			; !
 	DC $0			; NULL
 
+DEF_EASY
+        DC $31                  ; 1
+        DC $2e                  ; .
+        DC $20                  ;  
+        DC $45                  ; E
+        DC $61                  ; a
+        DC $73                  ; s
+        DC $79                  ; y
+        DC $0                   ; NULL
 
+DEF_MODERATE
+        DC $32                  ; 2
+        DC $2e                  ; .
+        DC $20                  ;  
+        DC $4d                  ; M
+        DC $6f                  ; o
+        DC $64                  ; d
+        DC $65                  ; e
+        DC $72                  ; r
+        DC $61                  ; a
+        DC $74                  ; t
+        DC $65                  ; e
+        DC $0                   ; NULL
+
+DEF_3DIFFICULT
+        DC $33                  ; 3
+        DC $2e                  ; .
+        DC $20                  ;  
+        DC $44                  ; D
+        DC $69                  ; i
+        DC $66                  ; f
+        DC $66                  ; f
+        DC $69                  ; i
+        DC $63                  ; c
+        DC $75                  ; u
+        DC $6c                  ; l
+        DC $74                  ; t
+        DC $0                   ; NULL
 
 DEF_WINS
 	DC #$57			; W
