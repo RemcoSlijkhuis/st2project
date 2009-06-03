@@ -266,7 +266,7 @@ check_combination_ai_3_continue_2
 	RTS
 check_combination_ai_3_continue_3
 	LDA ROW2
-	AND COMPAREVALUE_COL3
+	AND COMPAREVALUE_COL2
 	CMP #$00
 	BEQ check_combination_ai_3_continue_4		; check for combination:
 	LDA #$07  					;   #   # O
