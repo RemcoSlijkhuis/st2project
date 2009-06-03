@@ -8,6 +8,7 @@
 	
 	JMP main			; start with the program
 	INCLUDE "macro.c64"		; load the macro's
+	INCLUDE "image.c64" 		; load the main image
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "menu.c64"		; load the main menu module
 	INCLUDE "ai.c64"		; load the ai
@@ -19,7 +20,8 @@
 main
 
 	JSR main_menu			; init the main mmenu
-	JSR init_screen 		; init the sceen for the game
+	JSR init_screen 		; init the sceen for the game
+
 
 game_loop
 	DC $0B				; sleep 1ms
