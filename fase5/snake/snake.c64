@@ -8,7 +8,7 @@
 	INCLUDE "macro.c64"		; loa the macros
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
-	INCLUDE "ai3.c64"		; load AI 3.0
+	INCLUDE "ai2.c64"		; load AI 3.0
 	INCLUDE "menu.c64"		; load main menu
 	INCLUDE "image.c64"		; load snake image
 	
