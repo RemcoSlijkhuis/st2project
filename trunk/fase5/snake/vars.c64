@@ -107,7 +107,7 @@ DEF_MODERATE
         DC $65                  ; e
         DC $0                   ; NULL
 
-DEF_3DIFFICULT
+DEF_DIFFICULT
         DC $33                  ; 3
         DC $2e                  ; .
         DC $20                  ;  
