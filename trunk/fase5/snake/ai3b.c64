@@ -70,7 +70,7 @@ notFirst
 			BEQ AI_decideOpt5	
 			LDA #$01			; if no legal option, give error code 1
 			JSR AI_error		
-			JMP snake_AI_1		; and perform basic direction choice
+			JMP snake_AI_2		; and perform basic direction choice
 AI3_end		LDA PLAYER1_DIR		; get direction of player 1
 			STA AI_moveMem		; store direction for next turn
 			JMP skip_AI			; return after choice is made
@@ -109,28 +109,28 @@ setOp5		LDA #$05			; set option 5
 ;##
 
 AI_decideOpt1
-			JMP snake_AI_1    	; under construction
+			JMP snake_AI_2    	; under construction
 
 ;#######################################################################################
 ;## AI_decideOpt2	decide where to go if option = 2
 ;##
 
 AI_decideOpt2
-			JMP snake_AI_1    	; under construction
+			JMP snake_AI_2    	; under construction
 			
 ;#######################################################################################
 ;## AI_decideOpt3	decide where to go if option = 3
 ;##
 
 AI_decideOpt3
-			JMP snake_AI_1    	; under construction
+			JMP snake_AI_2    	; under construction
 			
 ;#######################################################################################
 ;## AI_decideOpt4	decide where to go if option = 4
 ;##
 
 AI_decideOpt4
-			JMP snake_AI_1    	; under construction
+			JMP snake_AI_2    	; under construction
 			
 ;#######################################################################################
 ;## AI_decideOpt5	decide where to go if option = 5
