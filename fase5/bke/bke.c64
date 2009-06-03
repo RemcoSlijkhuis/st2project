@@ -5,7 +5,7 @@
 ;######################################################################
 	processor 6502
 	org $8000
-	
+	JSR start_screen
 	JMP main			; start with the program
 	INCLUDE "macro.c64"		; load the macro's
 	INCLUDE "image.c64" 		; load the main image
