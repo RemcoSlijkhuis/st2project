@@ -4,7 +4,7 @@
 ;#################################################
 
 main_menu
-	JSR start_screen
+	
 	DC $0F				; setcolor, red text with dark yellow bg
 	DC $27
 	DC $0C				; clear screen
