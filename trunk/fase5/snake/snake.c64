@@ -180,13 +180,13 @@ handle_key_end
 randomize_game:
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
-	LDA #$10
+	;LDA #$10
 	STA PLAYER1_Y			; store it as player1 y
 	INC PLAYER1_Y			; and increment it with 1 to start at y=1 at the highest
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
 	
-	LDA #$10
+	;LDA #$10
 	STA PLAYER2_Y			; store it as player2 y
 	INC PLAYER2_Y			; and increment it with 1 to start at y=1 at the highest
 	RTS

@@ -6,7 +6,7 @@ snake_AI_2
 	JMP AI2_follow  		; go check optimal direction
 AI2_loop
 	INX				; one more try
-	CPX #$05			; if this is the fifth try it's not possible to go anywhere
+	CPX #$06			; if this is the sixth try it's not possible to go anywhere
 	BEQ AI2_end			; so stop processing
 	LDA PLAYER2_DIR 		; get direction player 2
 	CMP #$02			; check if direction is smaller than 2
@@ -102,7 +102,7 @@ AI2_fol_down
 	DEC PLAYER2_Y			; undo movement
 	CMP #$0				
 	BEQ AI2_fol_down_1			; if next position is not clear, go follow normal procedure.
-	JMP AI_end
+	JMP AI2_loop
 AI2_fol_down_1
 	LDA #$02			; else load down direction
 	STA PLAYER2_DIR		
@@ -118,7 +118,7 @@ AI2_fol_left
 	INC PLAYER2_X			; undo movement
 	CMP #$0				
 	BEQ AI2_fol_left_1			; if next position is not clear, go follow normal procedure.
-	JMP AI_end
+	JMP AI2_loop
 AI2_fol_left_1
 	LDA #$01			; else load left direction
 	STA PLAYER2_DIR		
@@ -130,7 +130,7 @@ AI2_fol_up
 	INC PLAYER2_Y			; undo movement
 	CMP #$0				
 	BEQ AI2_fol_up_1			; if next position is not clear, go follow normal procedure.
-	JMP AI_end
+	JMP AI2_loop
 AI2_fol_up_1
 	LDA #$00			; else load up direction
 	STA PLAYER2_DIR		
