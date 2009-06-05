@@ -2,19 +2,7 @@
 ;##		AI version 3.0
 ;########################
 
-;########################################################################
-;## AI_option	variable wich holds the strategy 
-;##
-;##	option 1 : player 2 starts on upper half, opponent starts lower
-;##	option 2 : player 2 starts on lower half, opponent starts lower 
-;## option 3 : player 2 starts on upper half, opponent starts higher 
-;## option 4 : player 2 starts on lower half, opponent starts higher
-;## option 5 : opponent starts at exact opposite position
-;##
 
-AI_option
-	
-			dc #$00			; init option at 0
 
 ;#######################################################################
 ;##	AI_case		divides strategy, amount differs per option
@@ -22,11 +10,7 @@ AI_option
 			
 AI_case	
 			dc #$00			; init case at 0
-;#####################################################################	
-;## AI_turn 	keeps track at which turn te game is.
-;##	
-AI_turn
-			dc #$00			; init turn at 0
+
 			
 ;#####################################################################	
 ;## AI_moveMem	stores the previous direction of player1
@@ -43,14 +27,6 @@ AI_tablePoint
 			dc #$00			; init tablePoint at 0
 			dc #$00
 	
-;###########################################################################
-;##	AI_playerBound	 can be used if player 1 almost surrounds himself, and has only 1 exit direction 
-;##	
-
-AI_playerBound
-			dc #$00			;init at 0
-			dc #$00
-
 
 
 ;##########################################################################
@@ -59,81 +35,19 @@ AI_playerBound
 
 snake_AI_3			
 AI_main
-			LDA AI_turn 		; load previous turn
-			CMP #$00			; check for first turn
-			BNE notFirst		; if not, skip choosOpt
-			JSR	AI_chooseOpt	; else call chooseOpt
-notFirst
-			INC AI_turn			; increment to current turn
-			JMP AI_decideOpt5	
+			JMP AI_decide	
 		
-			JMP snake_AI_2		; and perform basic direction choice
 AI3_end		LDA PLAYER1_DIR		; get direction of player 1
 			STA AI_moveMem		; store direction for next turn
 			JMP skip_AI			; return after choice is made
 		
-;################################################################################
-;## AI_chooseOpt	decides wich strategy to use
-;##
 
-AI_chooseOpt
-			LDX PLAYER2_Y		; get starting position player 2
-			CPX PLAYER1_Y		; compare to starting position player 1
-			BEQ setOp5			; if exact opposite, go set option 1
-			BMI lowOp			; if opponent is higher go to highOp, else proceed to lowOp
-lowOp		CPX #$0B			; check on which half player 2 starts
-			BMI setOp2			; go to setOp2if player 2 is on lower half
-setOp1		LDA #$01			; else set option 3
-			STA AI_option	
-			RTS
-setOp2		LDA #$02			; set option 2
-			STA AI_option
-			RTS
-highOp		CPX #$0B			; check on wich half player 2 starts
-			BMI setOp4			; go to set option 4 if player 2 is on lower half
-setOp3		LDA #$03			; set Option 3
-			STA AI_option	
-			RTS
-setOp4		LDA #$04			; set option 4
-			STA AI_option	
-			RTS
-setOp5		LDA #$05			; set option 5
-			STA AI_option
-			RTS
-
-;#######################################################################################
-;## AI_decideOpt1	decide where to go if option = 1
-;##
-
-AI_decideOpt1
-			JMP snake_AI_2    	; under construction
-
-;#######################################################################################
-;## AI_decideOpt2	decide where to go if option = 2
-;##
-
-AI_decideOpt2
-			JMP snake_AI_2    	; under construction
 			
 ;#######################################################################################
-;## AI_decideOpt3	decide where to go if option = 3
+;## AI_decide	decide where to go 
 ;##
 
-AI_decideOpt3
-			JMP snake_AI_2    	; under construction
-			
-;#######################################################################################
-;## AI_decideOpt4	decide where to go if option = 4
-;##
-
-AI_decideOpt4
-			JMP snake_AI_2    	; under construction
-			
-;#######################################################################################
-;## AI_decideOpt5	decide where to go if option = 5
-;##
-
-AI_decideOpt5
+AI_decide
 			LDA AI_case			; get current case
 			ASL 	
 			TAX
@@ -202,17 +116,8 @@ Opt5_Action2
 			LDY PLAYER2_Y		; load y coordinate
 			CPY #$0B			; check at which half player 2 is at.
 			BPL	goUp			; if player 2 is at lower half, go up
-			;BEQ doOpp			; if at center do opposite of player 1
 			JMP goDown			; else go down
-;doOpp		LDA AI_moveMEM		; load previous movement 
-;			CLC 				;
-;			ADC #$02			; add 2 to direction
-;			CMP #$04			; check if direction exceeds 4, if direction was down
-;			BMI doOpp_end		; if not, go set new direction
-;			SBC #$04			; else substract 4 to get new direction
-;doOpp_end	STA PLAYER2_DIR		; set new direction
-;			JMP setCase1		; go set new case
-			
+		
 Opt5_Action3	
 			LDA PLAYER1_DIR		; peek what player 1 does
 			CMP #$03			; if player 1 goes right, do nothing
@@ -308,38 +213,15 @@ noEnd 		LDX #$01			; player 2 goes left
 			STX PLAYER2_DIR
 			CMP #$03			; if player 1 goes right, set case 0
 			BEQ setCase0
-			LDX PLAYER1_X		; else store turning point and direction of player 1
-			STX AI_playerBound	;
-			LDY PLAYER2_DIR		;
-			STY AI_playerBound+1;
-setCase5	LDA #$05			; set case to 5
-			STA AI_case			;
-			JMP AI3_end			; and jump to end
+			JMP setCase4
 			
-			
-		
-	
 Opt5_4		
 			JMP snake_AI_2	    ; go to basic fill up routine 
 
-Opt5_5	
-			JMP snake_AI_2		; under contruction
-			
-			
-;######################################################################################
-;## AI_error
-;##		
 
-AI_error
-			LDX #$48			; move to (72;5)
-			LDY #$05
-			DC $04				
-			Print DEF_ERROR		; print error message
-			STA $7000			; store error code
-			LDA #$00
-			STA $7001
-			Print $7000			; print error code 
-			RTS
+			
+			
+
 			
 			
 			
