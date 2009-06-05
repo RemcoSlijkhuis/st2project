@@ -301,7 +301,7 @@ Opt5_3
 			CMP PLAYER2_DIR		; compare to player 2 last direction
 			BNE noEnd			; if not equal continue
 			LDY PLAYER2_Y		; else check if not running into top
-			CMP #$01
+			CPY #$01
 			BNE jmp_end			; if not, return
 			LDA #$01			; else go left (player 1 will crash into wall)
 			STA PLAYER2_DIR
