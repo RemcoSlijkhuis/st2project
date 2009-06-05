@@ -1,3 +1,4 @@
+;ascii art from www.chris.com
 PRINT_SNAKE
 	Print DEF_SNAKE_0
 	INY
