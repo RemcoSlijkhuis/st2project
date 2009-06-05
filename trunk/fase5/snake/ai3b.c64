@@ -280,7 +280,7 @@ Opt5_2
 			CPY PLAYER2_Y		; compare with player 2 y position
 			BEQ setCase0		; if on same height again, continue as if case 0 
 			DEC PLAYER2_X		; else move player virtual left
-			JSR CHECK_COLLISION	; check if this will cause collison
+			JSR AI_check_collison	; check if this will cause collison
 			INC PLAYER2_X		; undo virtual movement
 			CMP #$00			; check if there was no collision
 			BEQ goEnd			; if not jump to end without changing direction
