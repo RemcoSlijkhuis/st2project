@@ -154,6 +154,9 @@ AI_LEVEL
 	DC #$00			; no AI
 	DC #$00
 
+FIXED_POSITIONS
+	DC #$00
+
 NO_AI
 	DC #$00
 	DC #$00
