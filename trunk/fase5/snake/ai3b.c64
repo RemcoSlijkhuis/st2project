@@ -65,11 +65,8 @@ AI_main
 			JSR	AI_chooseOpt	; else call chooseOpt
 notFirst
 			INC AI_turn			; increment to current turn
-			LDA AI_option		; load option in accumulator
-			CMP #$05			; if option is 5, go to decideOpt5
-			BEQ AI_decideOpt5	
-			LDA #$01			; if no legal option, give error code 1
-			JSR AI_error		
+			JMP AI_decideOpt5	
+		
 			JMP snake_AI_2		; and perform basic direction choice
 AI3_end		LDA PLAYER1_DIR		; get direction of player 1
 			STA AI_moveMem		; store direction for next turn
