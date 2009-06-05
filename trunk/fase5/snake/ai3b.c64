@@ -285,7 +285,7 @@ Opt5_2
 			CMP #$00			; check if there was no collision
 			BEQ goEnd			; if not jump to end without changing direction
 			LDY PLAYER2_Y		; else load current position of player 2
-			CMP #$0B			; check on wich half player 2 resides
+			CPY #$0B			; check on wich half player 2 resides
 			BMI goDown2			; if on upper half go down
 			JMP goUp			; else goUp
 			
