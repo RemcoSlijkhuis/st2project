@@ -1,4 +1,4 @@
-
+# terminal settings are similar to those found on http://heather.cs.ucdavis.edu/~matloff/50/Tetris.s
 .data
 
 .global start	
