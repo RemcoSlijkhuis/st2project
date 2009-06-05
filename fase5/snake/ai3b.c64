@@ -279,11 +279,22 @@ Opt5_2
 			LDY PLAYER1_Y		; load y position player 1
 			CPY PLAYER2_Y		; compare with player 2 y position
 			BEQ setCase0		; if on same height again, continue as if case 0 
-			JMP AI3_end			; else return without changing direction.
+			DEC PLAYER2_X		; else move player virtual left
+			JSR CHECK_COLLISION	; check if this will cause collison
+			INC PLAYER2_X		; undo virtual movement
+			CMP #$00			; check if there was no collision
+			BEQ goEnd			; if not jump to end without changing direction
+			LDY PLAYER2_Y		; else load current position of player 2
+			CMP #$0B			; check on wich half player 2 resides
+			BMI goDown2			; if on upper half go down
+			JMP goUp			; else goUp
+			
+goEnd		JMP AI3_end			; return 
+			
 			
 setCase0 	LDA #$00			; load case 0
 			STA AI_case
-			JMP AI3_end			; and return
+			JMP snake_AI_3		; and try again in case 0
 			
 Opt5_3	
 			LDA PLAYER1_DIR		; peek at player1 direction
