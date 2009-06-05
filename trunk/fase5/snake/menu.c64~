@@ -77,7 +77,7 @@ menu_1player_moderate
 	Load_AI snake_AI_2		; load the moderately difficult AI
 	RTS
 
-menu_1player_difficulteasy
+menu_1player_difficult
 	Load_AI snake_AI_3		; load the difficult AI
 	RTS
 

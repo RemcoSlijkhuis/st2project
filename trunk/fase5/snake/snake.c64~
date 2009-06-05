@@ -7,7 +7,7 @@
 	INCLUDE "vars.c64"		; load string definition
 	INCLUDE "ai.c64"		; load AI 1.0
 	INCLUDE "ai2.c64"		; load AI 2.0
-	INCLUDE "ai3.c64"		; load AI 3.0
+	INCLUDE "ai3b.c64"		; load AI 3.0
 	INCLUDE "menu.c64"		; load main menu
 	INCLUDE "image.c64"		; load snake image
 	
@@ -178,15 +178,23 @@ handle_key_end
 ;## randomize_game: randomizes the player positions                 ##
 ;#####################################################################
 randomize_game:
+	LDA FIXED_POSITIONS
+	BNE randomize
+	LDA #$10
+	STA PLAYER1_Y
+	LDA #$10
+	STA PLAYER2_Y
+	RTS
+randomize
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
-	LDA #$10
+	;LDA #$10
 	STA PLAYER1_Y			; store it as player1 y
 	INC PLAYER1_Y			; and increment it with 1 to start at y=1 at the highest
 	DC $07				; get a random number that's not bigger than 21
 	DC $15				; 
 	
-	LDA #$10
+	;LDA #$10
 	STA PLAYER2_Y			; store it as player2 y
 	INC PLAYER2_Y			; and increment it with 1 to start at y=1 at the highest
 	RTS

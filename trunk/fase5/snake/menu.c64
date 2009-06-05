@@ -79,6 +79,8 @@ menu_1player_moderate
 
 menu_1player_difficult
 	Load_AI snake_AI_3		; load the difficult AI
+	LDA #$01
+	STA FIXED_POSITIONS
 	RTS
 
 menu_2player
