@@ -160,7 +160,6 @@ above		LDY PLAYER2_Y		; load player 2 y posiyion
 			BEQ	right_fill		; if at top go set dir to right and fill up mode		
 			CPY PLAYER1_Y		; else compare with position of player 1
 			BPL goUp			; if player 2 is below or next to player 1, go up
-			JMP goUp
 tryLeft		LDA #$01			; else set left direction
 			STA PLAYER2_DIR		;
 			JMP setCase4		; and set case to 4 (players now end in a tie, or seperated)
